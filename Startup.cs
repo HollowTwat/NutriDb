@@ -1,11 +1,9 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Nutri2Service.Models;
-using System.Configuration;
-namespace BerryBuyerBuilder
+using NutriDbService.Models;
+namespace NutriDbService
 {
     public class Startup
     {
@@ -58,7 +56,7 @@ namespace BerryBuyerBuilder
             {
                 endpoints.MapControllers();
             });
-           
+
         }
         // This method gets called by the runtime. Use this method to configure endpoints
         public void Endpoints(IEndpointRouteBuilder builder)

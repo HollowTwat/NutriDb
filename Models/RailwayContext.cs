@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace Nutri2Service.Models;
+namespace NutriDbService.Models;
 
 public partial class RailwayContext : DbContext
 {

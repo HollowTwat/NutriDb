@@ -6,8 +6,8 @@
 		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
 		<InvariantGlobalization>true</InvariantGlobalization>
 		<DockerfileContext>.</DockerfileContext>
-		<AssemblyName>Nutri2Service</AssemblyName>
-		<RootNamespace>Nutri2Service</RootNamespace>
+		<AssemblyName>NutriDbService</AssemblyName>
+		<RootNamespace>NutriDbService</RootNamespace>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

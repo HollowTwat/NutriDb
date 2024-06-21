@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 
-namespace Nutri2Service.Models;
+namespace NutriDbService.Models;
 
 public partial class Subscription
 {

@@ -1,12 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Nutri2Service.Models;
+using NutriDbService.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace BerryBuyerBuilder.Controllers
+namespace NutriDbService.Controllers
 {
     [ApiController]
     [Route("api/[controller]/[action]")]
@@ -23,7 +23,7 @@ namespace BerryBuyerBuilder.Controllers
         #region AllCRUDS
 
         #region ProductType
-        [HttpGet]   
+        [HttpGet]
         public ActionResult<IEnumerable<Promo>> GetAllPromo()
         {
             try
