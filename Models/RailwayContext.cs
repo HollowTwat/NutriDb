@@ -26,7 +26,7 @@ public partial class RailwayContext : DbContext
     public virtual DbSet<Userinfo> Userinfos { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseNpgsql("Server=viaduct.proxy.rlwy.net;Port=38794;Database=railway;user id=postgres;password=wTLZPRhYXHSReMKcUHSCNDEQlgQmbFDO");
+        => optionsBuilder.UseNpgsql("Server=postgres.railway.internal;Port=38794;Database=railway;user id=postgres;password=wTLZPRhYXHSReMKcUHSCNDEQlgQmbFDO");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

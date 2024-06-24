@@ -47,7 +47,7 @@ namespace NutriDbService
             });
             app.UseRouting();
             app.UseCors(builder => builder
-      .WithOrigins("https://elaborate-seahorse-305700.netlify.app")
+      //.WithOrigins("https://elaborate-seahorse-305700.netlify.app")
       .AllowAnyHeader()
       .AllowAnyMethod()
       .AllowCredentials()
