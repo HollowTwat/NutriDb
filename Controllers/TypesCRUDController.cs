@@ -16,9 +16,9 @@ namespace NutriDbService.Controllers
     public class TypesCRUDController : Controller
     {
         private readonly ILogger<TypesCRUDController> _logger;
-        private NutriDbContext _context;
+        private railwayContext _context;
         private MealHelper _mealHelper;
-        public TypesCRUDController(NutriDbContext context, MealHelper mealHelper, ILogger<TypesCRUDController> logger)
+        public TypesCRUDController(railwayContext context, MealHelper mealHelper, ILogger<TypesCRUDController> logger)
         {
             _context = context;
             _mealHelper = mealHelper;

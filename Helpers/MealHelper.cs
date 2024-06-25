@@ -6,8 +6,8 @@ namespace NutriDbService.Helpers
 {
     public class MealHelper
     {
-        public NutriDbContext _nutriDbContext { get; set; }
-        public MealHelper(NutriDbContext railwayContext)
+        public railwayContext _nutriDbContext { get; set; }
+        public MealHelper(railwayContext railwayContext)
         {
             _nutriDbContext = railwayContext;
         }
