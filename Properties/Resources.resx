@@ -117,40 +117,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="BuildType" xml:space="preserve">
-    <value>Release</value>
-  </data>
-  <data name="BuyOperName" xml:space="preserve">
-    <value>Закуп</value>
-  </data>
   <data name="DbConnectionString" xml:space="preserve">
-    <value>server=localhost;database=u1495815_default;port=3306;user=u1495815_mariad;password=a1Az0o9jOBiivd4C;ssl mode=None</value>
+    <value>Host=postgres.railway.internal;Port=38794;Username=postgres;Password=wTLZPRhYXHSReMKcUHSCNDEQlgQmbFDO;Database=railway</value>
   </data>
-  <data name="DbVersionString" xml:space="preserve">
-    <value>10.5.10-mariadb</value>
-  </data>
-  <data name="MutualPaymentOperName" xml:space="preserve">
-    <value>Взаиморасчеты</value>
-  </data>
-  <data name="NotPaid" xml:space="preserve">
-    <value>Не Оплачен</value>
-  </data>
-  <data name="OutlayOperName" xml:space="preserve">
-    <value>Расходы</value>
-  </data>
-  <data name="Paid" xml:space="preserve">
-    <value>Оплачен</value>
-  </data>
-  <data name="PaymentOperName" xml:space="preserve">
-    <value>Передача денег</value>
-  </data>
-  <data name="PointProdGetOperName" xml:space="preserve">
-    <value>Забор товара с точки</value>
-  </data>
-  <data name="PointTypeName" xml:space="preserve">
-    <value>точка сбора</value>
-  </data>
-  <data name="SellOperName" xml:space="preserve">
-    <value>Продажа</value>
+  <data name="DebugConnectionString" xml:space="preserve">
+    <value>Host=viaduct.proxy.rlwy.net;Port=38794;Username=postgres;Password=wTLZPRhYXHSReMKcUHSCNDEQlgQmbFDO;Database=railway</value>
   </data>
 </root>

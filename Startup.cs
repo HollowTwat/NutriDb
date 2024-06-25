@@ -2,14 +2,13 @@
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using NutriDbService.Models;
+using NutriDbService.DbModels;
+using NutriDbService.Helpers;
 namespace NutriDbService
 {
     public class Startup
     {
-        //Scaffold-DbContext "Server=31.31.196.234;Database=u1495815_default;Port=3306;User=u1495815_mariad;Password=a1Az0o9jOBiivd4C;ssl mode=None" Pomelo.EntityFrameworkCore.MySql -OutputDir .\Models\DBModels -f
-        //server=localhost;database=u1495815_default;port=3306;user=u1495815_mariad;password=a1Az0o9jOBiivd4C;ssl mode=None
-        //server=localhost;database=u1495815_BerryDb;port=3306;user=u1495815_mariad;password=a1Az0o9jOBiivd4C;ssl mode=None
+        //Scaffold-DbContext "Host=viaduct.proxy.rlwy.net;Port=38794;Username=postgres;Password=wTLZPRhYXHSReMKcUHSCNDEQlgQmbFDO;Database=railway" Npgsql.EntityFrameworkCore.PostgreSQL -OutputDir DbModels -f
         public IConfiguration _configuration;
 
         public Startup(IConfiguration configuration)
@@ -27,7 +26,8 @@ namespace NutriDbService
             services.AddControllers().AddNewtonsoftJson();
 
             services.AddSwaggerGen();
-            services.AddTransient<RailwayContext>();
+            services.AddTransient<NutriDbContext>();
+            services.AddScoped<MealHelper>();
             //    services.AddDbContext<RailwayContext>(options =>
             //options.UseNpgsql(Configuration.GetConnectionString("BloggingContext")));
         }

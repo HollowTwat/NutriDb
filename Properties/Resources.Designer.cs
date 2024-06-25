@@ -61,25 +61,7 @@ namespace NutriDbService.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Release.
-        /// </summary>
-        internal static string BuildType {
-            get {
-                return ResourceManager.GetString("BuildType", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Закуп.
-        /// </summary>
-        internal static string BuyOperName {
-            get {
-                return ResourceManager.GetString("BuyOperName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to server=localhost;database=u1495815_default;port=3306;user=u1495815_mariad;password=a1Az0o9jOBiivd4C;ssl mode=None.
+        ///   Looks up a localized string similar to Host=postgres.railway.internal;Port=38794;Username=postgres;Password=wTLZPRhYXHSReMKcUHSCNDEQlgQmbFDO;Database=railway.
         /// </summary>
         internal static string DbConnectionString {
             get {
@@ -88,83 +70,11 @@ namespace NutriDbService.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to 10.5.10-mariadb.
+        ///   Looks up a localized string similar to Host=viaduct.proxy.rlwy.net;Port=38794;Username=postgres;Password=wTLZPRhYXHSReMKcUHSCNDEQlgQmbFDO;Database=railway.
         /// </summary>
-        internal static string DbVersionString {
+        internal static string DebugConnectionString {
             get {
-                return ResourceManager.GetString("DbVersionString", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Взаиморасчеты.
-        /// </summary>
-        internal static string MutualPaymentOperName {
-            get {
-                return ResourceManager.GetString("MutualPaymentOperName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Не Оплачен.
-        /// </summary>
-        internal static string NotPaid {
-            get {
-                return ResourceManager.GetString("NotPaid", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Расходы.
-        /// </summary>
-        internal static string OutlayOperName {
-            get {
-                return ResourceManager.GetString("OutlayOperName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Оплачен.
-        /// </summary>
-        internal static string Paid {
-            get {
-                return ResourceManager.GetString("Paid", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Передача денег.
-        /// </summary>
-        internal static string PaymentOperName {
-            get {
-                return ResourceManager.GetString("PaymentOperName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Забор товара с точки.
-        /// </summary>
-        internal static string PointProdGetOperName {
-            get {
-                return ResourceManager.GetString("PointProdGetOperName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to точка сбора.
-        /// </summary>
-        internal static string PointTypeName {
-            get {
-                return ResourceManager.GetString("PointTypeName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Продажа.
-        /// </summary>
-        internal static string SellOperName {
-            get {
-                return ResourceManager.GetString("SellOperName", resourceCulture);
+                return ResourceManager.GetString("DebugConnectionString", resourceCulture);
             }
         }
     }

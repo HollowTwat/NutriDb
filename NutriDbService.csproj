@@ -56,8 +56,4 @@
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </None>
 	</ItemGroup>
-	<ItemGroup>
-	  <Folder Include="Helpers\" />
-	  <Folder Include="Models\" />
-	</ItemGroup>
 </Project>
