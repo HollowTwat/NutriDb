@@ -26,6 +26,7 @@ namespace NutriDbService
             services.AddControllers().AddNewtonsoftJson();
 
             services.AddSwaggerGen();
+            services.AddScoped<railwayContext>();
             services.AddScoped<NutriDbContext>();
             services.AddScoped<MealHelper>();
             //    services.AddDbContext<RailwayContext>(options =>
