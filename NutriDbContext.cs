@@ -9,11 +9,12 @@ namespace NutriDbService
         {
             if (!optionsBuilder.IsConfigured)
             {
-#if DEBUG
-                optionsBuilder.UseNpgsql(Properties.Resources.DebugConnectionString);
-#else
-                optionsBuilder.UseNpgsql(Properties.Resources.DbConnectionString);
-#endif
+                optionsBuilder.UseNpgsql("Host=postgres.railway.internal;Port=38794;Username=postgres;Password=wTLZPRhYXHSReMKcUHSCNDEQlgQmbFDO;Database=railway");
+                //#if DEBUG
+                //                optionsBuilder.UseNpgsql(Properties.Resources.DebugConnectionString);
+                //#else
+                //                optionsBuilder.UseNpgsql(Properties.Resources.DbConnectionString);
+                //#endif
             }
         }
     }
