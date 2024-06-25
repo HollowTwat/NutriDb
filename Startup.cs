@@ -26,7 +26,7 @@ namespace NutriDbService
             services.AddControllers().AddNewtonsoftJson();
 
             services.AddSwaggerGen();
-            services.AddTransient<NutriDbContext>();
+            services.AddSingleton<NutriDbContext>();
             services.AddScoped<MealHelper>();
             //    services.AddDbContext<RailwayContext>(options =>
             //options.UseNpgsql(Configuration.GetConnectionString("BloggingContext")));
