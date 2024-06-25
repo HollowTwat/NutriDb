@@ -43,7 +43,7 @@ namespace NutriDbService
             // Enable middleware to serve swagger-ui assets (HTML, JS, CSS etc.)
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V-0.2.8_Release");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V-0.0.1_Release");
                 c.RoutePrefix = string.Empty;
             });
             app.UseRouting();

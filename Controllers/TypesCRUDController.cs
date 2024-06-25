@@ -17,11 +17,11 @@ namespace NutriDbService.Controllers
     {
         private readonly ILogger<TypesCRUDController> _logger;
         private railwayContext _context;
-        private MealHelper _mealHelper;
-        public TypesCRUDController(railwayContext context, MealHelper mealHelper, ILogger<TypesCRUDController> logger)
+        //private MealHelper _mealHelper;
+        public TypesCRUDController(railwayContext context,/* MealHelper mealHelper,*/ ILogger<TypesCRUDController> logger)
         {
             _context = context;
-            _mealHelper = mealHelper;
+            //_mealHelper = mealHelper;
             _logger = logger;
         }
 
@@ -44,19 +44,19 @@ namespace NutriDbService.Controllers
         #endregion
 
         #region Meal
-        [HttpPost]
-        public ActionResult<int> CreateMeal(CreateMealRequest request)
-        {
-            try
-            {
-                var res = _mealHelper.CreateMeal(request);
-                return Ok(res);
-            }
-            catch (Exception ex)
-            {
-                return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
-            }
-        }
+        //[HttpPost]
+        //public ActionResult<int> CreateMeal(CreateMealRequest request)
+        //{
+        //    try
+        //    {
+        //        var res = _mealHelper.CreateMeal(request);
+        //        return Ok(res);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
+        //    }
+        //}
         [HttpGet]
         public ActionResult<List<GetMealResp>> GetTodayUserMeals(int userId)
         {
