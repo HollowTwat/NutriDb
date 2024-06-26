@@ -81,7 +81,7 @@ namespace NutriDbService.Controllers
                             {
                                 description = x.Description,
                                 weight = x.Weight,
-                                nutriProps = new PythModels.NutriProps(x.Fats, x.Carbs, x.Protein)
+                                nutritional_value = new PythModels.NutriProps(x.Fats, x.Carbs, x.Protein)
                             }).ToList(),
                         }
                     });

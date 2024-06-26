@@ -18,9 +18,9 @@ namespace NutriDbService.Helpers
             {
                 dishes.Add(new Dish
                 {
-                    Carbs = d.nutriProps.carbs,
-                    Fats = d.nutriProps.fats,
-                    Protein = d.nutriProps.protein,
+                    Carbs = d.nutritional_value.carbs,
+                    Fats = d.nutritional_value.fats,
+                    Protein = d.nutritional_value.protein,
                     Description = d.description,
                     Kkal = null,
                     Weight = d.weight,
