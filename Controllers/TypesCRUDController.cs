@@ -7,6 +7,7 @@ using NutriDbService.PythModels.Request;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Unicode;
 using System.Threading.Tasks;
 
 namespace NutriDbService.Controllers
@@ -93,6 +94,12 @@ namespace NutriDbService.Controllers
             {
                 return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
+        }
+
+        [HttpGet]
+        public string TestFood(CreateMealRequest2 input)
+        {
+           return Newtonsoft.Json.JsonConvert.SerializeObject(input.meal.food);
         }
         #endregion
         #endregion
