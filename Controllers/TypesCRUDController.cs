@@ -48,16 +48,20 @@ namespace NutriDbService.Controllers
 
         #region Meal
         [HttpPost]
-        public ActionResult<int> CreateMeal(CreateMealRequest request)
+        public bool CreateMeal(CreateMealRequest request)
         {
             try
             {
                 var res = _mealHelper.CreateMeal(request);
-                return Ok(res);
+                _logger.LogInformation(res.ToString());
+               return true;
+               // return Ok(res);
             }
             catch (Exception ex)
             {
-                return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
+                _logger.LogError(ex,"Meal Create Error");
+                return false;
+                //return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
         }
         [HttpGet]
