@@ -53,7 +53,7 @@ namespace NutriDbService.Controllers
             try
             {
                 var res = _mealHelper.CreateMeal(request);
-                _logger.LogInformation($"User={request.userId} Meal={res} was added");
+                _logger.LogInformation($"UserTG={request.userTgId} Meal={res} was added");
                 return true;
                 // return Ok(res);
             }
@@ -70,7 +70,7 @@ namespace NutriDbService.Controllers
             try
             {
                 var res = _mealHelper.CreateMeal(request);
-                _logger.LogInformation($"User={request.userId} Meal={res} was edited");
+                _logger.LogInformation($"User={request.userTgId} Meal={res} was edited");
                 return true;
                 // return Ok(res);
             }
@@ -82,11 +82,12 @@ namespace NutriDbService.Controllers
             }
         }
         [HttpGet]
-        public ActionResult<List<GetMealResp>> GetTodayUserMeals(int userId)
+        public ActionResult<List<GetMealResp>> GetTodayUserMeals(int userTgId)
         {
             try
             {
-                var meals = _context.Meals.Where(x => x.UserId == userId && x.Timestamp.Value.Date == DateTime.Now.Date).ToList();
+                var user = _context.Users.Single(x => x.TgId == userTgId);
+                var meals = _context.Meals.Where(x => x.UserId == user.Id && x.Timestamp.Value.Date == DateTime.Now.Date).ToList();
                 var mealsId = meals.Select(x => x.Id).ToList();
                 var dishes = _context.Dishes.Where(x => mealsId.Contains(x.MealId));
                 var resp = new List<GetMealResp>() { };

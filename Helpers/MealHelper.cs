@@ -14,6 +14,7 @@ namespace NutriDbService.Helpers
         }
         public int CreateMeal(CreateMealRequest createMealRequest)
         {
+            var user = _nutriDbContext.Users.Single(x => x.TgId == createMealRequest.userTgId);
             var dishes = new HashSet<Dish>();
             foreach (var d in createMealRequest.meal.food)
             {
@@ -29,7 +30,7 @@ namespace NutriDbService.Helpers
             }
             var meal = new Meal()
             {
-                UserId = createMealRequest.userId,
+                UserId = user.Id,
                 Weight = createMealRequest.meal.totalWeight,
                 Dishes = dishes,
                 Description = createMealRequest.meal.description,
@@ -45,6 +46,7 @@ namespace NutriDbService.Helpers
         }
         public int EditMeal(EditMealRequest createMealRequest)
         {
+            var user = _nutriDbContext.Users.Single(x => x.TgId == createMealRequest.userTgId);
             var meal = _nutriDbContext.Meals.Single(x => x.Id == createMealRequest.mealId);
             var dishes = new HashSet<Dish>();
             foreach (var d in createMealRequest.meal.food)
@@ -60,7 +62,7 @@ namespace NutriDbService.Helpers
                 });
             }
 
-            meal.UserId = createMealRequest.userId;
+            meal.UserId = user.Id;
             meal.Weight = createMealRequest.meal.totalWeight;
             meal.Dishes = dishes;
             meal.Description = createMealRequest.meal.description;
