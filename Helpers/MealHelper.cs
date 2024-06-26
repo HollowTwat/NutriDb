@@ -1,6 +1,7 @@
 ﻿using NutriDbService.DbModels;
 using NutriDbService.PythModels.Request;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace NutriDbService.Helpers
 {
@@ -35,8 +36,39 @@ namespace NutriDbService.Helpers
                 Type = (short)createMealRequest.meal.type,
                 Timestamp = createMealRequest.EatedAt
             };
+
             _nutriDbContext.Database.BeginTransaction();
             _nutriDbContext.Meals.Add(meal);
+            _nutriDbContext.SaveChanges();
+            _nutriDbContext.Database.CommitTransaction();
+            return meal.Id;
+        }
+        public int EditMeal(EditMealRequest createMealRequest)
+        {
+            var meal = _nutriDbContext.Meals.Single(x => x.Id == createMealRequest.mealId);
+            var dishes = new HashSet<Dish>();
+            foreach (var d in createMealRequest.meal.food)
+            {
+                dishes.Add(new Dish
+                {
+                    Carbs = d.nutritional_value.carbs,
+                    Fats = d.nutritional_value.fats,
+                    Protein = d.nutritional_value.protein,
+                    Description = d.description,
+                    Kkal = null,
+                    Weight = d.weight,
+                });
+            }
+
+            meal.UserId = createMealRequest.userId;
+            meal.Weight = createMealRequest.meal.totalWeight;
+            meal.Dishes = dishes;
+            meal.Description = createMealRequest.meal.description;
+            meal.Type = (short)createMealRequest.meal.type;
+            meal.Timestamp = createMealRequest.EatedAt;
+
+            _nutriDbContext.Database.BeginTransaction();
+            _nutriDbContext.Meals.Update(meal);
             _nutriDbContext.SaveChanges();
             _nutriDbContext.Database.CommitTransaction();
             return meal.Id;

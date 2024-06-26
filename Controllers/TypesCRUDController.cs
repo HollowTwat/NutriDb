@@ -53,13 +53,30 @@ namespace NutriDbService.Controllers
             try
             {
                 var res = _mealHelper.CreateMeal(request);
-                _logger.LogInformation(res.ToString());
-               return true;
-               // return Ok(res);
+                _logger.LogInformation($"User={request.userId} Meal={res} was added");
+                return true;
+                // return Ok(res);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex,"Meal Create Error");
+                _logger.LogError(ex, "Meal Create Error");
+                return false;
+                //return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
+            }
+        }
+        [HttpPost]
+        public bool EditMeal(CreateMealRequest request)
+        {
+            try
+            {
+                var res = _mealHelper.CreateMeal(request);
+                _logger.LogInformation($"User={request.userId} Meal={res} was edited");
+                return true;
+                // return Ok(res);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Meal Edit Error");
                 return false;
                 //return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
