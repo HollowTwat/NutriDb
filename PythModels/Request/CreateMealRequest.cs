@@ -14,7 +14,7 @@ namespace NutriDbService.PythModels.Request
     {
         public int userId { get; set; }
 
-        public PythMeal meal { get; set; }
+        public PythMeal2 meal { get; set; }
 
         public DateTime EatedAt { get; set; }
     }

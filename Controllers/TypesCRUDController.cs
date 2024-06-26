@@ -99,6 +99,7 @@ namespace NutriDbService.Controllers
         [HttpGet]
         public string TestFood(CreateMealRequest2 input)
         {
+           // input.meal.food;
            return Newtonsoft.Json.JsonConvert.SerializeObject(input.meal.food);
         }
         #endregion
