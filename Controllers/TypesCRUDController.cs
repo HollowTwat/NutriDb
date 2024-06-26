@@ -3,10 +3,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using NutriDbService.DbModels;
 using NutriDbService.Helpers;
+using NutriDbService.PythModels;
 using NutriDbService.PythModels.Request;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Text.Unicode;
 using System.Threading.Tasks;
 
@@ -95,12 +97,21 @@ namespace NutriDbService.Controllers
                 return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
         }
-
-        [HttpGet]
-        public string TestFood(CreateMealRequest2 input)
+        [HttpPost]
+        public ActionResult<int> CreateMealFromUnicode(string request)
         {
-           // input.meal.food;
-           return Newtonsoft.Json.JsonConvert.SerializeObject(input.meal.food);
+            try
+            {
+                request = request.Replace("\\\"", "\"");
+                request = Regex.Unescape(request);
+                var inp = Newtonsoft.Json.JsonConvert.DeserializeObject<CreateMealRequest>(request);
+                var res = _mealHelper.CreateMeal(inp);
+                return Ok(res);
+            }
+            catch (Exception ex)
+            {
+                return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
+            }
         }
         #endregion
         #endregion
