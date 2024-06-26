@@ -70,7 +70,8 @@ namespace NutriDbService.Controllers
                 {
                     resp.Add(new GetMealResp()
                     {
-                        EatedAt = meal.Timestamp.Value,
+                        mealId = meal.Id,
+                        eatedAt = meal.Timestamp.Value,
                         userId = meal.UserId,
                         meal = new PythModels.PythMeal
                         {
