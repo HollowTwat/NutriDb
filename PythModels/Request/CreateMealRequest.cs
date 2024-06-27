@@ -8,6 +8,6 @@ namespace NutriDbService.PythModels.Request
 
         public PythMeal meal { get; set; }
 
-        public DateTime EatedAt { get; set; }
+        public string EatedAt { get; set; }
     }
 }

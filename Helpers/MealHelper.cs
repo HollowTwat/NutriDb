@@ -1,5 +1,6 @@
 ﻿using NutriDbService.DbModels;
 using NutriDbService.PythModels.Request;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -28,6 +29,7 @@ namespace NutriDbService.Helpers
                     Weight = d.weight,
                 });
             }
+
             var meal = new Meal()
             {
                 UserId = user.Id,
@@ -35,7 +37,7 @@ namespace NutriDbService.Helpers
                 Dishes = dishes,
                 Description = createMealRequest.meal.description,
                 Type = (short)createMealRequest.meal.type,
-                Timestamp = createMealRequest.EatedAt
+                Timestamp = DateTime.TryParseExact(createMealRequest.EatedAt, "dd.MM.yyyy_HH:mm", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var parseTime) == true ? parseTime : null
             };
 
             _nutriDbContext.Database.BeginTransaction();
@@ -67,7 +69,11 @@ namespace NutriDbService.Helpers
             meal.Dishes = dishes;
             meal.Description = createMealRequest.meal.description;
             meal.Type = (short)createMealRequest.meal.type;
-            meal.Timestamp = createMealRequest.EatedAt;
+            if (DateTime.TryParseExact(createMealRequest.EatedAt, "dd.MM.yyyy_HH:mm", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var parseTime))
+                meal.Timestamp = parseTime;
+            else
+                meal.Timestamp = null;
+
 
             _nutriDbContext.Database.BeginTransaction();
             _nutriDbContext.Meals.Update(meal);
