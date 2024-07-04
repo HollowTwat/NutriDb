@@ -37,7 +37,7 @@ namespace NutriDbService.Helpers
                 Dishes = dishes,
                 Description = createMealRequest.meal.description,
                 Type = (short)createMealRequest.meal.type,
-                Timestamp = DateTime.TryParseExact(createMealRequest.EatedAt, "dd.MM.yyyy_HH:mm", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var parseTime) == true ? parseTime : null
+                MealTime = DateTime.UtcNow//DateTime.TryParseExact(createMealRequest.EatedAt, "dd.MM.yyyy_HH:mm", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var parseTime) == true ? parseTime : null
             };
 
             _nutriDbContext.Database.BeginTransaction();
@@ -70,9 +70,9 @@ namespace NutriDbService.Helpers
             meal.Description = createMealRequest.meal.description;
             meal.Type = (short)createMealRequest.meal.type;
             if (DateTime.TryParseExact(createMealRequest.EatedAt, "dd.MM.yyyy_HH:mm", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var parseTime))
-                meal.Timestamp = parseTime;
+                meal.MealTime = parseTime;
             else
-                meal.Timestamp = null;
+                meal.MealTime = null;
 
 
             _nutriDbContext.Database.BeginTransaction();

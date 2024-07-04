@@ -14,7 +14,7 @@ namespace NutriDbService.DbModels
         public int UserId { get; set; }
         public string Description { get; set; }
         public decimal? Weight { get; set; }
-        public DateTime? Timestamp { get; set; }
+        public DateTime? MealTime { get; set; }
         public short? Type { get; set; }
 
         public virtual User User { get; set; }
