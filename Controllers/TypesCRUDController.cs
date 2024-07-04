@@ -87,7 +87,7 @@ namespace NutriDbService.Controllers
             try
             {
                 var user = _context.Users.Single(x => x.TgId == userTgId);
-                var meals = _context.Meals.Where(x => x.UserId == user.Id && DateTime.Equals(x.MealTime.Value.Date, DateTime.UtcNow.Date)).ToList();
+                var meals = _context.Meals.Where(x => x.UserId == user.Id && DateTime.Equals(x.MealTime.Value.Date, DateTime.UtcNow.ToLocalTime().Date)).ToList();
                 //var a = _context.Meals.Where(x => x.UserId == user.Id).ToList();
                 //var b = _context.Meals.Where(x => DateTime.Equals(x.MealTime.Value.Date, DateTime.UtcNow.Date)).ToList();
                 //var meals2 = _context.Meals.Where(x => DateTime.Equals(x.MealTime.Value.Date, DateTime.UtcNow.Date) && x.UserId == user.Id).ToList();
