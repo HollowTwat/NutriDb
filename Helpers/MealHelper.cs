@@ -8,7 +8,7 @@ namespace NutriDbService.Helpers
 {
     public class MealHelper
     {
-        TimeZoneInfo _timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time");
+        TimeZoneInfo _timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById("MSK");
         public railwayContext _nutriDbContext { get; set; }
         public MealHelper(railwayContext railwayContext)
         {

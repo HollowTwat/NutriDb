@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using DocumentFormat.OpenXml.Drawing;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using NutriDbService.DbModels;
@@ -18,12 +19,16 @@ namespace NutriDbService.Controllers
     [Route("api/[controller]/[action]")]
     public class TypesCRUDController : Controller
     {
-        TimeZoneInfo _timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time");
         private readonly ILogger<TypesCRUDController> _logger;
         private railwayContext _context;
         private MealHelper _mealHelper;
+        TimeZoneInfo _timeZoneInfo;
         public TypesCRUDController(railwayContext context, MealHelper mealHelper, ILogger<TypesCRUDController> logger)
         {
+            TimeSpan myoffset = new TimeSpan(+3, 0, 0);
+            TimeZoneInfo.CreateCustomTimeZone("MSK", myoffset, "MSK", "MSK");
+            _timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById("MSK");
+
             _context = context;
             _mealHelper = mealHelper;
             _logger = logger;
