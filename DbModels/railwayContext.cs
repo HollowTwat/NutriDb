@@ -114,7 +114,7 @@ namespace NutriDbService.DbModels
                 entity.Property(e => e.Description).HasColumnName("description");
 
                 entity.Property(e => e.MealTime)
-                    .HasPrecision(0)
+                    .HasColumnType("timestamp(0) without time zone")
                     .HasColumnName("meal_time");
 
                 entity.Property(e => e.Type).HasColumnName("type");
