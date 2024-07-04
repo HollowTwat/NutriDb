@@ -22,13 +22,8 @@ namespace NutriDbService.Controllers
         private readonly ILogger<TypesCRUDController> _logger;
         private railwayContext _context;
         private MealHelper _mealHelper;
-        TimeZoneInfo _timeZoneInfo;
         public TypesCRUDController(railwayContext context, MealHelper mealHelper, ILogger<TypesCRUDController> logger)
         {
-            TimeSpan myoffset = new TimeSpan(+3, 0, 0);
-            TimeZoneInfo.CreateCustomTimeZone("MSK", myoffset, "MSK", "MSK");
-            _timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById("MSK");
-
             _context = context;
             _mealHelper = mealHelper;
             _logger = logger;
@@ -93,7 +88,7 @@ namespace NutriDbService.Controllers
             try
             {
                 var user = _context.Users.Single(x => x.TgId == userTgId);
-                var meals = _context.Meals.Where(x => x.UserId == user.Id && DateTime.Equals(x.MealTime.Value.Date, TimeZoneInfo.ConvertTime(DateTime.UtcNow, _timeZoneInfo).Date)).ToList();
+                var meals = _context.Meals.Where(x => x.UserId == user.Id && DateTime.Equals(x.MealTime.Value.Date, DateTime.UtcNow.ToLocalTime().AddHours(3).Date)).ToList();
                 //var a = _context.Meals.Where(x => x.UserId == user.Id).ToList();
                 //var b = _context.Meals.Where(x => DateTime.Equals(x.MealTime.Value.Date, DateTime.UtcNow.Date)).ToList();
                 //var meals2 = _context.Meals.Where(x => DateTime.Equals(x.MealTime.Value.Date, DateTime.UtcNow.Date) && x.UserId == user.Id).ToList();
@@ -135,7 +130,7 @@ namespace NutriDbService.Controllers
             {
                 var user = _context.Users.Single(x => x.TgId == userTgId);
                 var inDay = (DayOfWeek)day;
-                var startDate = TimeZoneInfo.ConvertTime(DateTime.UtcNow, _timeZoneInfo).AddDays(-7).Date;
+                var startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-7).Date;
                 var meals = _context.Meals.Where(x => x.UserId == user.Id && x.MealTime.Value.Date > startDate && x.MealTime.Value.DayOfWeek == (DayOfWeek)day).ToList();
                 var mealsId = meals.Select(x => x.Id).ToList();
                 var dishes = _context.Dishes.Where(x => mealsId.Contains(x.MealId));

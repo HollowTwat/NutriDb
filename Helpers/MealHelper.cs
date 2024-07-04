@@ -8,7 +8,6 @@ namespace NutriDbService.Helpers
 {
     public class MealHelper
     {
-        TimeZoneInfo _timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById("MSK");
         public railwayContext _nutriDbContext { get; set; }
         public MealHelper(railwayContext railwayContext)
         {
@@ -38,7 +37,7 @@ namespace NutriDbService.Helpers
                 Dishes = dishes,
                 Description = createMealRequest.meal.description,
                 Type = (short)createMealRequest.meal.type,
-                MealTime = TimeZoneInfo.ConvertTime(DateTime.UtcNow, _timeZoneInfo)//DateTime.TryParseExact(createMealRequest.EatedAt, "dd.MM.yyyy_HH:mm", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var parseTime) == true ? parseTime : null
+                MealTime = DateTime.UtcNow.ToLocalTime().AddHours(3)//DateTime.TryParseExact(createMealRequest.EatedAt, "dd.MM.yyyy_HH:mm", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var parseTime) == true ? parseTime : null
             };
 
             _nutriDbContext.Database.BeginTransaction();
