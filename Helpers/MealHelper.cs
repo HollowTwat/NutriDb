@@ -85,15 +85,5 @@ namespace NutriDbService.Helpers
             return meal.Id;
         }
 
-        public static string CreatePretty(List<PythFood> food)
-        {
-            var tpretty = string.Empty;
-            var i = 1;
-            foreach (var item in food)
-            {
-                tpretty += $"\n{i}){item.description} {Math.Round(item.weight,0)}г ({Math.Round(item.nutritional_value.fats,0)}г жиров {Math.Round(item.nutritional_value.carbs, 0)}г углеводов {Math.Round(item.nutritional_value.protein, 0)}г белков) ";
-            }
-            return tpretty;
-        }
     }
 }
