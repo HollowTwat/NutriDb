@@ -1,4 +1,5 @@
 ﻿using DocumentFormat.OpenXml.InkML;
+using DocumentFormat.OpenXml.Presentation;
 using NutriDbService.DbModels;
 using NutriDbService.PythModels;
 using NutriDbService.PythModels.Request;
@@ -18,7 +19,9 @@ namespace NutriDbService.Helpers
 
         public int CreateMeal(CreateMealRequest createMealRequest)
         {
-            var user = _nutriDbContext.Users.Single(x => x.TgId == createMealRequest.userTgId);
+            var user = _nutriDbContext.Users.SingleOrDefault(x => x.TgId == createMealRequest.userTgId);
+            if (user == null)
+                throw new Exception($"I Cant Find User : {createMealRequest.userTgId}");
             var dishes = new HashSet<Dish>();
             foreach (var d in createMealRequest.meal.food)
             {
@@ -51,8 +54,14 @@ namespace NutriDbService.Helpers
         }
         public int EditMeal(EditMealRequest createMealRequest)
         {
-            var user = _nutriDbContext.Users.Single(x => x.TgId == createMealRequest.userTgId);
-            var meal = _nutriDbContext.Meals.Single(x => x.Id == createMealRequest.mealId);
+            var user = _nutriDbContext.Users.SingleOrDefault(x => x.TgId == createMealRequest.userTgId);
+            if (user == null)
+                throw new Exception($"I Cant Find User : {createMealRequest.userTgId}");
+
+            var meal = _nutriDbContext.Meals.SingleOrDefault(x => x.Id == createMealRequest.mealId);
+            if (user == null)
+                throw new Exception($"I Cant Find User : {createMealRequest.userTgId}");
+
             var dishes = new HashSet<Dish>();
             foreach (var d in createMealRequest.meal.food)
             {
@@ -74,8 +83,6 @@ namespace NutriDbService.Helpers
             meal.Type = (short)createMealRequest.meal.type;
             if (DateTime.TryParseExact(createMealRequest.EatedAt, "dd.MM.yyyy_HH:mm", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var parseTime))
                 meal.MealTime = parseTime;
-            else
-                meal.MealTime = null;
 
 
             _nutriDbContext.Database.BeginTransaction();

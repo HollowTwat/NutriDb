@@ -63,11 +63,11 @@ namespace NutriDbService.Controllers
             }
         }
         [HttpPost]
-        public bool EditMeal(CreateMealRequest request)
+        public bool EditMeal(EditMealRequest request)
         {
             try
             {
-                var res = _mealHelper.CreateMeal(request);
+                var res = _mealHelper.EditMeal(request);
                 _logger.LogInformation($"User={request.userTgId} Meal={res} was edited");
                 return true;
                 // return Ok(res);
@@ -88,9 +88,7 @@ namespace NutriDbService.Controllers
                 if (user == null)
                     throw new Exception($"I Cant Find User : {userTgId}");
                 var meals = _context.Meals.Where(x => x.UserId == user.Id && DateTime.Equals(x.MealTime.Value.Date, DateTime.UtcNow.ToLocalTime().AddHours(3).Date)).ToList();
-                //var a = _context.Meals.Where(x => x.UserId == user.Id).ToList();
-                //var b = _context.Meals.Where(x => DateTime.Equals(x.MealTime.Value.Date, DateTime.UtcNow.Date)).ToList();
-                //var meals2 = _context.Meals.Where(x => DateTime.Equals(x.MealTime.Value.Date, DateTime.UtcNow.Date) && x.UserId == user.Id).ToList();
+            
                 var mealsId = meals.Select(x => x.Id).ToList();
                 var dishes = _context.Dishes.Where(x => mealsId.Contains(x.MealId));
                 var resp = new List<MealResp>() { };
@@ -116,6 +114,48 @@ namespace NutriDbService.Controllers
                     }
                     );
                 }
+                return Ok(Newtonsoft.Json.JsonConvert.SerializeObject(new GetTodayMealResp(resp)));
+            }
+            catch (Exception ex)
+            {
+                return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
+            }
+        }
+
+        [HttpGet]
+        public ActionResult<GetTodayMealResp> GetUserMealById(int userTgId, long mealId)
+        {
+            try
+            {
+                var user = _context.Users.SingleOrDefault(x => x.TgId == userTgId);
+                if (user == null)
+                    throw new Exception($"I Cant Find User : {userTgId}");
+                var meal = _context.Meals.SingleOrDefault(x => x.UserId == user.Id && x.Id == mealId);
+                if (meal == null)
+                    throw new Exception($"I Cant Find meal : {mealId}");
+
+                var dishes = _context.Dishes.Where(x => x.MealId == mealId);
+                var resp = new List<MealResp>
+                {
+                    new MealResp()
+                    {
+                        mealId = meal.Id,
+                        eatedAt = meal.MealTime.Value,
+                        userId = meal.UserId,
+                        meal = new PythModels.PythMeal
+                        {
+                            description = meal.Description,
+                            totalWeight = meal.Weight,
+                            type = (mealtype)meal.Type,
+                            food = dishes.Where(x => x.MealId == meal.Id).ToList().Select(x => new PythModels.PythFood()
+                            {
+                                description = x.Description,
+                                weight = x.Weight,
+                                nutritional_value = new PythModels.NutriProps(x.Fats, x.Carbs, x.Protein)
+                            }).ToList()
+                        }
+                    }
+                };
                 return Ok(Newtonsoft.Json.JsonConvert.SerializeObject(new GetTodayMealResp(resp)));
             }
             catch (Exception ex)
