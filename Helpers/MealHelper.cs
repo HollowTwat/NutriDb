@@ -1,5 +1,6 @@
 ﻿using DocumentFormat.OpenXml.InkML;
 using DocumentFormat.OpenXml.Presentation;
+using Microsoft.EntityFrameworkCore;
 using NutriDbService.DbModels;
 using NutriDbService.PythModels;
 using NutriDbService.PythModels.Request;
@@ -61,7 +62,7 @@ namespace NutriDbService.Helpers
             if (user == null)
                 throw new Exception($"I Cant Find User : {createMealRequest.userTgId}");
 
-            var meal = _nutriDbContext.Meals.SingleOrDefault(x => x.Id == createMealRequest.mealId);
+            var meal = _nutriDbContext.Meals.Include(x=>x.Dishes).SingleOrDefault(x => x.Id == createMealRequest.mealId);
             if (meal == null)
                 throw new Exception($"I Cant Find Meal : {createMealRequest.mealId}");
             var olddishes = meal.Dishes;
