@@ -1,4 +1,6 @@
-﻿using NutriDbService.DbModels;
+﻿using DocumentFormat.OpenXml.InkML;
+using NutriDbService.DbModels;
+using NutriDbService.PythModels;
 using NutriDbService.PythModels.Request;
 using System;
 using System.Collections.Generic;
@@ -13,6 +15,7 @@ namespace NutriDbService.Helpers
         {
             _nutriDbContext = railwayContext;
         }
+
         public int CreateMeal(CreateMealRequest createMealRequest)
         {
             var user = _nutriDbContext.Users.Single(x => x.TgId == createMealRequest.userTgId);
@@ -80,6 +83,17 @@ namespace NutriDbService.Helpers
             _nutriDbContext.SaveChanges();
             _nutriDbContext.Database.CommitTransaction();
             return meal.Id;
+        }
+
+        public static string CreatePretty(List<PythFood> food)
+        {
+            var tpretty = string.Empty;
+            var i = 1;
+            foreach (var item in food)
+            {
+                tpretty += $"\n{i}){item.description} {Math.Round(item.weight,0)}г ({Math.Round(item.nutritional_value.fats,0)}г жиров {Math.Round(item.nutritional_value.carbs, 0)}г углеводов {Math.Round(item.nutritional_value.protein, 0)}г белков) ";
+            }
+            return tpretty;
         }
     }
 }

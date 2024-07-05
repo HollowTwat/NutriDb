@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json.Bson;
+using System.Collections.Generic;
+using System.Security.Cryptography;
 
 namespace NutriDbService.PythModels
 {
@@ -10,6 +12,9 @@ namespace NutriDbService.PythModels
 
         public List<PythFood> food { get; set; }
 
+        public string pretty { get; set; }
+
         public mealtype type { get; set; }
+
     }
 }

@@ -1,6 +1,4 @@
-﻿using DocumentFormat.OpenXml.Drawing;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using NutriDbService.DbModels;
 using NutriDbService.Helpers;
@@ -10,8 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Text.Unicode;
-using System.Threading.Tasks;
 
 namespace NutriDbService.Controllers
 {
@@ -87,7 +83,9 @@ namespace NutriDbService.Controllers
         {
             try
             {
-                var user = _context.Users.Single(x => x.TgId == userTgId);
+                var user = _context.Users.SingleOrDefault(x => x.TgId == userTgId);
+                if (user == null)
+                    throw new Exception($"I Cant Find User : {userTgId}");
                 var meals = _context.Meals.Where(x => x.UserId == user.Id && DateTime.Equals(x.MealTime.Value.Date, DateTime.UtcNow.ToLocalTime().AddHours(3).Date)).ToList();
                 //var a = _context.Meals.Where(x => x.UserId == user.Id).ToList();
                 //var b = _context.Meals.Where(x => DateTime.Equals(x.MealTime.Value.Date, DateTime.UtcNow.Date)).ToList();
@@ -97,24 +95,27 @@ namespace NutriDbService.Controllers
                 var resp = new List<GetMealResp>() { };
                 foreach (var meal in meals)
                 {
+                    var tmeal = new PythModels.PythMeal
+                    {
+                        description = meal.Description,
+                        totalWeight = meal.Weight,
+                        type = (mealtype)meal.Type,
+                        food = dishes.Where(x => x.MealId == meal.Id).ToList().Select(x => new PythModels.PythFood()
+                        {
+                            description = x.Description,
+                            weight = x.Weight,
+                            nutritional_value = new PythModels.NutriProps(x.Fats, x.Carbs, x.Protein)
+                        }).ToList()
+                    };
+                    tmeal.pretty = MealHelper.CreatePretty(tmeal.food);
                     resp.Add(new GetMealResp()
                     {
                         mealId = meal.Id,
                         eatedAt = meal.MealTime.Value,
                         userId = meal.UserId,
-                        meal = new PythModels.PythMeal
-                        {
-                            description = meal.Description,
-                            totalWeight = meal.Weight,
-                            type = (mealtype)meal.Type,
-                            food = dishes.Where(x => x.MealId == meal.Id).ToList().Select(x => new PythModels.PythFood()
-                            {
-                                description = x.Description,
-                                weight = x.Weight,
-                                nutritional_value = new PythModels.NutriProps(x.Fats, x.Carbs, x.Protein)
-                            }).ToList(),
-                        }
-                    });
+                        meal = tmeal
+                    }
+                    );
                 }
                 return Ok(Newtonsoft.Json.JsonConvert.SerializeObject(resp));
             }
@@ -128,7 +129,9 @@ namespace NutriDbService.Controllers
         {
             try
             {
-                var user = _context.Users.Single(x => x.TgId == userTgId);
+                var user = _context.Users.SingleOrDefault(x => x.TgId == userTgId);
+                if (user == null)
+                    throw new Exception($"I Cant Find User : {userTgId}");
                 var inDay = (DayOfWeek)day;
                 var startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-7).Date;
                 var meals = _context.Meals.Where(x => x.UserId == user.Id && x.MealTime.Value.Date > startDate && x.MealTime.Value.DayOfWeek == (DayOfWeek)day).ToList();
@@ -137,23 +140,25 @@ namespace NutriDbService.Controllers
                 var resp = new List<GetMealResp>() { };
                 foreach (var meal in meals)
                 {
+                    var tmeal = new PythModels.PythMeal
+                    {
+                        description = meal.Description,
+                        totalWeight = meal.Weight,
+                        type = (mealtype)meal.Type,
+                        food = dishes.Where(x => x.MealId == meal.Id).ToList().Select(x => new PythModels.PythFood()
+                        {
+                            description = x.Description,
+                            weight = x.Weight,
+                            nutritional_value = new PythModels.NutriProps(x.Fats, x.Carbs, x.Protein)
+                        }).ToList(),
+                    };
+                    tmeal.pretty = MealHelper.CreatePretty(tmeal.food);
                     resp.Add(new GetMealResp()
                     {
                         mealId = meal.Id,
                         eatedAt = meal.MealTime.Value,
                         userId = meal.UserId,
-                        meal = new PythModels.PythMeal
-                        {
-                            description = meal.Description,
-                            totalWeight = meal.Weight,
-                            type = (mealtype)meal.Type,
-                            food = dishes.Where(x => x.MealId == meal.Id).ToList().Select(x => new PythModels.PythFood()
-                            {
-                                description = x.Description,
-                                weight = x.Weight,
-                                nutritional_value = new PythModels.NutriProps(x.Fats, x.Carbs, x.Protein)
-                            }).ToList(),
-                        }
+                        meal = tmeal
                     });
                 }
                 return Ok(Newtonsoft.Json.JsonConvert.SerializeObject(resp));
