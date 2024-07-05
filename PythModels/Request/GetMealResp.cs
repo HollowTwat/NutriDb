@@ -3,13 +3,13 @@ using System.Collections.Generic;
 
 namespace NutriDbService.PythModels.Request
 {
-    public class GetTodayMealResp
+    public class GetMealResp
     {
         public List<MealResp> Meals { get; set; }
 
         public string pretty { get; set; }
 
-        public GetTodayMealResp(List<MealResp> meals)
+        public GetMealResp(List<MealResp> meals)
         {
             Meals = meals;
             pretty = string.Empty;

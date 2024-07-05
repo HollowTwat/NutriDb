@@ -80,7 +80,7 @@ namespace NutriDbService.Controllers
             }
         }
         [HttpGet]
-        public ActionResult<GetTodayMealResp> GetTodayUserMeals(int userTgId)
+        public ActionResult<GetMealResp> GetTodayUserMeals(int userTgId)
         {
             try
             {
@@ -114,7 +114,7 @@ namespace NutriDbService.Controllers
                     }
                     );
                 }
-                return Ok(Newtonsoft.Json.JsonConvert.SerializeObject(new GetTodayMealResp(resp)));
+                return Ok(Newtonsoft.Json.JsonConvert.SerializeObject(new GetMealResp(resp)));
             }
             catch (Exception ex)
             {
@@ -123,7 +123,7 @@ namespace NutriDbService.Controllers
         }
 
         [HttpGet]
-        public ActionResult<GetTodayMealResp> GetUserMealById(int userTgId, long mealId)
+        public ActionResult<GetMealResp> GetUserMealById(int userTgId, long mealId)
         {
             try
             {
@@ -156,7 +156,7 @@ namespace NutriDbService.Controllers
                         }
                     }
                 };
-                return Ok(Newtonsoft.Json.JsonConvert.SerializeObject(new GetTodayMealResp(resp)));
+                return Ok(Newtonsoft.Json.JsonConvert.SerializeObject(new GetMealResp(resp)));
             }
             catch (Exception ex)
             {
@@ -164,7 +164,7 @@ namespace NutriDbService.Controllers
             }
         }
         [HttpGet]
-        public ActionResult<GetTodayMealResp> GetUserMeals(int userTgId, int day)
+        public ActionResult<GetMealResp> GetUserMeals(int userTgId, int day)
         {
             try
             {
@@ -199,7 +199,7 @@ namespace NutriDbService.Controllers
                         }
                     });
                 }
-                return Ok(Newtonsoft.Json.JsonConvert.SerializeObject(new GetTodayMealResp(resp)));
+                return Ok(Newtonsoft.Json.JsonConvert.SerializeObject(new GetMealResp(resp)));
             }
             catch (Exception ex)
             {
