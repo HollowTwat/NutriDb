@@ -23,6 +23,7 @@ namespace NutriDbService.Helpers
             if (user == null)
                 throw new Exception($"I Cant Find User : {createMealRequest.userTgId}");
             var dishes = new HashSet<Dish>();
+            decimal totalweight = 0;
             foreach (var d in createMealRequest.meal.food)
             {
                 dishes.Add(new Dish
@@ -34,12 +35,13 @@ namespace NutriDbService.Helpers
                     Kkal = null,
                     Weight = d.weight,
                 });
+                totalweight += d.weight;
             }
 
             var meal = new Meal()
             {
                 UserId = user.Id,
-                Weight = createMealRequest.meal.totalWeight,
+                Weight = createMealRequest.meal.totalWeight == 0 ? totalweight : createMealRequest.meal.totalWeight,
                 Dishes = dishes,
                 Description = createMealRequest.meal.description,
                 Type = (short)createMealRequest.meal.type,
@@ -54,6 +56,7 @@ namespace NutriDbService.Helpers
         }
         public int EditMeal(EditMealRequest createMealRequest)
         {
+            decimal totalweight = 0;
             var user = _nutriDbContext.Users.SingleOrDefault(x => x.TgId == createMealRequest.userTgId);
             if (user == null)
                 throw new Exception($"I Cant Find User : {createMealRequest.userTgId}");
@@ -74,10 +77,11 @@ namespace NutriDbService.Helpers
                     Kkal = null,
                     Weight = d.weight,
                 });
+                totalweight += d.weight;
             }
 
             meal.UserId = user.Id;
-            meal.Weight = createMealRequest.meal.totalWeight;
+            meal.Weight = createMealRequest.meal.totalWeight == 0 ? totalweight : createMealRequest.meal.totalWeight;
             meal.Dishes = dishes;
             meal.Description = createMealRequest.meal.description;
             meal.Type = (short)createMealRequest.meal.type;
