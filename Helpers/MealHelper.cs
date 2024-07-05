@@ -59,9 +59,9 @@ namespace NutriDbService.Helpers
                 throw new Exception($"I Cant Find User : {createMealRequest.userTgId}");
 
             var meal = _nutriDbContext.Meals.SingleOrDefault(x => x.Id == createMealRequest.mealId);
-            if (user == null)
-                throw new Exception($"I Cant Find User : {createMealRequest.userTgId}");
-
+            if (meal == null)
+                throw new Exception($"I Cant Find Meal : {createMealRequest.mealId}");
+            var olddishes = meal.Dishes;
             var dishes = new HashSet<Dish>();
             foreach (var d in createMealRequest.meal.food)
             {
@@ -86,6 +86,7 @@ namespace NutriDbService.Helpers
 
 
             _nutriDbContext.Database.BeginTransaction();
+            _nutriDbContext.Dishes.RemoveRange(olddishes);
             _nutriDbContext.Meals.Update(meal);
             _nutriDbContext.SaveChanges();
             _nutriDbContext.Database.CommitTransaction();
