@@ -88,7 +88,7 @@ namespace NutriDbService.Controllers
                 if (user == null)
                     throw new Exception($"I Cant Find User : {userTgId}");
                 var meals = _context.Meals.Where(x => x.UserId == user.Id && DateTime.Equals(x.MealTime.Value.Date, DateTime.UtcNow.ToLocalTime().AddHours(3).Date)).ToList();
-            
+
                 var mealsId = meals.Select(x => x.Id).ToList();
                 var dishes = _context.Dishes.Where(x => mealsId.Contains(x.MealId));
                 var resp = new List<MealResp>() { };
@@ -200,6 +200,31 @@ namespace NutriDbService.Controllers
                     });
                 }
                 return Ok(Newtonsoft.Json.JsonConvert.SerializeObject(new GetMealResp(resp)));
+            }
+            catch (Exception ex)
+            {
+                return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
+            }
+        }
+
+        [HttpGet]
+        public ActionResult<GetMealResp> CreateUser(int userTgId)
+        {
+            try
+            {
+                var user = _context.Users.SingleOrDefault(x => x.TgId == userTgId);
+                if (user != null)
+                    return Ok(true);
+                _context.Users.Add(new DbModels.User
+                {
+                    TgId = userTgId,
+                    Timezone = 0,
+                    StageId = 0,
+                    RegistrationTime = DateOnly.FromDateTime(DateTime.UtcNow.ToLocalTime().AddHours(3)),
+                    IsActive = true,
+                });
+                _context.SaveChanges();
+                return Ok(true);
             }
             catch (Exception ex)
             {
