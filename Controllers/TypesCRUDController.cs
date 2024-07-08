@@ -208,7 +208,7 @@ namespace NutriDbService.Controllers
         }
 
         [HttpGet]
-        public ActionResult<GetMealResp> CreateUser(int userTgId)
+        public ActionResult<GetMealResp> EnsureUser(int userTgId)
         {
             try
             {
