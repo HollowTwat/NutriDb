@@ -208,7 +208,7 @@ namespace NutriDbService.Controllers
         }
 
         [HttpGet]
-        public ActionResult<GetMealResp> EnsureUser(int userTgId)
+        public ActionResult<GetMealResp> EnsureUser(int userTgId, string userName)
         {
             try
             {
@@ -220,8 +220,10 @@ namespace NutriDbService.Controllers
                     TgId = userTgId,
                     Timezone = 0,
                     StageId = 0,
+                    LessonId = 0,
                     RegistrationTime = DateOnly.FromDateTime(DateTime.UtcNow.ToLocalTime().AddHours(3)),
                     IsActive = true,
+                    Username = string.IsNullOrEmpty(userName) ? null : userName,
                 });
                 _context.SaveChanges();
                 return Ok(true);
