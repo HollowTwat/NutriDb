@@ -15,12 +15,12 @@ namespace NutriDbService.PythModels.Request
             pretty = string.Empty;
             foreach (var meal in Meals)
             {
-                pretty += $"Прием пищи {meal.mealId}";
+                pretty += $"\nПрием пищи {meal.mealId}";
                 var i = 0;
                 foreach (var item in meal.meal.food)
                 {
                     i++;
-                    pretty += $"\n{i}){item.description} {Math.Round(item.weight, 0)}г ({Math.Round(item.nutritional_value.fats, 0)}г жиров {Math.Round(item.nutritional_value.carbs, 0)}г углеводов {Math.Round(item.nutritional_value.protein, 0)}г белков) ";
+                    pretty += $"\n{i}){item.description} {Math.Round(item.weight, 0)}г ({Math.Round(item.nutritional_value.fats, 0)}г жиров {Math.Round(item.nutritional_value.carbs, 0)}г углеводов {Math.Round(item.nutritional_value.protein, 0)}г белков)";
                 }
             }
         }
