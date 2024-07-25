@@ -13,7 +13,7 @@ namespace NutriDbService.Helpers
 
     public class TransmitterHelper
     {
-        private readonly string BaseUrl = "https://quart-test.railway.internal";
+        private readonly string BaseUrl = "http://quart-test.railway.internal";
         public railwayContext _nutriDbContext { get; set; }
         public TransmitterHelper(railwayContext nutriDbContext)
         {
