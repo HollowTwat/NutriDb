@@ -50,6 +50,10 @@ namespace NutriDbService.Controllers
         public string Test(string aa)
         {
             return _transmitterHelper.Test(aa);
+        }
+        public string Testinner(string aa)
+        {
+            return _transmitterHelper.TestInner(aa);
 
         }
     }

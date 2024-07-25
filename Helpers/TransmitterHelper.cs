@@ -7,13 +7,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using static System.Net.WebRequestMethods;
 
 namespace NutriDbService.Helpers
 {
 
     public class TransmitterHelper
     {
-        private readonly string BaseUrl = "http://quart-test.railway.internal:7610";
+        private readonly string BaseUrl = "https://quart-test-production-9039.up.railway.app";
         public railwayContext _nutriDbContext { get; set; }
         public TransmitterHelper(railwayContext nutriDbContext)
         {
@@ -127,6 +128,12 @@ namespace NutriDbService.Helpers
         {
             var par = new Dictionary<string, string> { { "test", input } };
             var url = $"{BaseUrl}/test";
+            return SendRequest(par, url).GetAwaiter().GetResult();
+        }
+        public string TestInner(string input)
+        {
+            var par = new Dictionary<string, string> { { "test", input } };
+            var url = $"http://quart-test.railway.internal:7610/test";
             return SendRequest(par, url).GetAwaiter().GetResult();
         }
     }
