@@ -13,7 +13,7 @@ namespace NutriDbService.Helpers
 
     public class TransmitterHelper
     {
-        private readonly string BaseUrl = "quart-test.railway.internal";
+        private readonly string BaseUrl = "https://quart-test.railway.internal";
         public railwayContext _nutriDbContext { get; set; }
         public TransmitterHelper(railwayContext nutriDbContext)
         {
@@ -125,7 +125,9 @@ namespace NutriDbService.Helpers
 
         public string Test(string input)
         {
-            return SendRequest(new Dictionary<string, string> { { "test", "" } }, $"{BaseUrl}/test").GetAwaiter().GetResult();
+            var par = new Dictionary<string, string> { { "test", input } };
+            var url = $"{BaseUrl}/test";
+            return SendRequest(par, url).GetAwaiter().GetResult();
         }
     }
 }
