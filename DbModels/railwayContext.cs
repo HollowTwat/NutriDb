@@ -17,6 +17,7 @@ namespace NutriDbService.DbModels
         }
 
         public virtual DbSet<Dish> Dishes { get; set; }
+        public virtual DbSet<Gptrequest> Gptrequests { get; set; }
         public virtual DbSet<Loyalty> Loyalties { get; set; }
         public virtual DbSet<Meal> Meals { get; set; }
         public virtual DbSet<Messagelog> Messagelogs { get; set; }
@@ -32,7 +33,7 @@ namespace NutriDbService.DbModels
 #if DEBUG
                 optionsBuilder.UseNpgsql("Host=viaduct.proxy.rlwy.net;Port=38794;Username=postgres;Password=wTLZPRhYXHSReMKcUHSCNDEQlgQmbFDO;Database=railway");
 #else
-                optionsBuilder.UseNpgsql("Host=postgres.railway.internal;Port=5432;Username=postgres;Password=wTLZPRhYXHSReMKcUHSCNDEQlgQmbFDO;Database=railway");
+                                optionsBuilder.UseNpgsql("Host=postgres.railway.internal;Port=5432;Username=postgres;Password=wTLZPRhYXHSReMKcUHSCNDEQlgQmbFDO;Database=railway");
 #endif
             }
         }
@@ -76,6 +77,26 @@ namespace NutriDbService.DbModels
                     .HasForeignKey(d => d.MealId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("dish_to_meal");
+            });
+
+            modelBuilder.Entity<Gptrequest>(entity =>
+            {
+                entity.ToTable("gptrequest");
+
+                entity.HasIndex(e => e.Id, "req_id_index")
+                    .IsUnique();
+
+                entity.Property(e => e.Id)
+                    .ValueGeneratedNever()
+                    .HasColumnName("id");
+
+                entity.Property(e => e.Answer).HasColumnName("answer");
+
+                entity.Property(e => e.Done).HasColumnName("done");
+
+                entity.Property(e => e.Iserror).HasColumnName("iserror");
+
+                entity.Property(e => e.UserTgid).HasColumnName("user_tgid");
             });
 
             modelBuilder.Entity<Loyalty>(entity =>

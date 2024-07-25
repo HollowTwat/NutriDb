@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NutriDbService.PythModels.Request
+namespace NutriDbService.PythModels.Response
 {
     public class MealResp
     {

@@ -2,11 +2,11 @@
 {
     public enum mealtype
     {
-        breakfast,
-        afternoon,
-        dinner,
-        evening,
-        supper,
-        nightsnack
+        breakfast=0,
+        afternoon=1,
+        dinner=2,
+        evening=3,
+        supper=4,
+        nightsnack=5,
     }
 }

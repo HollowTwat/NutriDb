@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace NutriDbService.PythModels.Request
+namespace NutriDbService.PythModels.Response
 {
     public class GetMealResp
     {
