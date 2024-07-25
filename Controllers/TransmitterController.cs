@@ -49,14 +49,8 @@ namespace NutriDbService.Controllers
         [HttpPost]
         public string Test(string aa)
         {
-            try
-            {
-                return _transmitterHelper.Test(aa);
-            }
-            catch (Exception ex)
-            {
-                return Newtonsoft.Json.JsonConvert.SerializeObject(ex);
-            }
+            return _transmitterHelper.Test(aa);
+
         }
     }
 }
