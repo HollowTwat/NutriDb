@@ -4,6 +4,7 @@ using NutriDbService.DbModels;
 using NutriDbService.Helpers;
 using NutriDbService.NoCodeModels;
 using NutriDbService.PythModels.Response;
+using System;
 using System.Threading;
 
 namespace NutriDbService.Controllers
@@ -23,17 +24,29 @@ namespace NutriDbService.Controllers
             _logger = logger;
         }
 
+        [HttpPost]
         public CreateGPTResponse CreateGPTRequset(CreateGPTRequest req)
         {
-            var res = _transmitterHelper.CreateGPTRequest(req).GetAwaiter().GetResult();
-            return new CreateGPTResponse(res);
+            try
+            {
+                var res = _transmitterHelper.CreateGPTRequest(req).GetAwaiter().GetResult();
+                return new CreateGPTResponse(res);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+                return new CreateGPTResponse() { isError = true };
+            }
         }
+        
+        [HttpPost]
         public CheckGPTResponse CheckGPTStatus(CheckGPTRequest req)
         {
             var res = _transmitterHelper.CheckGPT(req.RequestId);
             return res;
         }
 
+        [HttpPost]
         public string Test(string aa)
         {
             return _transmitterHelper.Test(aa);

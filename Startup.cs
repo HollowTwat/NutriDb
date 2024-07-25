@@ -2,18 +2,19 @@
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using NutriDbService.DbModels;
 using NutriDbService.Helpers;
 namespace NutriDbService
 {
     public class Startup
     {
-//#if DEBUG
-//        optionsBuilder.UseNpgsql("Host=viaduct.proxy.rlwy.net;Port=38794;Username=postgres;Password=wTLZPRhYXHSReMKcUHSCNDEQlgQmbFDO;Database=railway");
-//#else
-//                optionsBuilder.UseNpgsql("Host=postgres.railway.internal;Port=5432;Username=postgres;Password=wTLZPRhYXHSReMKcUHSCNDEQlgQmbFDO;Database=railway");
-//#endif 
-            //Scaffold-DbContext "Host=viaduct.proxy.rlwy.net;Port=38794;Username=postgres;Password=wTLZPRhYXHSReMKcUHSCNDEQlgQmbFDO;Database=railway" Npgsql.EntityFrameworkCore.PostgreSQL -OutputDir DbModels -f
+        //#if DEBUG
+        //        optionsBuilder.UseNpgsql("Host=viaduct.proxy.rlwy.net;Port=38794;Username=postgres;Password=wTLZPRhYXHSReMKcUHSCNDEQlgQmbFDO;Database=railway");
+        //#else
+        //                optionsBuilder.UseNpgsql("Host=postgres.railway.internal;Port=5432;Username=postgres;Password=wTLZPRhYXHSReMKcUHSCNDEQlgQmbFDO;Database=railway");
+        //#endif 
+        //Scaffold-DbContext "Host=viaduct.proxy.rlwy.net;Port=38794;Username=postgres;Password=wTLZPRhYXHSReMKcUHSCNDEQlgQmbFDO;Database=railway" Npgsql.EntityFrameworkCore.PostgreSQL -OutputDir DbModels -f
         public IConfiguration _configuration;
 
         public Startup(IConfiguration configuration)
@@ -34,6 +35,7 @@ namespace NutriDbService
             services.AddScoped<railwayContext>();
             //services.AddScoped<NutriDbContext>();
             services.AddScoped<MealHelper>();
+            services.AddScoped<TransmitterHelper>();
             //    services.AddDbContext<RailwayContext>(options =>
             //options.UseNpgsql(Configuration.GetConnectionString("BloggingContext")));
         }

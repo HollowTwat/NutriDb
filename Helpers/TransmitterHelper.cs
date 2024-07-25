@@ -13,13 +13,11 @@ namespace NutriDbService.Helpers
 
     public class TransmitterHelper
     {
-        private readonly ILogger _logger;
         private readonly string BaseUrl = "quart-test.railway.internal";
         public railwayContext _nutriDbContext { get; set; }
-        public TransmitterHelper(railwayContext nutriDbContext, ILogger logger)
+        public TransmitterHelper(railwayContext nutriDbContext)
         {
             _nutriDbContext = nutriDbContext;
-            _logger = logger;
         }
 
         public async Task<int> CreateGPTRequest(CreateGPTRequest request)
@@ -121,8 +119,7 @@ namespace NutriDbService.Helpers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Упали при попытке создать запрос к ГПТ");
-                return false;
+                throw new Exception("Упали при попытке создать запрос к ГПТ", ex);
             }
         }
 
