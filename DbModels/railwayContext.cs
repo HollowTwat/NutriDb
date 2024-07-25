@@ -33,7 +33,7 @@ namespace NutriDbService.DbModels
 #if DEBUG
                 optionsBuilder.UseNpgsql("Host=viaduct.proxy.rlwy.net;Port=38794;Username=postgres;Password=wTLZPRhYXHSReMKcUHSCNDEQlgQmbFDO;Database=railway");
 #else
-                                optionsBuilder.UseNpgsql("Host=postgres.railway.internal;Port=5432;Username=postgres;Password=wTLZPRhYXHSReMKcUHSCNDEQlgQmbFDO;Database=railway");
+                        optionsBuilder.UseNpgsql("Host=postgres.railway.internal;Port=5432;Username=postgres;Password=wTLZPRhYXHSReMKcUHSCNDEQlgQmbFDO;Database=railway");
 #endif
             }
         }
@@ -83,12 +83,9 @@ namespace NutriDbService.DbModels
             {
                 entity.ToTable("gptrequest");
 
-                entity.HasIndex(e => e.Id, "req_id_index")
-                    .IsUnique();
-
                 entity.Property(e => e.Id)
-                    .ValueGeneratedNever()
-                    .HasColumnName("id");
+                    .HasColumnName("id")
+                    .HasDefaultValueSql("nextval('gptrequest_id_auto_inc'::regclass)");
 
                 entity.Property(e => e.Answer).HasColumnName("answer");
 

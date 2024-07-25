@@ -23,9 +23,8 @@ namespace NutriDbService.Helpers
 
         public async Task<int> CreateGPTRequest(CreateGPTRequest request)
         {
-            var reqid = _nutriDbContext.Gptrequests.Last().Id;
-            reqid++;
-            await _nutriDbContext.Gptrequests.AddAsync(new Gptrequest { Id = reqid, Iserror = false, Done = false, UserTgid = request.UserTgId });
+            var req = new Gptrequest { Iserror = false, Done = false, UserTgid = request.UserTgId };
+            await _nutriDbContext.Gptrequests.AddAsync(req);
             await _nutriDbContext.SaveChangesAsync();
 
             var reqparams = new Dictionary<string, string>();
@@ -54,8 +53,8 @@ namespace NutriDbService.Helpers
                     throw new ArgumentNullException("Пустой type");
             }
             var url = $"{BaseUrl}/{request.Type}";
-            Task.Run(() => { ExecuteRequest(reqparams, url, reqid); });
-            return reqid;
+            Task.Run(() => { ExecuteRequest(reqparams, url, req.Id); });
+            return req.Id;
         }
 
         public CheckGPTResponse CheckGPT(long requestId)
