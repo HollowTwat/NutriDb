@@ -38,7 +38,7 @@ namespace NutriDbService.Controllers
                 return new CreateGPTResponse() { isError = true };
             }
         }
-        
+
         [HttpPost]
         public CheckGPTResponse CheckGPTStatus(CheckGPTRequest req)
         {
@@ -49,7 +49,14 @@ namespace NutriDbService.Controllers
         [HttpPost]
         public string Test(string aa)
         {
-            return _transmitterHelper.Test(aa);
+            try
+            {
+                return _transmitterHelper.Test(aa);
+            }
+            catch (Exception ex)
+            {
+                return Newtonsoft.Json.JsonConvert.SerializeObject(ex);
+            }
         }
     }
 }
