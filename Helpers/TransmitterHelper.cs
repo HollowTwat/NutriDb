@@ -31,23 +31,23 @@ namespace NutriDbService.Helpers
             switch (request.Type)
             {
                 case "txt":
-                    reqparams.Add("txt", request.Question);
+                    reqparams.Add("txt", request.Question.ToString());
                     reqparams.Add("id", request.UserTgId.ToString());
                     break;
                 case "oga":
                 case "imggg":
-                    reqparams.Add("url", request.Question);
+                    reqparams.Add("url", request.Question.ToString());
                     reqparams.Add("id", request.UserTgId.ToString());
                     break;
                 case "edit_oga":
-                    reqparams.Add("url", request.Question);
+                    reqparams.Add("url", request.Question.ToString());
                     reqparams.Add("id", request.UserTgId.ToString());
-                    reqparams.Add("oldmeal", request.Oldmeal);
+                    reqparams.Add("oldmeal", request.Oldmeal.ToString());
                     break;
                 case "edit_txt":
-                    reqparams.Add("txt", request.Question);
+                    reqparams.Add("txt", request.Question.ToString());
                     reqparams.Add("id", request.UserTgId.ToString());
-                    reqparams.Add("oldmeal", request.Oldmeal);
+                    reqparams.Add("oldmeal", request.Oldmeal.ToString());
                     break;
                 default:
                     throw new ArgumentNullException("Пустой type");
