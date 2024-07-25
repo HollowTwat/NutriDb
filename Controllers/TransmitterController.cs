@@ -51,6 +51,8 @@ namespace NutriDbService.Controllers
         {
             return _transmitterHelper.Test(aa);
         }
+
+        [HttpPost]
         public string Testinner(string aa)
         {
             return _transmitterHelper.TestInner(aa);
