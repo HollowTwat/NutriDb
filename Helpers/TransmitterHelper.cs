@@ -59,7 +59,7 @@ namespace NutriDbService.Helpers
                     throw new ArgumentNullException("Пустой type");
             }
             var url = $"{BaseUrl}/{request.Type}";
-            Task.Run(() => { ExecuteRequest(reqparams, url, req.Id); });
+            Task.Run(() => { ExecuteRequest(_nutriDbContext,reqparams, url, req.Id); });
             return req.Id;
         }
 
@@ -92,7 +92,7 @@ namespace NutriDbService.Helpers
             var response = await client.PostAsync(reqUrl, content);
             return await response.Content.ReadAsStringAsync();
         }
-        public async Task<bool> ExecuteRequest(CreateGPTPythRequest reqparams, string reqUrl, int requstId)
+        public async Task<bool> ExecuteRequest(railwayContext nutriDbContext,CreateGPTPythRequest reqparams, string reqUrl, int requstId)
         {
             string responseString = string.Empty;
             try
@@ -107,8 +107,8 @@ namespace NutriDbService.Helpers
                 dbreq.Done = true;
                 dbreq.Answer = Newtonsoft.Json.JsonConvert.SerializeObject(ex);
                 dbreq.Iserror = true;
-                _nutriDbContext.Update(dbreq);
-                await _nutriDbContext.SaveChangesAsync();
+                nutriDbContext.Update(dbreq);
+                await nutriDbContext.SaveChangesAsync();
             }
             try
             {
@@ -118,8 +118,8 @@ namespace NutriDbService.Helpers
                 dbreq.Done = true;
                 dbreq.Answer = responseString;
                 dbreq.Iserror = false;
-                _nutriDbContext.Update(dbreq);
-                await _nutriDbContext.SaveChangesAsync();
+                nutriDbContext.Update(dbreq);
+                await nutriDbContext.SaveChangesAsync();
                 return true;
             }
             catch (Exception ex)
