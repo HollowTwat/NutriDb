@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using static System.Net.WebRequestMethods;
 
@@ -83,15 +84,12 @@ namespace NutriDbService.Helpers
                         Done = false,
                         IsError = true
                     };
-                //if (requestId % 1000 == 0) 
-                //{
-                //    _nutriDbContext.RemoveRange()
-                //}
+
                 return new CheckGPTResponse
                 {
                     Done = gptreq.Done,
                     IsError = gptreq?.Iserror ?? false,
-                    Response = String.IsNullOrEmpty(gptreq.Answer) ? null : gptreq.Answer//Newtonsoft.Json.JsonConvert.DeserializeObject<GPTResponse>(gptreq.Answer)
+                    Response = String.IsNullOrEmpty(gptreq.Answer) ? null : Regex.Escape(gptreq.Answer)//Newtonsoft.Json.JsonConvert.DeserializeObject<GPTResponse>(gptreq.Answer)
                 };
             }
             catch (Exception ex) { return new CheckGPTResponse { IsError = true, Done = true, Response = "Мы упали" }; }//new GPTResponse { pretty = "Мы упали" } }; }
