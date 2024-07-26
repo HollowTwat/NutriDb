@@ -59,6 +59,11 @@ namespace NutriDbService.Helpers
                     reqparams.id = request.UserTgId.ToString();
                     reqparams.oldmeal = request.Oldmeal.ToString();
                     break;
+                case "day1/yapp_oga":
+                case "day1/yapp":
+                    reqparams.id=request.UserTgId.ToString();
+                    reqparams.txt=request.Question.ToString();
+                    break;
                 default:
                     throw new ArgumentNullException("Пустой type");
             }
