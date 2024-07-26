@@ -61,8 +61,8 @@ namespace NutriDbService.Helpers
                     break;
                 case "day1/yapp_oga":
                 case "day1/yapp":
-                    reqparams.id=request.UserTgId.ToString();
-                    reqparams.txt=request.Question.ToString();
+                    reqparams.id = request.UserTgId.ToString();
+                    reqparams.txt = request.Question.ToString();
                     break;
                 default:
                     throw new ArgumentNullException("Пустой type");
@@ -87,10 +87,10 @@ namespace NutriDbService.Helpers
                 {
                     Done = gptreq.Done,
                     IsError = gptreq?.Iserror ?? false,
-                    Response = String.IsNullOrEmpty(gptreq.Answer) ? null : Newtonsoft.Json.JsonConvert.DeserializeObject<GPTResponse>(gptreq.Answer)
+                    Response = String.IsNullOrEmpty(gptreq.Answer) ? null : gptreq.Answer//Newtonsoft.Json.JsonConvert.DeserializeObject<GPTResponse>(gptreq.Answer)
                 };
             }
-            catch (Exception ex) { return new CheckGPTResponse { IsError = true, Done = true, Response = new GPTResponse { pretty = "Мы упали" } }; }
+            catch (Exception ex) { return new CheckGPTResponse { IsError = true, Done = true, Response = "Мы упали" }; }//new GPTResponse { pretty = "Мы упали" } }; }
         }
 
         public async Task<string> SendRequest(CreateGPTPythRequest reqparams, string reqUrl)
@@ -128,7 +128,7 @@ namespace NutriDbService.Helpers
                     if (dbreq == null)
                         throw new NullReferenceException($"В бд нет реквеста с id={requstId}");
                     dbreq.Done = true;
-                    dbreq.Answer = responseString;
+                    dbreq.Answer = Newtonsoft.Json.JsonConvert.SerializeObject(responseString);
                     dbreq.Iserror = false;
                     _nutriDbContext.Update(dbreq);
                     await _nutriDbContext.SaveChangesAsync();
