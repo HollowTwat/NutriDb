@@ -1,11 +1,14 @@
 ﻿using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using NutriDbService.DbModels;
 using NutriDbService.NoCodeModels;
+using NutriDbService.PythModels.Request;
 using NutriDbService.PythModels.Response;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using static System.Net.WebRequestMethods;
 
@@ -27,27 +30,30 @@ namespace NutriDbService.Helpers
             await _nutriDbContext.Gptrequests.AddAsync(req);
             await _nutriDbContext.SaveChangesAsync();
 
-            var reqparams = new Dictionary<string, string>();
+
+            CreateGPTPythRequest reqparams = new CreateGPTPythRequest();
             switch (request.Type)
             {
+
                 case "txt":
-                    reqparams.Add("txt", request.Question.ToString());
-                    reqparams.Add("id", request.UserTgId.ToString());
+                    reqparams.txt = request.Question.ToString();
+                    reqparams.id = request.UserTgId.ToString();
                     break;
                 case "oga":
                 case "imggg":
-                    reqparams.Add("url", request.Question.ToString());
-                    reqparams.Add("id", request.UserTgId.ToString());
+
+                    reqparams.url = request.Question.ToString();
+                    reqparams.id = request.UserTgId.ToString();
                     break;
                 case "edit_oga":
-                    reqparams.Add("url", request.Question.ToString());
-                    reqparams.Add("id", request.UserTgId.ToString());
-                    reqparams.Add("oldmeal", request.Oldmeal.ToString());
+                    reqparams.url = request.Question.ToString();
+                    reqparams.id = request.UserTgId.ToString();
+                    reqparams.oldmeal = request.Oldmeal.ToString();
                     break;
                 case "edit_txt":
-                    reqparams.Add("txt", request.Question.ToString());
-                    reqparams.Add("id", request.UserTgId.ToString());
-                    reqparams.Add("oldmeal", request.Oldmeal.ToString());
+                    reqparams.txt = request.Question.ToString();
+                    reqparams.id = request.UserTgId.ToString();
+                    reqparams.oldmeal = request.Oldmeal.ToString();
                     break;
                 default:
                     throw new ArgumentNullException("Пустой type");
@@ -78,16 +84,15 @@ namespace NutriDbService.Helpers
             catch (Exception ex) { return new CheckGPTResponse { IsError = true, Done = true, Response = new GPTResponse { pretty = "Мы упали" } }; }
         }
 
-        public async Task<string> SendRequest(Dictionary<string, string> reqparams, string reqUrl)
+        public async Task<string> SendRequest(CreateGPTPythRequest reqparams, string reqUrl)
         {
             HttpClient client = new HttpClient();
 
-            var content = new FormUrlEncodedContent(reqparams);
-
+            HttpContent content = new StringContent(JsonConvert.SerializeObject(reqparams), Encoding.UTF8, "application/json");
             var response = await client.PostAsync(reqUrl, content);
             return await response.Content.ReadAsStringAsync();
         }
-        public async Task<bool> ExecuteRequest(Dictionary<string, string> reqparams, string reqUrl, int requstId)
+        public async Task<bool> ExecuteRequest(CreateGPTPythRequest reqparams, string reqUrl, int requstId)
         {
             string responseString = string.Empty;
             try
@@ -125,13 +130,15 @@ namespace NutriDbService.Helpers
 
         public string Test(string input)
         {
-            var par = new Dictionary<string, string> { { "test", input } };
+            var par = new CreateGPTPythRequest();
+            par.txt = input;
             var url = $"{BaseUrl}/test";
             return SendRequest(par, url).GetAwaiter().GetResult();
         }
         public string TestInner(string input)
         {
-            var par = new Dictionary<string, string> { { "test", input } };
+            var par = new CreateGPTPythRequest();
+            par.txt = input;
             var url = $"http://quart-test.railway.internal:7610/test";
             return SendRequest(par, url).GetAwaiter().GetResult();
         }
