@@ -83,6 +83,10 @@ namespace NutriDbService.Helpers
                         Done = false,
                         IsError = true
                     };
+                //if (requestId % 1000 == 0) 
+                //{
+                //    _nutriDbContext.RemoveRange()
+                //}
                 return new CheckGPTResponse
                 {
                     Done = gptreq.Done,
@@ -128,7 +132,7 @@ namespace NutriDbService.Helpers
                     if (dbreq == null)
                         throw new NullReferenceException($"В бд нет реквеста с id={requstId}");
                     dbreq.Done = true;
-                    dbreq.Answer = Newtonsoft.Json.JsonConvert.SerializeObject(responseString);
+                    dbreq.Answer = responseString;
                     dbreq.Iserror = false;
                     _nutriDbContext.Update(dbreq);
                     await _nutriDbContext.SaveChangesAsync();
