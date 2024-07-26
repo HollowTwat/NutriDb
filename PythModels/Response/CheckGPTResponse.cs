@@ -6,6 +6,6 @@
 
         public bool Done { get; set; }
 
-        public string Response { get; set; }
+        public GPTResponse Response { get; set; }
     }
 }
