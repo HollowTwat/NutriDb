@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using NutriDbService.DbModels;
 using NutriDbService.NoCodeModels;
@@ -19,14 +20,17 @@ namespace NutriDbService.Helpers
     {
         private readonly string BaseUrl = "https://quart-test-production-9039.up.railway.app";
         public railwayContext _nutriDbContext { get; set; }
-        public TransmitterHelper(railwayContext nutriDbContext)
+        private readonly IServiceProvider _serviceProvider;
+        public TransmitterHelper(railwayContext nutriDbContext, IServiceProvider serviceProvider)
         {
             _nutriDbContext = nutriDbContext;
+            _serviceProvider = serviceProvider;
         }
 
         public async Task<int> CreateGPTRequest(CreateGPTRequest request)
         {
             var req = new Gptrequest { Iserror = false, Done = false, UserTgid = request.UserTgId };
+
             await _nutriDbContext.Gptrequests.AddAsync(req);
             await _nutriDbContext.SaveChangesAsync();
 
@@ -59,7 +63,7 @@ namespace NutriDbService.Helpers
                     throw new ArgumentNullException("Пустой type");
             }
             var url = $"{BaseUrl}/{request.Type}";
-            Task.Run(() => { ExecuteRequest(_nutriDbContext,reqparams, url, req.Id); });
+            Task.Run(() => { ExecuteRequest(reqparams, url, req.Id); });
             return req.Id;
         }
 
@@ -92,39 +96,43 @@ namespace NutriDbService.Helpers
             var response = await client.PostAsync(reqUrl, content);
             return await response.Content.ReadAsStringAsync();
         }
-        public async Task<bool> ExecuteRequest(railwayContext nutriDbContext,CreateGPTPythRequest reqparams, string reqUrl, int requstId)
+        public async Task<bool> ExecuteRequest(CreateGPTPythRequest reqparams, string reqUrl, int requstId)
         {
-            string responseString = string.Empty;
-            try
+            using (var scope = _serviceProvider.CreateScope())
             {
-                responseString = await SendRequest(reqparams, reqUrl);
-            }
-            catch (Exception ex)
-            {
-                var dbreq = _nutriDbContext.Gptrequests.SingleOrDefault(x => x.Id == requstId);
-                if (dbreq == null)
-                    throw new NullReferenceException($"В бд нет реквеста с id={requstId}");
-                dbreq.Done = true;
-                dbreq.Answer = Newtonsoft.Json.JsonConvert.SerializeObject(ex);
-                dbreq.Iserror = true;
-                nutriDbContext.Update(dbreq);
-                await nutriDbContext.SaveChangesAsync();
-            }
-            try
-            {
-                var dbreq = _nutriDbContext.Gptrequests.SingleOrDefault(x => x.Id == requstId);
-                if (dbreq == null)
-                    throw new NullReferenceException($"В бд нет реквеста с id={requstId}");
-                dbreq.Done = true;
-                dbreq.Answer = responseString;
-                dbreq.Iserror = false;
-                nutriDbContext.Update(dbreq);
-                await nutriDbContext.SaveChangesAsync();
-                return true;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Упали при попытке создать запрос к ГПТ", ex);
+                var _nutriDbContext = scope.ServiceProvider.GetRequiredService<railwayContext>();
+                string responseString = string.Empty;
+                try
+                {
+                    responseString = await SendRequest(reqparams, reqUrl);
+                }
+                catch (Exception ex)
+                {
+                    var dbreq = _nutriDbContext.Gptrequests.SingleOrDefault(x => x.Id == requstId);
+                    if (dbreq == null)
+                        throw new NullReferenceException($"В бд нет реквеста с id={requstId}");
+                    dbreq.Done = true;
+                    dbreq.Answer = Newtonsoft.Json.JsonConvert.SerializeObject(ex);
+                    dbreq.Iserror = true;
+                    _nutriDbContext.Update(dbreq);
+                    await _nutriDbContext.SaveChangesAsync();
+                }
+                try
+                {
+                    var dbreq = _nutriDbContext.Gptrequests.SingleOrDefault(x => x.Id == requstId);
+                    if (dbreq == null)
+                        throw new NullReferenceException($"В бд нет реквеста с id={requstId}");
+                    dbreq.Done = true;
+                    dbreq.Answer = responseString;
+                    dbreq.Iserror = false;
+                    _nutriDbContext.Update(dbreq);
+                    await _nutriDbContext.SaveChangesAsync();
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("Упали при попытке создать запрос к ГПТ", ex);
+                }
             }
         }
 

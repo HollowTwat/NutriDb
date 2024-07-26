@@ -32,10 +32,11 @@ namespace NutriDbService
             services.AddControllers().AddNewtonsoftJson();
 
             services.AddSwaggerGen();
-            services.AddScoped<railwayContext>();
+            services.AddTransient<railwayContext>();
             //services.AddScoped<NutriDbContext>();
             services.AddScoped<MealHelper>();
             services.AddScoped<TransmitterHelper>();
+
             //    services.AddDbContext<RailwayContext>(options =>
             //options.UseNpgsql(Configuration.GetConnectionString("BloggingContext")));
         }
