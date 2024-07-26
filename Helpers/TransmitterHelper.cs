@@ -92,7 +92,7 @@ namespace NutriDbService.Helpers
                     Response = String.IsNullOrEmpty(gptreq.Answer) ? null : Newtonsoft.Json.JsonConvert.DeserializeObject<GPTResponse>(gptreq.Answer)
                 };
             }
-            catch (Exception ex) { return new CheckGPTResponse { IsError = true, Done = true, Response = "Мы упали" }; }//new GPTResponse { pretty = "Мы упали" } }; }
+            catch (Exception ex) { return new CheckGPTResponse { IsError = true, Done = true, Response = new GPTResponse { pretty = "Мы упали" } }; }
         }
 
         public async Task<string> SendRequest(CreateGPTPythRequest reqparams, string reqUrl)
