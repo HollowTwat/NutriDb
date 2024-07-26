@@ -67,11 +67,11 @@ namespace NutriDbService.Helpers
             return req.Id;
         }
 
-        public CheckGPTResponse CheckGPT(long requestId)
+        public CheckGPTResponse CheckGPT(int requestId)
         {
             try
             {
-                var gptreq = _nutriDbContext.Gptrequests.SingleOrDefault();
+                var gptreq = _nutriDbContext.Gptrequests.SingleOrDefault(x=>x.Id==requestId);
                 if (gptreq == null)
                     return new CheckGPTResponse
                     {
