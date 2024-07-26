@@ -71,7 +71,7 @@ namespace NutriDbService.Helpers
         {
             try
             {
-                var gptreq = _nutriDbContext.Gptrequests.SingleOrDefault(x=>x.Id==requestId);
+                var gptreq = _nutriDbContext.Gptrequests.SingleOrDefault(x => x.Id == requestId);
                 if (gptreq == null)
                     return new CheckGPTResponse
                     {
@@ -82,7 +82,7 @@ namespace NutriDbService.Helpers
                 {
                     Done = gptreq.Done,
                     IsError = gptreq?.Iserror ?? false,
-                    Response = Newtonsoft.Json.JsonConvert.DeserializeObject<GPTResponse>(gptreq.Answer)
+                    Response = String.IsNullOrEmpty(gptreq.Answer) ? null : Newtonsoft.Json.JsonConvert.DeserializeObject<GPTResponse>(gptreq.Answer)
                 };
             }
             catch (Exception ex) { return new CheckGPTResponse { IsError = true, Done = true, Response = new GPTResponse { pretty = "Мы упали" } }; }
