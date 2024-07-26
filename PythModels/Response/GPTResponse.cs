@@ -7,5 +7,7 @@ namespace NutriDbService.PythModels.Response
         public string pretty { get; set; }
 
         public List<PythFood> food { get; set; }
+
+        public string extra { get; set; }
     }
 }
