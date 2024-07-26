@@ -89,7 +89,7 @@ namespace NutriDbService.Helpers
                 {
                     Done = gptreq.Done,
                     IsError = gptreq?.Iserror ?? false,
-                    Response = String.IsNullOrEmpty(gptreq.Answer) ? null : Regex.Escape(gptreq.Answer)//Newtonsoft.Json.JsonConvert.DeserializeObject<GPTResponse>(gptreq.Answer)
+                    Response = String.IsNullOrEmpty(gptreq.Answer) ? null : Newtonsoft.Json.JsonConvert.DeserializeObject<GPTResponse>(gptreq.Answer)
                 };
             }
             catch (Exception ex) { return new CheckGPTResponse { IsError = true, Done = true, Response = "Мы упали" }; }//new GPTResponse { pretty = "Мы упали" } }; }
