@@ -30,6 +30,7 @@ namespace NutriDbService.Controllers
         {
             try
             {
+                _logger.LogTrace(Newtonsoft.Json.JsonConvert.SerializeObject(req));
                 var res = await _transmitterHelper.CreateGPTRequest(req);
                 return new CreateGPTResponse(res);
             }
