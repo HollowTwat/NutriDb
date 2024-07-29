@@ -109,7 +109,7 @@ namespace NutriDbService.Controllers
                             {
                                 description = x.Description,
                                 weight = x.Weight,
-                                nutritional_value = new PythModels.NutriProps(x.Fats, x.Carbs, x.Protein)
+                                nutritional_value = new PythModels.NutriProps(x.Fats, x.Carbs, x.Protein,x.Kkal)
                             }).ToList()
                         }
                     }
@@ -152,7 +152,7 @@ namespace NutriDbService.Controllers
                             {
                                 description = x.Description,
                                 weight = x.Weight,
-                                nutritional_value = new PythModels.NutriProps(x.Fats, x.Carbs, x.Protein)
+                                nutritional_value = new PythModels.NutriProps(x.Fats, x.Carbs, x.Protein, x.Kkal)
                             }).ToList()
                         }
                     }
@@ -195,7 +195,7 @@ namespace NutriDbService.Controllers
                             {
                                 description = x.Description,
                                 weight = x.Weight,
-                                nutritional_value = new PythModels.NutriProps(x.Fats, x.Carbs, x.Protein)
+                                nutritional_value = new PythModels.NutriProps(x.Fats, x.Carbs, x.Protein, x.Kkal)
                             }).ToList(),
                         }
                     });

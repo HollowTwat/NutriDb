@@ -33,7 +33,7 @@ namespace NutriDbService.Helpers
                     Fats = d.nutritional_value.fats,
                     Protein = d.nutritional_value.protein,
                     Description = d.description,
-                    Kkal = null,
+                    Kkal = d.nutritional_value.kcal,
                     Weight = d.weight,
                 });
                 totalweight += d.weight;
@@ -75,7 +75,7 @@ namespace NutriDbService.Helpers
                     Fats = d.nutritional_value.fats,
                     Protein = d.nutritional_value.protein,
                     Description = d.description,
-                    Kkal = null,
+                    Kkal = d.nutritional_value.kcal,
                     Weight = d.weight,
                 });
                 totalweight += d.weight;

@@ -9,7 +9,7 @@ namespace NutriDbService.DbModels
         public decimal Fats { get; set; }
         public decimal Carbs { get; set; }
         public decimal Protein { get; set; }
-        public decimal? Kkal { get; set; }
+        public decimal Kkal { get; set; }
         public string Description { get; set; }
         public decimal Weight { get; set; }
         public int MealId { get; set; }
