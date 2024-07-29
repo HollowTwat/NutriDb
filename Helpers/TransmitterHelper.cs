@@ -65,6 +65,10 @@ namespace NutriDbService.Helpers
                     reqparams.id = request.UserTgId.ToString();
                     reqparams.txt = request.Question.ToString();
                     break;
+                case "rate_day":
+                    reqparams.id = request.UserTgId.ToString();
+                    reqparams.txt = request.Question.ToString();
+                    break;
                 default:
                     throw new ArgumentNullException("Пустой type");
             }
@@ -143,17 +147,18 @@ namespace NutriDbService.Helpers
             }
         }
 
-        public string Test(string input)
+        public string Test(CreateGPTRequest req)
         {
             var par = new CreateGPTPythRequest();
-            par.txt = input;
+            par.txt = req.Question;
+            par.id = req.UserTgId.ToString();
             var url = $"{BaseUrl}/test";
             return SendRequest(par, url).GetAwaiter().GetResult();
         }
         public string TestInner(CreateGPTRequest req)
         {
             var par = new CreateGPTPythRequest();
-            par.txt=req.Question;
+            par.txt = req.Question;
             par.id = req.UserTgId.ToString();
             var url = $"http://quart-test.railway.internal:7610/test";
             return SendRequest(par, url).GetAwaiter().GetResult();

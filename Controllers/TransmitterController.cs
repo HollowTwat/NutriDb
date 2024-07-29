@@ -48,9 +48,9 @@ namespace NutriDbService.Controllers
         }
 
         [HttpPost]
-        public string Test(string aa)
+        public string Test(CreateGPTRequest req)
         {
-            return _transmitterHelper.Test(aa);
+            return _transmitterHelper.Test(req);
         }
 
         [HttpPost]
