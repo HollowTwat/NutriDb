@@ -150,10 +150,11 @@ namespace NutriDbService.Helpers
             var url = $"{BaseUrl}/test";
             return SendRequest(par, url).GetAwaiter().GetResult();
         }
-        public string TestInner(string input)
+        public string TestInner(CreateGPTRequest req)
         {
             var par = new CreateGPTPythRequest();
-            par.txt = input;
+            par.txt=req.Question;
+            par.id = req.UserTgId.ToString();
             var url = $"http://quart-test.railway.internal:7610/test";
             return SendRequest(par, url).GetAwaiter().GetResult();
         }

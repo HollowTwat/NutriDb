@@ -6,6 +6,7 @@ using NutriDbService.NoCodeModels;
 using NutriDbService.PythModels.Response;
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace NutriDbService.Controllers
 {
@@ -25,11 +26,11 @@ namespace NutriDbService.Controllers
         }
 
         [HttpPost]
-        public CreateGPTResponse CreateGPTRequset(CreateGPTRequest req)
+        public async Task<CreateGPTResponse> CreateGPTRequset(CreateGPTRequest req)
         {
             try
             {
-                var res = _transmitterHelper.CreateGPTRequest(req).GetAwaiter().GetResult();
+                var res = await _transmitterHelper.CreateGPTRequest(req);
                 return new CreateGPTResponse(res);
             }
             catch (Exception ex)
@@ -53,9 +54,9 @@ namespace NutriDbService.Controllers
         }
 
         [HttpPost]
-        public string Testinner(string aa)
+        public string Testinner(CreateGPTRequest req)
         {
-            return _transmitterHelper.TestInner(aa);
+            return _transmitterHelper.TestInner(req);
 
         }
     }
