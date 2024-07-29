@@ -40,6 +40,7 @@ namespace NutriDbService.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, ex.Message);
                 return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
         }
@@ -119,6 +120,7 @@ namespace NutriDbService.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, ex.Message);
                 return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
         }
@@ -161,6 +163,7 @@ namespace NutriDbService.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, ex.Message);
                 return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
         }
@@ -204,6 +207,7 @@ namespace NutriDbService.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, ex.Message);
                 return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
         }
@@ -231,6 +235,7 @@ namespace NutriDbService.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, ex.Message);
                 return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
         }
@@ -247,6 +252,7 @@ namespace NutriDbService.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, ex.Message);
                 return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
         }

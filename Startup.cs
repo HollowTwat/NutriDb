@@ -27,7 +27,7 @@ namespace NutriDbService
             services.AddCors();
             services.AddMvc();
 
-            services.AddLogging();
+            //services.AddLogging();
 
             services.AddControllers().AddNewtonsoftJson();
 
