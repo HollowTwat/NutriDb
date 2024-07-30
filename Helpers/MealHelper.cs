@@ -1,6 +1,8 @@
 ﻿using DocumentFormat.OpenXml.InkML;
 using DocumentFormat.OpenXml.Presentation;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using NutriDbService.DbModels;
 using NutriDbService.PythModels;
 using NutriDbService.PythModels.Request;
@@ -13,9 +15,11 @@ namespace NutriDbService.Helpers
     public class MealHelper
     {
         public railwayContext _nutriDbContext { get; set; }
-        public MealHelper(railwayContext railwayContext)
+        private readonly ILogger _logger;
+        public MealHelper(railwayContext railwayContext, IServiceProvider serviceProvider)
         {
             _nutriDbContext = railwayContext;
+            _logger = serviceProvider.GetRequiredService<ILogger<TransmitterHelper>>();
         }
 
         public int CreateMeal(CreateMealRequest createMealRequest)
@@ -62,7 +66,7 @@ namespace NutriDbService.Helpers
             if (user == null)
                 throw new Exception($"I Cant Find User : {createMealRequest.userTgId}");
 
-            var meal = _nutriDbContext.Meals.Include(x=>x.Dishes).SingleOrDefault(x => x.Id == createMealRequest.mealId);
+            var meal = _nutriDbContext.Meals.Include(x => x.Dishes).SingleOrDefault(x => x.Id == createMealRequest.mealId);
             if (meal == null)
                 throw new Exception($"I Cant Find Meal : {createMealRequest.mealId}");
             var olddishes = meal.Dishes;

@@ -53,7 +53,7 @@ namespace NutriDbService.Controllers
             try
             {
                 var res = _mealHelper.CreateMeal(request);
-                _logger.LogInformation($"UserTG={request.userTgId} Meal={res} was added");
+                _logger.LogWarning($"UserTG={request.userTgId} Meal={res} was added");
                 return true;
                 // return Ok(res);
             }
@@ -70,7 +70,7 @@ namespace NutriDbService.Controllers
             try
             {
                 var res = _mealHelper.EditMeal(request);
-                _logger.LogInformation($"User={request.userTgId} Meal={res} was edited");
+                _logger.LogWarning($"User={request.userTgId} Meal={res} was edited");
                 return true;
                 // return Ok(res);
             }
@@ -110,7 +110,7 @@ namespace NutriDbService.Controllers
                             {
                                 description = x.Description,
                                 weight = x.Weight,
-                                nutritional_value = new PythModels.NutriProps(x.Fats, x.Carbs, x.Protein,x.Kkal)
+                                nutritional_value = new PythModels.NutriProps(x.Fats, x.Carbs, x.Protein, x.Kkal)
                             }).ToList()
                         }
                     }

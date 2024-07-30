@@ -89,7 +89,15 @@ namespace NutriDbService.DbModels
 
                 entity.Property(e => e.Answer).HasColumnName("answer");
 
+                entity.Property(e => e.CreationDate)
+                    .HasColumnType("timestamp(6) without time zone")
+                    .HasColumnName("creation_date");
+
                 entity.Property(e => e.Done).HasColumnName("done");
+
+                entity.Property(e => e.FinishDate)
+                    .HasColumnType("timestamp without time zone")
+                    .HasColumnName("finish_date");
 
                 entity.Property(e => e.Iserror).HasColumnName("iserror");
 

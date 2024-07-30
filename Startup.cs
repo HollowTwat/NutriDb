@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,14 +29,17 @@ namespace NutriDbService
             services.AddMvc();
 
             //services.AddLogging();
-
             services.AddControllers().AddNewtonsoftJson();
 
             services.AddSwaggerGen();
             services.AddTransient<railwayContext>();
             //services.AddScoped<NutriDbContext>();
-            services.AddScoped<MealHelper>();
-            services.AddScoped<TransmitterHelper>();
+            services.AddTransient<MealHelper>();
+            services.AddTransient<TransmitterHelper>();
+            //services.AddTransient(_ => ActivatorUtilities.CreateInstance<TransmitterHelper>(_,
+            //   _.GetRequiredService<railwayContext>(),
+            //   ApplicationSettings.Instance.Config,
+            //   _.GetRequiredService<ILogger<SuperManager>>()));
 
             //    services.AddDbContext<RailwayContext>(options =>
             //options.UseNpgsql(Configuration.GetConnectionString("BloggingContext")));
