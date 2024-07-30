@@ -101,6 +101,11 @@ namespace NutriDbService.DbModels
 
                 entity.Property(e => e.Iserror).HasColumnName("iserror");
 
+                entity.Property(e => e.ReqType)
+                    .IsRequired()
+                    .HasMaxLength(50)
+                    .HasColumnName("req_type");
+
                 entity.Property(e => e.UserTgid).HasColumnName("user_tgid");
             });
 

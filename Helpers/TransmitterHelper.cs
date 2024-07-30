@@ -29,14 +29,14 @@ namespace NutriDbService.Helpers
         {
             _nutriDbContext = nutriDbContext;
             _serviceProviderFactory = serviceProviderFactory;
-            
+
             _logger = _serviceProviderFactory.CreateScope().ServiceProvider.GetRequiredService<ILogger<TransmitterHelper>>();
         }
 
         public async Task<int> CreateGPTRequest(CreateGPTRequest request)
         {
 
-            var req = new Gptrequest { Iserror = false, Done = false, UserTgid = request.UserTgId, CreationDate = DateTime.UtcNow.ToLocalTime().AddHours(3) };
+            var req = new Gptrequest { Iserror = false, Done = false, UserTgid = request.UserTgId, CreationDate = DateTime.UtcNow.ToLocalTime().AddHours(3), ReqType = string.IsNullOrEmpty(request.Type) ? "empty" : request.Type };
 
             await _nutriDbContext.Gptrequests.AddAsync(req);
             await _nutriDbContext.SaveChangesAsync();

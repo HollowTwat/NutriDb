@@ -12,5 +12,6 @@ namespace NutriDbService.DbModels
         public bool? Iserror { get; set; }
         public DateTime CreationDate { get; set; }
         public DateTime? FinishDate { get; set; }
+        public string ReqType { get; set; }
     }
 }
