@@ -13,7 +13,6 @@ namespace NutriDbService.DbModels
         public float? Weight { get; set; }
         public float? Height { get; set; }
         public string Gender { get; set; }
-
-        public virtual User User { get; set; }
+        public string Extra { get; set; }
     }
 }

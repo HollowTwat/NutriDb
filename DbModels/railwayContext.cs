@@ -35,6 +35,7 @@ namespace NutriDbService.DbModels
 #else
                         optionsBuilder.UseNpgsql("Host=postgres.railway.internal;Port=5432;Username=postgres;Password=wTLZPRhYXHSReMKcUHSCNDEQlgQmbFDO;Database=railway");
 #endif
+
             }
         }
 
@@ -263,14 +264,16 @@ namespace NutriDbService.DbModels
                 entity.ToTable("userinfo");
 
                 entity.Property(e => e.Id)
-                    .ValueGeneratedNever()
-                    .HasColumnName("id");
+                    .HasColumnName("id")
+                    .HasDefaultValueSql("nextval('userinfo_id_auto_inc'::regclass)");
 
                 entity.Property(e => e.Age).HasColumnName("age");
 
                 entity.Property(e => e.Email)
                     .HasMaxLength(255)
                     .HasColumnName("email");
+
+                entity.Property(e => e.Extra).HasColumnName("extra");
 
                 entity.Property(e => e.Gender)
                     .HasMaxLength(255)
@@ -285,12 +288,6 @@ namespace NutriDbService.DbModels
                 entity.Property(e => e.UserId).HasColumnName("userId");
 
                 entity.Property(e => e.Weight).HasColumnName("weight");
-
-                entity.HasOne(d => d.User)
-                    .WithMany(p => p.Userinfos)
-                    .HasForeignKey(d => d.UserId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("userInfo_to_user");
             });
 
             modelBuilder.HasSequence("dish_id_auto_inc");

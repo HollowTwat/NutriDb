@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using DocumentFormat.OpenXml.Drawing;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using NutriDbService.DbModels;
 using NutriDbService.Helpers;
@@ -64,6 +65,7 @@ namespace NutriDbService.Controllers
                 //return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
         }
+
         [HttpPost]
         public bool EditMeal(EditMealRequest request)
         {
@@ -81,6 +83,7 @@ namespace NutriDbService.Controllers
                 //return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
         }
+
         [HttpGet]
         public ActionResult<GetMealResp> GetTodayUserMeals(int userTgId)
         {
@@ -167,6 +170,7 @@ namespace NutriDbService.Controllers
                 return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
         }
+
         [HttpGet]
         public ActionResult<GetMealResp> GetUserMeals(int userTgId, int day)
         {
@@ -239,6 +243,7 @@ namespace NutriDbService.Controllers
                 return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
         }
+
         [HttpPost]
         public ActionResult<int> CreateMealFromUnicode(string request)
         {
@@ -248,6 +253,55 @@ namespace NutriDbService.Controllers
                 request = Regex.Unescape(request);
                 var inp = Newtonsoft.Json.JsonConvert.DeserializeObject<CreateMealRequest>(request);
                 var res = _mealHelper.CreateMeal(inp);
+                return Ok(res);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+                return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
+            }
+        }
+
+        [HttpPost]
+        public ActionResult<bool> AddUserInfo(AddUserExtraRequest req)
+        {
+            try
+            {
+                var userId = _context.Users.SingleOrDefault(x => x.TgId == req.UserTgId).Id;
+                var usi = _context.Userinfos.SingleOrDefault(x => x.UserId == userId);
+                var info = Newtonsoft.Json.JsonConvert.SerializeObject(req.Info);
+                if (usi == null)
+                {
+                    _context.Userinfos.Add(new Userinfo
+                    {
+                        UserId = userId,
+                        Extra = info
+                    });
+                }
+                else
+                {
+                    usi.Extra = info;
+                    _context.Update(usi);
+                }
+                _context.SaveChanges();
+                return Ok(true);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+                return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
+            }
+        }
+
+
+        [HttpPost]
+        public ActionResult<Dictionary<string, string>> GetUserInfo(int userTgId)
+        {
+            try
+            {
+                var userId = _context.Users.SingleOrDefault(x => x.TgId == userTgId).Id;
+                var usi = _context.Userinfos.SingleOrDefault(x => x.UserId == userId);
+                var res = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, string>>(usi.Extra);
                 return Ok(res);
             }
             catch (Exception ex)
