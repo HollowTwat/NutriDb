@@ -263,7 +263,7 @@ namespace NutriDbService.Controllers
         }
 
         [HttpPost]
-        public ActionResult<bool> AddUserInfo(AddUserExtraRequest req)
+        public ActionResult<bool> AddUserExtraInfo(AddUserExtraRequest req)
         {
             try
             {
@@ -295,7 +295,7 @@ namespace NutriDbService.Controllers
 
 
         [HttpPost]
-        public ActionResult<Dictionary<string, string>> GetUserInfo(int userTgId)
+        public ActionResult<Dictionary<string, string>> GetUserExtraInfo(int userTgId)
         {
             try
             {
