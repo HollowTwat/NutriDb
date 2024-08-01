@@ -32,6 +32,8 @@ namespace NutriDbService.Controllers
             {
                 _logger.LogWarning($"На вход пришло {Newtonsoft.Json.JsonConvert.SerializeObject(req)}");
                 var res = await _transmitterHelper.CreateGPTRequest(req);
+                if (res == 0)
+                    return new CreateGPTResponse { isError = true, RequestId = 0 };
                 return new CreateGPTResponse(res);
             }
             catch (Exception ex)

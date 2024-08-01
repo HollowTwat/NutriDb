@@ -39,8 +39,8 @@ namespace NutriDbService.Helpers
             var req = new Gptrequest { Iserror = false, Done = false, UserTgid = request.UserTgId, CreationDate = DateTime.UtcNow.ToLocalTime().AddHours(3), ReqType = string.IsNullOrEmpty(request.Type) ? "empty" : request.Type };
 
             await _nutriDbContext.Gptrequests.AddAsync(req);
-            await _nutriDbContext.SaveChangesAsync();
-
+            var usrId = _nutriDbContext.Users.SingleOrDefault(x => x.TgId == request.UserTgId).Id;
+            var isEmptyExtra = _nutriDbContext.Userinfos.Any(x => x.UserId == usrId && string.IsNullOrEmpty(x.Extra));
 
             CreateGPTPythRequest reqparams = new CreateGPTPythRequest();
             switch (request.Type)
@@ -52,7 +52,6 @@ namespace NutriDbService.Helpers
                     break;
                 case "oga":
                 case "imggg":
-
                     reqparams.url = request.Question.ToString();
                     reqparams.id = request.UserTgId.ToString();
                     break;
@@ -68,10 +67,14 @@ namespace NutriDbService.Helpers
                     break;
                 case "day1/yapp_oga":
                 case "day1/yapp":
+                    if (isEmptyExtra)
+                        return 0;
                     reqparams.id = request.UserTgId.ToString();
                     reqparams.txt = request.Question.ToString();
                     break;
                 case "rate_day":
+                    if (isEmptyExtra)
+                        return 0;
                     reqparams.id = request.UserTgId.ToString();
                     reqparams.txt = request.Question.ToString();
                     break;
@@ -79,6 +82,7 @@ namespace NutriDbService.Helpers
                     throw new ArgumentNullException("Пустой type");
             }
             var url = $"{BaseUrl}/{request.Type}";
+            await _nutriDbContext.SaveChangesAsync();
             Task.Run(() => { ExecuteRequest(reqparams, url, req.Id); });
             return req.Id;
         }
