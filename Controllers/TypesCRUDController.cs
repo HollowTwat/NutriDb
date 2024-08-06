@@ -173,7 +173,7 @@ namespace NutriDbService.Controllers
         }
 
         [HttpGet]
-        public ActionResult<GetMealResp> GetUserMeals(int userTgId, int day, mealtype? typemeal)
+        public ActionResult<GetMealResp> GetUserMeals(int userTgId, int? day, mealtype? typemeal)
         {
             try
             {
@@ -183,7 +183,11 @@ namespace NutriDbService.Controllers
                 //var inDay = (DayOfWeek)day;
                 var startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-7).Date;
                 //var meals = _context.Meals.Where(x => x.UserId == user.Id && x.MealTime.Value.Date > startDate && x.MealTime.Value.DayOfWeek == (DayOfWeek)day).ToList();
-                var meals = _context.Meals.Where(x => x.UserId == user.Id && x.MealTime.Value.Date > startDate && x.MealTime.Value.DayOfWeek == (DayOfWeek)day).ToList();
+                var meals = _context.Meals.Where(x => x.UserId == user.Id && x.MealTime.Value.Date > startDate).ToList();
+                if (day != null)
+                {
+                    meals = meals.Where(x => x.MealTime.Value.DayOfWeek == (DayOfWeek)day).ToList();
+                }
                 if (typemeal != null)
                 {
                     meals = meals.Where(x => x.Type == ((short)typemeal)).ToList();
