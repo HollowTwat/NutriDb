@@ -4,6 +4,6 @@ namespace NutriDbService.PythModels.Request
 {
     public class EditMealRequest : CreateMealRequest
     {
-        public int mealId { get; set; }
+        public int? mealId { get; set; }
     }
 }

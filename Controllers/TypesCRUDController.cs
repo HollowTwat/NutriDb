@@ -49,19 +49,19 @@ namespace NutriDbService.Controllers
 
         #region Meal
         [HttpPost]
-        public bool CreateMeal(CreateMealRequest request)
+        public int CreateMeal(EditMealRequest request)
         {
             try
             {
-                var res = _mealHelper.CreateMeal(request);
-                _logger.LogWarning($"UserTG={request.userTgId} Meal={res} was added");
-                return true;
+                var mealId = _mealHelper.CreateMeal(request);
+                _logger.LogWarning($"UserTG={request.userTgId} Meal={mealId} was added");
+                return mealId;
                 // return Ok(res);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Meal Create Error");
-                return false;
+                return 0;
                 //return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
         }
@@ -84,6 +84,7 @@ namespace NutriDbService.Controllers
             }
         }
 
+        [Obsolete]
         [HttpGet]
         public ActionResult<GetMealResp> GetTodayUserMeals(int userTgId)
         {
@@ -172,16 +173,21 @@ namespace NutriDbService.Controllers
         }
 
         [HttpGet]
-        public ActionResult<GetMealResp> GetUserMeals(int userTgId, int day)
+        public ActionResult<GetMealResp> GetUserMeals(int userTgId, int day, mealtype? typemeal)
         {
             try
             {
                 var user = _context.Users.SingleOrDefault(x => x.TgId == userTgId);
                 if (user == null)
                     throw new Exception($"I Cant Find User : {userTgId}");
-                var inDay = (DayOfWeek)day;
+                //var inDay = (DayOfWeek)day;
                 var startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-7).Date;
+                //var meals = _context.Meals.Where(x => x.UserId == user.Id && x.MealTime.Value.Date > startDate && x.MealTime.Value.DayOfWeek == (DayOfWeek)day).ToList();
                 var meals = _context.Meals.Where(x => x.UserId == user.Id && x.MealTime.Value.Date > startDate && x.MealTime.Value.DayOfWeek == (DayOfWeek)day).ToList();
+                if (typemeal != null)
+                {
+                    meals = meals.Where(x => x.Type == ((short)typemeal)).ToList();
+                }
                 var mealsId = meals.Select(x => x.Id).ToList();
                 var dishes = _context.Dishes.Where(x => mealsId.Contains(x.MealId));
                 var resp = new List<MealResp>() { };
@@ -251,7 +257,7 @@ namespace NutriDbService.Controllers
             {
                 request = request.Replace("\\\"", "\"");
                 request = Regex.Unescape(request);
-                var inp = Newtonsoft.Json.JsonConvert.DeserializeObject<CreateMealRequest>(request);
+                var inp = Newtonsoft.Json.JsonConvert.DeserializeObject<EditMealRequest>(request);
                 var res = _mealHelper.CreateMeal(inp);
                 return Ok(res);
             }

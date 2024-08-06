@@ -12,7 +12,7 @@ namespace NutriDbService.PythModels
 
         public List<PythFood> food { get; set; }
 
-        public mealtype type { get; set; }
+        public mealtype? type { get; set; }
 
     }
 }

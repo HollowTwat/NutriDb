@@ -22,7 +22,7 @@ namespace NutriDbService.Helpers
             _logger = serviceProvider.GetRequiredService<ILogger<TransmitterHelper>>();
         }
 
-        public int CreateMeal(CreateMealRequest createMealRequest)
+        public int CreateMeal(EditMealRequest createMealRequest)
         {
             var user = _nutriDbContext.Users.SingleOrDefault(x => x.TgId == createMealRequest.userTgId);
             if (user == null)
@@ -43,22 +43,41 @@ namespace NutriDbService.Helpers
                 totalweight += d.weight;
             }
 
-            var meal = new Meal()
+            Meal meal;
+            if (createMealRequest.mealId == null)
             {
-                UserId = user.Id,
-                Weight = createMealRequest.meal.totalWeight == 0 ? totalweight : createMealRequest.meal.totalWeight,
-                Dishes = dishes,
-                Description = createMealRequest.meal.description,
-                Type = (short)createMealRequest.meal.type,
-                MealTime = DateTime.UtcNow.ToLocalTime().AddHours(3)//DateTime.TryParseExact(createMealRequest.EatedAt, "dd.MM.yyyy_HH:mm", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var parseTime) == true ? parseTime : null
-            };
+                meal = new Meal()
+                {
+                    UserId = user.Id,
+                    Weight = createMealRequest.meal.totalWeight == 0 ? totalweight : createMealRequest.meal.totalWeight,
+                    Dishes = dishes,
+                    Description = createMealRequest.meal.description,
+                    Type = (short)createMealRequest.meal.type,
+                    MealTime = DateTime.UtcNow.ToLocalTime().AddHours(3)//DateTime.TryParseExact(createMealRequest.EatedAt, "dd.MM.yyyy_HH:mm", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var parseTime) == true ? parseTime : null
+                };
+                _nutriDbContext.Database.BeginTransaction();
+                _nutriDbContext.Meals.Add(meal);
+                _nutriDbContext.SaveChanges();
+                _nutriDbContext.Database.CommitTransaction();
 
-            _nutriDbContext.Database.BeginTransaction();
-            _nutriDbContext.Meals.Add(meal);
-            _nutriDbContext.SaveChanges();
-            _nutriDbContext.Database.CommitTransaction();
-            return meal.Id;
+                return meal.Id;
+            }
+            else
+            {
+                meal = _nutriDbContext.Meals.SingleOrDefault(x => x.Id == createMealRequest.mealId);
+                foreach (var dish in dishes)
+                    dish.MealId = (int)createMealRequest.mealId;
+                meal.Weight += createMealRequest.meal.totalWeight == 0 ? totalweight : createMealRequest.meal.totalWeight;
+
+                _nutriDbContext.Database.BeginTransaction();
+                _nutriDbContext.Meals.Update(meal);
+                _nutriDbContext.Dishes.AddRange(dishes);
+                _nutriDbContext.SaveChanges();
+                _nutriDbContext.Database.CommitTransaction();
+                return meal.Id;
+            }
         }
+
         public int EditMeal(EditMealRequest createMealRequest)
         {
             decimal totalweight = 0;
