@@ -86,7 +86,7 @@ namespace NutriDbService.Controllers
 
         [Obsolete]
         [HttpGet]
-        public ActionResult<GetMealResp> GetTodayUserMeals(int userTgId)
+        public ActionResult<GetMealResp> GetTodayUserMeals(long userTgId)
         {
             try
             {
@@ -130,7 +130,7 @@ namespace NutriDbService.Controllers
         }
 
         [HttpGet]
-        public ActionResult<GetMealResp> GetUserMealById(int userTgId, long mealId)
+        public ActionResult<GetMealResp> GetUserMealById(long userTgId, long mealId)
         {
             try
             {
@@ -173,7 +173,7 @@ namespace NutriDbService.Controllers
         }
 
         [HttpGet]
-        public ActionResult<GetMealResp> GetUserMeals(int userTgId, int? day, mealtype? typemeal)
+        public ActionResult<GetMealResp> GetUserMeals(long userTgId, int? day, mealtype? typemeal)
         {
             try
             {
@@ -227,7 +227,7 @@ namespace NutriDbService.Controllers
         }
 
         [HttpGet]
-        public ActionResult<GetMealResp> EnsureUser(int userTgId, string userName)
+        public ActionResult<GetMealResp> EnsureUser(long userTgId, string userName)
         {
             try
             {
@@ -305,7 +305,7 @@ namespace NutriDbService.Controllers
 
 
         [HttpPost]
-        public ActionResult<Dictionary<string, string>> GetUserExtraInfo(int userTgId)
+        public ActionResult<Dictionary<string, string>> GetUserExtraInfo(long userTgId)
         {
             try
             {

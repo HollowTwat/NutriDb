@@ -20,7 +20,7 @@ namespace NutriDbService.DbModels
         public int? StageId { get; set; }
         public int? LessonId { get; set; }
         public bool IsActive { get; set; }
-        public int TgId { get; set; }
+        public long TgId { get; set; }
 
         public virtual ICollection<Loyalty> Loyalties { get; set; }
         public virtual ICollection<Meal> Meals { get; set; }
