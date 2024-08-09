@@ -9,5 +9,9 @@
         public string Oldmeal { get; set; }
 
         public string Type { get; set; }
+
+        public string AssistantType { get; set; }
+
+        public string OutputType { get; set; }
     }
 }

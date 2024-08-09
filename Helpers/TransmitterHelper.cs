@@ -78,6 +78,13 @@ namespace NutriDbService.Helpers
                     reqparams.id = request.UserTgId.ToString();
                     reqparams.txt = request.Question.ToString();
                     break;
+                case "rate_any":
+                    if (isEmptyExtra)
+                        return 0;
+                    reqparams.id = request.UserTgId.ToString();
+                    reqparams.txt = request.Question.ToString();
+                    reqparams.assistanttype = request.AssistantType;
+                    break;
                 default:
                     throw new ArgumentNullException("Пустой type");
             }
