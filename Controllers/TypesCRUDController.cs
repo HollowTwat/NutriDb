@@ -9,6 +9,7 @@ using NutriDbService.PythModels.Request;
 using NutriDbService.PythModels.Response;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography.Xml;
 using System.Text.RegularExpressions;
@@ -174,7 +175,7 @@ namespace NutriDbService.Controllers
         }
 
         [HttpGet]
-        public ActionResult<GetMealResp> GetUserMeals(long userTgId, int? day, mealtype? typemeal)
+        public ActionResult<GetMealResp> GetUserMeals(long userTgId, string day, mealtype? typemeal)
         {
             try
             {
@@ -185,9 +186,9 @@ namespace NutriDbService.Controllers
                 var startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-7).Date;
                 //var meals = _context.Meals.Where(x => x.UserId == user.Id && x.MealTime.Value.Date > startDate && x.MealTime.Value.DayOfWeek == (DayOfWeek)day).ToList();
                 var meals = _context.Meals.Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).ToList();
-                if (day != null)
+                if (!String.IsNullOrEmpty(day))
                 {
-                    meals = meals.Where(x => x.MealTime.DayOfWeek == (DayOfWeek)day).ToList();
+                    meals = meals.Where(x => x.MealTime.Date == DateTime.ParseExact($"{day}.{startDate.Year}","dd.MM.yyyy",CultureInfo.InvariantCulture).Date).ToList();
                 }
                 if (typemeal != null)
                 {
