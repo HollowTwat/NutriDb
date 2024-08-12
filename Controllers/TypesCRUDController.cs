@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using NutriDbService.DbModels;
 using NutriDbService.Helpers;
+using NutriDbService.NoCodeModels;
 using NutriDbService.PythModels;
 using NutriDbService.PythModels.Request;
 using NutriDbService.PythModels.Response;
@@ -93,7 +94,7 @@ namespace NutriDbService.Controllers
                 var user = _context.Users.SingleOrDefault(x => x.TgId == userTgId);
                 if (user == null)
                     throw new Exception($"I Cant Find User : {userTgId}");
-                var meals = _context.Meals.Where(x => x.UserId == user.Id && DateTime.Equals(x.MealTime.Value.Date, DateTime.UtcNow.ToLocalTime().AddHours(3).Date)).ToList();
+                var meals = _context.Meals.Where(x => x.UserId == user.Id && DateTime.Equals(x.MealTime.Date, DateTime.UtcNow.ToLocalTime().AddHours(3).Date)).ToList();
 
                 var mealsId = meals.Select(x => x.Id).ToList();
                 var dishes = _context.Dishes.Where(x => mealsId.Contains(x.MealId));
@@ -103,7 +104,7 @@ namespace NutriDbService.Controllers
                     resp.Add(new MealResp()
                     {
                         mealId = meal.Id,
-                        eatedAt = meal.MealTime.Value,
+                        eatedAt = meal.MealTime,
                         userId = meal.UserId,
                         meal = new PythModels.PythMeal
                         {
@@ -147,7 +148,7 @@ namespace NutriDbService.Controllers
                     new MealResp()
                     {
                         mealId = meal.Id,
-                        eatedAt = meal.MealTime.Value,
+                        eatedAt = meal.MealTime,
                         userId = meal.UserId,
                         meal = new PythModels.PythMeal
                         {
@@ -183,10 +184,10 @@ namespace NutriDbService.Controllers
                 //var inDay = (DayOfWeek)day;
                 var startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-7).Date;
                 //var meals = _context.Meals.Where(x => x.UserId == user.Id && x.MealTime.Value.Date > startDate && x.MealTime.Value.DayOfWeek == (DayOfWeek)day).ToList();
-                var meals = _context.Meals.Where(x => x.UserId == user.Id && x.MealTime.Value.Date > startDate).ToList();
+                var meals = _context.Meals.Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).ToList();
                 if (day != null)
                 {
-                    meals = meals.Where(x => x.MealTime.Value.DayOfWeek == (DayOfWeek)day).ToList();
+                    meals = meals.Where(x => x.MealTime.DayOfWeek == (DayOfWeek)day).ToList();
                 }
                 if (typemeal != null)
                 {
@@ -201,7 +202,7 @@ namespace NutriDbService.Controllers
                     resp.Add(new MealResp()
                     {
                         mealId = meal.Id,
-                        eatedAt = meal.MealTime.Value,
+                        eatedAt = meal.MealTime,
                         userId = meal.UserId,
                         meal = new PythModels.PythMeal
                         {
@@ -225,6 +226,51 @@ namespace NutriDbService.Controllers
                 return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
         }
+
+        [HttpGet]
+        public ActionResult<List<GetWeekMealStatusResponse>> GetUserWeekMealsStatus(long userTgId)
+        {
+            try
+            {
+                var user = _context.Users.SingleOrDefault(x => x.TgId == userTgId);
+                if (user == null)
+                    throw new Exception($"I Cant Find User : {userTgId}");
+            
+                var startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-7).Date;
+                var meals = _context.Meals.Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).ToList();
+
+                var resp = new List<GetWeekMealStatusResponse>();
+                for (var i = 0; i < 7; i++)
+                {
+                    var ndate = startDate.AddDays(i);
+                    var daymeals = new List<MealStatus>();
+                    foreach (mealtype t in Enum.GetValues(typeof(mealtype)))
+                    {
+                        daymeals.Add(new MealStatus
+                        {
+                            Type = t,
+                            isEmpty = !meals.Any(x => x.MealTime.Date == ndate && x.Type == (short)t)
+                        });
+                    }
+                    resp.Add(new GetWeekMealStatusResponse
+                    {
+
+                        DisplayDay = ndate.ToString("dd.MM"),
+                        MealStatus = daymeals,
+                        isEmpty = !daymeals.Any(x => !x.isEmpty)
+
+                    }
+                        );
+                }
+                return Ok(Newtonsoft.Json.JsonConvert.SerializeObject(resp));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+                return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
+            }
+        }
+
 
         [HttpGet]
         public ActionResult<GetMealResp> EnsureUser(long userTgId, string userName)
