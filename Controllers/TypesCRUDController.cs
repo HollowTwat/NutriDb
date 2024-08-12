@@ -249,7 +249,7 @@ namespace NutriDbService.Controllers
                         daymeals.Add(new MealStatus
                         {
                             Type = t,
-                            isEmpty = !meals.Any(x => x.MealTime.Date == ndate && x.Type == (short)t) ? "true" : "false"
+                            isEmpty = !meals.Any(x => x.MealTime.Date == ndate && x.Type == (short)t)
                         });
                     }
                     resp.Add(new GetWeekMealStatusResponse
@@ -257,7 +257,7 @@ namespace NutriDbService.Controllers
 
                         DisplayDay = ndate.ToString("dd.MM"),
                         MealStatus = daymeals,
-                        isEmpty = !daymeals.Any(x => x.isEmpty == "false") ? "true" : "false"
+                        isEmpty = !daymeals.Any(x => !x.isEmpty)
 
                     }
                         );
