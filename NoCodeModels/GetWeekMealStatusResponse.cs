@@ -6,13 +6,13 @@ namespace NutriDbService.NoCodeModels
     {
         public string DisplayDay { get; set; }
 
-        public bool isEmpty { get; set; }
+        public string isEmpty { get; set; }
 
         public List<MealStatus> MealStatus { get; set; }
     }
     public class MealStatus
     {
-        public bool isEmpty { get; set; }
+        public string isEmpty { get; set; }
 
         public mealtype Type { get; set; }
     }

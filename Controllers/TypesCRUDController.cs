@@ -235,7 +235,7 @@ namespace NutriDbService.Controllers
                 var user = _context.Users.SingleOrDefault(x => x.TgId == userTgId);
                 if (user == null)
                     throw new Exception($"I Cant Find User : {userTgId}");
-            
+
                 var startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-7).Date;
                 var meals = _context.Meals.Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).ToList();
 
@@ -249,7 +249,7 @@ namespace NutriDbService.Controllers
                         daymeals.Add(new MealStatus
                         {
                             Type = t,
-                            isEmpty = !meals.Any(x => x.MealTime.Date == ndate && x.Type == (short)t)
+                            isEmpty = !meals.Any(x => x.MealTime.Date == ndate && x.Type == (short)t) ? "true" : "false"
                         });
                     }
                     resp.Add(new GetWeekMealStatusResponse
@@ -257,7 +257,7 @@ namespace NutriDbService.Controllers
 
                         DisplayDay = ndate.ToString("dd.MM"),
                         MealStatus = daymeals,
-                        isEmpty = !daymeals.Any(x => !x.isEmpty)
+                        isEmpty = !daymeals.Any(x => x.isEmpty == "false") ? "true" : "false"
 
                     }
                         );
