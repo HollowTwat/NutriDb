@@ -174,25 +174,29 @@ namespace NutriDbService.Controllers
             }
         }
 
-        [HttpGet]
-        public ActionResult<GetMealResp> GetUserMeals(long userTgId, string day, mealtype? typemeal)
+        [HttpPost]
+        public ActionResult<GetMealResp> GetUserMeals(GetUserMealsRequest req)
         {
             try
             {
-                var user = _context.Users.SingleOrDefault(x => x.TgId == userTgId);
+                var user = _context.Users.SingleOrDefault(x => x.TgId == req.userTgId);
                 if (user == null)
-                    throw new Exception($"I Cant Find User : {userTgId}");
+                    throw new Exception($"I Cant Find User : {req.userTgId}");
                 //var inDay = (DayOfWeek)day;
                 var startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-7).Date;
                 //var meals = _context.Meals.Where(x => x.UserId == user.Id && x.MealTime.Value.Date > startDate && x.MealTime.Value.DayOfWeek == (DayOfWeek)day).ToList();
                 var meals = _context.Meals.Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).ToList();
-                if (!String.IsNullOrEmpty(day))
+                if (req.day != null)
                 {
-                    meals = meals.Where(x => x.MealTime.Date == DateTime.ParseExact($"{day}.{startDate.Year}","dd.MM.yyyy",CultureInfo.InvariantCulture).Date).ToList();
+                    meals = meals.Where(x => x.MealTime.DayOfWeek == (DayOfWeek)req.day).ToList();
                 }
-                if (typemeal != null)
+                if (!String.IsNullOrEmpty(req.dayStr))
                 {
-                    meals = meals.Where(x => x.Type == ((short)typemeal)).ToList();
+                    meals = meals.Where(x => x.MealTime.Date == DateTime.ParseExact($"{req.dayStr}.{startDate.Year}", "dd.MM.yyyy", CultureInfo.InvariantCulture).Date).ToList();
+                }
+                if (req.typemeal != null)
+                {
+                    meals = meals.Where(x => x.Type == ((short)req.typemeal)).ToList();
                 }
                 var mealsId = meals.Select(x => x.Id).ToList();
                 var dishes = _context.Dishes.Where(x => mealsId.Contains(x.MealId));
