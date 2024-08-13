@@ -243,7 +243,7 @@ namespace NutriDbService.Controllers
 
                 var startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-7).Date;
                 var meals = _context.Meals.Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).ToList();
-
+                var dishes = _context.Dishes.Where(x => meals.Select(x => x.Id).ToList().Contains(x.MealId));
                 var resp = new List<GetWeekMealStatusResponse>();
                 for (var i = 0; i < 7; i++)
                 {
@@ -257,12 +257,15 @@ namespace NutriDbService.Controllers
                             isEmpty = !meals.Any(x => x.MealTime.Date == ndate && x.Type == (short)t)
                         });
                     }
+                    var mlIds = meals.Where(x => x.MealTime.Date == ndate).Select(x => x.Id).ToList();
+                    var isEptyDay = !daymeals.Any(x => !x.isEmpty);
                     resp.Add(new GetWeekMealStatusResponse
                     {
 
                         DisplayDay = ndate.ToString("dd.MM"),
                         MealStatus = daymeals,
-                        isEmpty = !daymeals.Any(x => !x.isEmpty)
+                        isEmpty = isEptyDay,
+                        TotalKkal = isEptyDay ? 0.0m : dishes.Where(x => mlIds.Contains(x.MealId)).Select(x => x.Kkal).ToList().Sum()
 
                     }
                         );

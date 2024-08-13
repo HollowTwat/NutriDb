@@ -8,6 +8,7 @@ namespace NutriDbService.NoCodeModels
 
         public bool isEmpty { get; set; }
 
+        public decimal TotalKkal {  get; set; } 
         public List<MealStatus> MealStatus { get; set; }
     }
     public class MealStatus
