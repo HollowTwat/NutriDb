@@ -286,7 +286,7 @@ namespace NutriDbService.Controllers
             int diff = (7 + (date.DayOfWeek - firstDay)) % 7;
             return date.AddDays(-1 * diff).Date;
         }
-        [HttpPost]
+        [HttpGet]
         public ActionResult<GetMealTotalResponse> GetUserMealsTotal(long userTgId, Periods period)
         {
             try
