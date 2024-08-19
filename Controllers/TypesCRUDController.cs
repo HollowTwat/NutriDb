@@ -1,4 +1,6 @@
 ﻿using DocumentFormat.OpenXml.Drawing;
+using DocumentFormat.OpenXml.Presentation;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using NutriDbService.DbModels;
@@ -269,6 +271,66 @@ namespace NutriDbService.Controllers
 
                     }
                         );
+                }
+                return Ok(Newtonsoft.Json.JsonConvert.SerializeObject(resp));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+                return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
+            }
+        }
+       private static DateTime GetFirstDayOfWeek(DateTime date)
+        {
+            DayOfWeek firstDay = DayOfWeek.Monday;
+            int diff = (7 + (date.DayOfWeek - firstDay)) % 7;
+            return date.AddDays(-1 * diff).Date;
+        }
+        [HttpGet]
+        public ActionResult<GetMealTotalResponse> GetUserMealsTotal(long userTgId, Periods period)
+        {
+            try
+            {
+                var user = _context.Users.SingleOrDefault(x => x.TgId == userTgId);
+                if (user == null)
+                    throw new Exception($"I Cant Find User : {userTgId}");
+
+                DateTime startDate = DateTime.UtcNow.Date;
+                int daysinperiod = 0;
+                var now = DateTime.UtcNow.ToLocalTime().AddHours(3).Date;
+                switch (period)
+                {
+                    case Periods.day:
+                        startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-1).Date;
+                        daysinperiod = 1;
+                        break;
+                    case Periods.week:
+                        startDate = GetFirstDayOfWeek(now);
+                        daysinperiod = now.Day - startDate.Day;
+                        break;
+                    case Periods.month:
+                        startDate = new DateTime(now.Year, now.Month, 1);
+                        daysinperiod = now.Day - startDate.Day;
+                        break;
+                }
+
+                var mealsIds = _context.Meals.Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).Select(x => x.Id).ToList();
+                var dishes = _context.Dishes.Where(x => mealsIds.Contains(x.MealId)).ToList();
+                var resp = new GetMealTotalResponse();
+                foreach (var dish in dishes)
+                {
+
+                    resp.TotalCarbs += dish.Carbs;
+                    resp.TotalProt += dish.Protein;
+                    resp.TotalFats += dish.Fats;
+                    resp.TotalKkal += dish.Kkal;
+                }
+                var extra = _context.Userinfos.SingleOrDefault(x => x.UserId == user.Id).Extra;
+                if (extra == null) { resp.GoalKkal = 0.0m; }
+                else
+                {
+                    var extraDict = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, string>>(extra);
+                    resp.GoalKkal = decimal.Parse(extraDict["target_calories"])* daysinperiod;
                 }
                 return Ok(Newtonsoft.Json.JsonConvert.SerializeObject(resp));
             }
