@@ -268,6 +268,10 @@ namespace NutriDbService.DbModels
 
                 entity.Property(e => e.Age).HasColumnName("age");
 
+                entity.Property(e => e.Donelessonlist)
+                    .HasMaxLength(255)
+                    .HasColumnName("donelessonlist");
+
                 entity.Property(e => e.Email)
                     .HasMaxLength(255)
                     .HasColumnName("email");

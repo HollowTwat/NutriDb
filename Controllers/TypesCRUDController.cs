@@ -1,6 +1,7 @@
 ﻿using DocumentFormat.OpenXml.Drawing;
 using DocumentFormat.OpenXml.Presentation;
 using DocumentFormat.OpenXml.Spreadsheet;
+using DocumentFormat.OpenXml.Vml.Office;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using NutriDbService.DbModels;
@@ -280,7 +281,7 @@ namespace NutriDbService.Controllers
                 return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
         }
-       private static DateTime GetFirstDayOfWeek(DateTime date)
+        private static DateTime GetFirstDayOfWeek(DateTime date)
         {
             DayOfWeek firstDay = DayOfWeek.Monday;
             int diff = (7 + (date.DayOfWeek - firstDay)) % 7;
@@ -330,7 +331,7 @@ namespace NutriDbService.Controllers
                 else
                 {
                     var extraDict = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, string>>(extra);
-                    resp.GoalKkal = decimal.Parse(extraDict["target_calories"])* daysinperiod;
+                    resp.GoalKkal = decimal.Parse(extraDict["target_calories"]) * daysinperiod;
                 }
                 return Ok(Newtonsoft.Json.JsonConvert.SerializeObject(resp));
             }
@@ -396,17 +397,32 @@ namespace NutriDbService.Controllers
                 var userId = _context.Users.SingleOrDefault(x => x.TgId == req.UserTgId).Id;
                 var usi = _context.Userinfos.SingleOrDefault(x => x.UserId == userId);
                 var info = Newtonsoft.Json.JsonConvert.SerializeObject(req.Info);
+
+                short? age = string.IsNullOrEmpty(req.Info["user_info_age"]) ? null : short.Parse(req.Info["user_info_age"]);
+                float? weight = string.IsNullOrEmpty(req.Info["user_info_weight"]) ? null : float.Parse(req.Info["user_info_weight"]);
+                float? height = string.IsNullOrEmpty(req.Info["user_info_height"]) ? null : float.Parse(req.Info["user_info_height"]);
+                string? gender = string.IsNullOrEmpty(req.Info["user_info_gender"]) ? null : req.Info["user_info_gender"];
+
                 if (usi == null)
                 {
                     _context.Userinfos.Add(new Userinfo
                     {
                         UserId = userId,
-                        Extra = info
+                        Extra = info,
+                        Age = age,
+                        Weight = weight,
+                        Height = height,
+                        Gender = gender
+
                     });
                 }
                 else
                 {
                     usi.Extra = info;
+                    usi.Age = age;
+                    usi.Weight = weight;
+                    usi.Height = height;
+                    usi.Gender = gender;
                     _context.Update(usi);
                 }
                 _context.SaveChanges();
@@ -419,6 +435,58 @@ namespace NutriDbService.Controllers
             }
         }
 
+        [HttpPost]
+        public ActionResult<bool> AddUserLesson(long UserTgId, int lesson)
+        {
+            try
+            {
+                var userId = _context.Users.SingleOrDefault(x => x.TgId == UserTgId).Id;
+                var usi = _context.Userinfos.SingleOrDefault(x => x.UserId == userId);
+                if (usi == null)
+                {
+                    _context.Userinfos.Add(new Userinfo
+                    {
+                        UserId = userId,
+                        Donelessonlist = lesson.ToString()
+                    });
+                }
+                else
+                {
+                    usi.Donelessonlist += $",{lesson}";
+                    _context.Update(usi);
+                }
+                _context.SaveChanges();
+                return Ok(true);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+                return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
+            }
+        }
+
+        [HttpGet]
+        public ActionResult<List<string>> GetUserLessons(long UserTgId)
+        {
+            try
+            {
+                var userId = _context.Users.SingleOrDefault(x => x.TgId == UserTgId).Id;
+                var usi = _context.Userinfos.SingleOrDefault(x => x.UserId == userId);
+                if (usi == null)
+                {
+                    return new List<string>();
+                }
+                else
+                {
+                    return usi.Donelessonlist.Split(',').ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+                return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
+            }
+        }
 
         [HttpPost]
         public ActionResult<Dictionary<string, string>> GetUserExtraInfo(long userTgId)

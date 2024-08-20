@@ -14,5 +14,6 @@ namespace NutriDbService.DbModels
         public float? Height { get; set; }
         public string Gender { get; set; }
         public string Extra { get; set; }
+        public string Donelessonlist { get; set; }
     }
 }
