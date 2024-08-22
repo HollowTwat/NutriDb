@@ -466,20 +466,31 @@ namespace NutriDbService.Controllers
         }
 
         [HttpGet]
-        public ActionResult<List<string>> GetUserLessons(long UserTgId)
+        public ActionResult<string> GetUserLessons(long UserTgId)
         {
             try
             {
                 var userId = _context.Users.SingleOrDefault(x => x.TgId == UserTgId).Id;
                 var usi = _context.Userinfos.SingleOrDefault(x => x.UserId == userId);
-                if (usi == null)
+                var res = new List<(string, bool)>();
+                List<string> usisplit = new List<string>();
+                if (usi != null)
                 {
-                    return new List<string>();
+                    usisplit = usi.Donelessonlist.Split(',').ToList();
                 }
-                else
+                res.Add(new("99", usisplit.Contains("99") ? true : false));
+                for (var i = 1; i < 22; i++)
                 {
-                    return usi.Donelessonlist.Split(',').ToList();
+                    res.Add(new(i.ToString(), usisplit.Contains(i.ToString()) ? true : false));
                 }
+                var resString = "{";
+                foreach (var el in res)
+                {
+                    resString += $"{el.Item1}:{el.Item2},";
+                }
+                resString = resString.Remove(resString.Length - 1, 1);
+                resString += "}";
+                return Ok(resString);
             }
             catch (Exception ex)
             {
@@ -488,6 +499,28 @@ namespace NutriDbService.Controllers
             }
         }
 
+        [HttpGet]
+        public ActionResult<int> GetLastUserLesson(long UserTgId)
+        {
+            try
+            {
+                var userId = _context.Users.SingleOrDefault(x => x.TgId == UserTgId).Id;
+                var usi = _context.Userinfos.SingleOrDefault(x => x.UserId == userId);
+                if (usi == null)
+                {
+                    return 0;
+                }
+                else
+                {
+                    return int.Parse(usi.Donelessonlist.Split(',').ToList().Last());
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+                return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
+            }
+        }
         [HttpPost]
         public ActionResult<Dictionary<string, string>> GetUserExtraInfo(long userTgId)
         {
