@@ -474,7 +474,7 @@ namespace NutriDbService.Controllers
                 var usi = _context.Userinfos.SingleOrDefault(x => x.UserId == userId);
                 var res = new List<(string, bool)>();
                 List<string> usisplit = new List<string>();
-                if (usi != null)
+                if (!String.IsNullOrEmpty(usi?.Donelessonlist))
                 {
                     usisplit = usi.Donelessonlist.Split(',').ToList();
                 }
