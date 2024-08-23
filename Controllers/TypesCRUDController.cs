@@ -466,31 +466,34 @@ namespace NutriDbService.Controllers
         }
 
         [HttpGet]
-        public ActionResult<string> GetUserLessons(long UserTgId)
+        public ActionResult<List<bool>> GetUserLessons(long UserTgId)
         {
             try
             {
                 var userId = _context.Users.SingleOrDefault(x => x.TgId == UserTgId).Id;
                 var usi = _context.Userinfos.SingleOrDefault(x => x.UserId == userId);
-                var res = new List<(string, bool)>();
+                //var res = new List<(string, bool)>();
+                var res2=new List<bool>();
                 List<string> usisplit = new List<string>();
                 if (!String.IsNullOrEmpty(usi?.Donelessonlist))
                 {
                     usisplit = usi.Donelessonlist.Split(',').ToList();
                 }
-                res.Add(new("99", usisplit.Contains("99") ? true : false));
+                // res.Add(new("99", usisplit.Contains("99") ? true : false));
+                res2.Add(usisplit.Contains("99") ? true : false);
                 for (var i = 1; i < 22; i++)
                 {
-                    res.Add(new(i.ToString(), usisplit.Contains(i.ToString()) ? true : false));
+                    //res.Add(new(i.ToString(), usisplit.Contains(i.ToString()) ? true : false));
+                    res2.Add(usisplit.Contains(i.ToString()) ? true : false);
                 }
-                var resString = "{";
-                foreach (var el in res)
-                {
-                    resString += $"{el.Item1}:{el.Item2},";
-                }
-                resString = resString.Remove(resString.Length - 1, 1);
-                resString += "}";
-                return Ok(resString);
+                //var resString = "{";
+                //foreach (var el in res)
+                //{
+                //    resString += $"{el.Item1}:{el.Item2},";
+                //}
+                //resString = resString.Remove(resString.Length - 1, 1);
+                //resString += "}";
+                return Ok(res2);
             }
             catch (Exception ex)
             {
