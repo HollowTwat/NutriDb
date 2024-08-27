@@ -436,6 +436,45 @@ namespace NutriDbService.Controllers
         }
 
         [HttpPost]
+        public ActionResult<bool> AddOrUpdateUserExtraInfo(AddUserExtraRequest req)
+        {
+            try
+            {
+                var userId = _context.Users.SingleOrDefault(x => x.TgId == req.UserTgId).Id;
+                var usi = _context.Userinfos.SingleOrDefault(x => x.UserId == userId);
+
+
+
+                if (usi == null)
+                {
+                    return Problem("У пользователя нет доп информации");
+                }
+                else
+                {
+                    var dbInfo = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, string>>(usi.Extra);
+
+                    foreach (var kv in req.Info)
+                    {
+                        if (dbInfo.ContainsKey(kv.Key))
+                            dbInfo[kv.Key] = kv.Value;
+                        else
+                            dbInfo.Add(kv.Key, kv.Value);
+                    }
+
+                    usi.Extra = Newtonsoft.Json.JsonConvert.SerializeObject(dbInfo);
+                    _context.Update(usi);
+                }
+                _context.SaveChanges();
+                return Ok(true);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+                return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
+            }
+        }
+
+        [HttpPost]
         public ActionResult<bool> AddUserLesson(long UserTgId, int lesson)
         {
             try
@@ -452,8 +491,11 @@ namespace NutriDbService.Controllers
                 }
                 else
                 {
-                    usi.Donelessonlist += $",{lesson}";
-                    _context.Update(usi);
+                    if (!usi.Donelessonlist.Contains(lesson.ToString()))
+                    {
+                        usi.Donelessonlist += $",{lesson}";
+                        _context.Update(usi);
+                    }
                 }
                 _context.SaveChanges();
                 return Ok(true);
@@ -473,7 +515,7 @@ namespace NutriDbService.Controllers
                 var userId = _context.Users.SingleOrDefault(x => x.TgId == UserTgId).Id;
                 var usi = _context.Userinfos.SingleOrDefault(x => x.UserId == userId);
                 //var res = new List<(string, bool)>();
-                var res2=new List<bool>();
+                var res2 = new List<bool>();
                 List<string> usisplit = new List<string>();
                 if (!String.IsNullOrEmpty(usi?.Donelessonlist))
                 {
@@ -524,6 +566,7 @@ namespace NutriDbService.Controllers
                 return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
         }
+
         [HttpPost]
         public ActionResult<Dictionary<string, string>> GetUserExtraInfo(long userTgId)
         {
