@@ -2,7 +2,7 @@
 
 namespace NutriDbService.PythModels.Response
 {
-    public class MealResp
+    public class MealResponse
     {
         public int mealId { get; set; }
         public int userId { get; set; }

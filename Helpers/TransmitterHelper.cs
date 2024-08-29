@@ -1,20 +1,14 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using NutriDbService.Controllers;
 using NutriDbService.DbModels;
-using NutriDbService.NoCodeModels;
 using NutriDbService.PythModels.Request;
 using NutriDbService.PythModels.Response;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using static System.Net.WebRequestMethods;
 
 namespace NutriDbService.Helpers
 {
@@ -33,7 +27,7 @@ namespace NutriDbService.Helpers
             _logger = _serviceProviderFactory.CreateScope().ServiceProvider.GetRequiredService<ILogger<TransmitterHelper>>();
         }
 
-        public async Task<int> CreateGPTRequest(CreateGPTRequest request)
+        public async Task<int> CreateGPTRequest(CreateGPTNoCodeRequest request)
         {
 
             var req = new Gptrequest { Iserror = false, Done = false, UserTgid = request.UserTgId, CreationDate = DateTime.UtcNow.ToLocalTime().AddHours(3), ReqType = string.IsNullOrEmpty(request.Type) ? "empty" : request.Type };
@@ -192,7 +186,7 @@ namespace NutriDbService.Helpers
         }
 
 
-        public string Test(CreateGPTRequest req)
+        public string Test(CreateGPTNoCodeRequest req)
         {
             var par = new CreateGPTPythRequest();
             par.txt = req.Question;
@@ -200,7 +194,7 @@ namespace NutriDbService.Helpers
             var url = $"{BaseUrl}/test";
             return SendRequest(par, url).GetAwaiter().GetResult();
         }
-        public string TestInner(CreateGPTRequest req)
+        public string TestInner(CreateGPTNoCodeRequest req)
         {
             var par = new CreateGPTPythRequest();
             par.txt = req.Question;

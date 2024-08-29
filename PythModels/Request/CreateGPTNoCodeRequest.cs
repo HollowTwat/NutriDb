@@ -1,6 +1,6 @@
-﻿namespace NutriDbService.NoCodeModels
+﻿namespace NutriDbService.PythModels.Request
 {
-    public class CreateGPTRequest
+    public class CreateGPTNoCodeRequest
     {
         public long UserTgId { get; set; }
 

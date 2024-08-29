@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using NutriDbService.DbModels;
 using NutriDbService.Helpers;
-using NutriDbService.NoCodeModels;
 using NutriDbService.PythModels;
 using NutriDbService.PythModels.Request;
 using NutriDbService.PythModels.Response;
@@ -14,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Security.Cryptography.Xml;
 using System.Text.RegularExpressions;
 
@@ -91,7 +91,7 @@ namespace NutriDbService.Controllers
 
         [Obsolete]
         [HttpGet]
-        public ActionResult<GetMealResp> GetTodayUserMeals(long userTgId)
+        public ActionResult<GetMealResponse> GetTodayUserMeals(long userTgId)
         {
             try
             {
@@ -102,10 +102,10 @@ namespace NutriDbService.Controllers
 
                 var mealsId = meals.Select(x => x.Id).ToList();
                 var dishes = _context.Dishes.Where(x => mealsId.Contains(x.MealId));
-                var resp = new List<MealResp>() { };
+                var resp = new List<MealResponse>() { };
                 foreach (var meal in meals)
                 {
-                    resp.Add(new MealResp()
+                    resp.Add(new MealResponse()
                     {
                         mealId = meal.Id,
                         eatedAt = meal.MealTime,
@@ -125,7 +125,7 @@ namespace NutriDbService.Controllers
                     }
                     );
                 }
-                return Ok(Newtonsoft.Json.JsonConvert.SerializeObject(new GetMealResp(resp)));
+                return Ok(Newtonsoft.Json.JsonConvert.SerializeObject(new GetMealResponse(resp)));
             }
             catch (Exception ex)
             {
@@ -135,7 +135,7 @@ namespace NutriDbService.Controllers
         }
 
         [HttpGet]
-        public ActionResult<GetMealResp> GetUserMealById(long userTgId, long mealId)
+        public ActionResult<GetMealResponse> GetUserMealById(long userTgId, long mealId)
         {
             try
             {
@@ -147,9 +147,9 @@ namespace NutriDbService.Controllers
                     throw new Exception($"I Cant Find meal : {mealId}");
 
                 var dishes = _context.Dishes.Where(x => x.MealId == mealId);
-                var resp = new List<MealResp>
+                var resp = new List<MealResponse>
                 {
-                    new MealResp()
+                    new MealResponse()
                     {
                         mealId = meal.Id,
                         eatedAt = meal.MealTime,
@@ -168,7 +168,7 @@ namespace NutriDbService.Controllers
                         }
                     }
                 };
-                return Ok(Newtonsoft.Json.JsonConvert.SerializeObject(new GetMealResp(resp)));
+                return Ok(Newtonsoft.Json.JsonConvert.SerializeObject(new GetMealResponse(resp)));
             }
             catch (Exception ex)
             {
@@ -178,7 +178,7 @@ namespace NutriDbService.Controllers
         }
 
         [HttpPost]
-        public ActionResult<GetMealResp> GetUserMeals(GetUserMealsRequest req)
+        public ActionResult<GetMealResponse> GetUserMeals(GetUserMealsRequest req)
         {
             try
             {
@@ -203,11 +203,11 @@ namespace NutriDbService.Controllers
                 }
                 var mealsId = meals.Select(x => x.Id).ToList();
                 var dishes = _context.Dishes.Where(x => mealsId.Contains(x.MealId));
-                var resp = new List<MealResp>() { };
+                var resp = new List<MealResponse>() { };
                 foreach (var meal in meals)
                 {
 
-                    resp.Add(new MealResp()
+                    resp.Add(new MealResponse()
                     {
                         mealId = meal.Id,
                         eatedAt = meal.MealTime,
@@ -226,7 +226,7 @@ namespace NutriDbService.Controllers
                         }
                     });
                 }
-                return Ok(Newtonsoft.Json.JsonConvert.SerializeObject(new GetMealResp(resp)));
+                return Ok(Newtonsoft.Json.JsonConvert.SerializeObject(new GetMealResponse(resp)));
             }
             catch (Exception ex)
             {
@@ -347,7 +347,7 @@ namespace NutriDbService.Controllers
 
 
         [HttpGet]
-        public ActionResult<GetMealResp> EnsureUser(long userTgId, string userName)
+        public ActionResult<GetMealResponse> EnsureUser(long userTgId, string userName)
         {
             try
             {
@@ -406,6 +406,10 @@ namespace NutriDbService.Controllers
                 float? height = string.IsNullOrEmpty(req.Info["user_info_height"]) ? null : float.Parse(req.Info["user_info_height"]);
                 string? gender = string.IsNullOrEmpty(req.Info["user_info_gender"]) ? null : req.Info["user_info_gender"];
 
+                string? morningPing = string.IsNullOrEmpty(req.Info["user_info_morning_ping"]) ? null : TimeOnly.TryParseExact(req.Info["user_info_morning_ping"], "HH:mm", out var m) == true ? req.Info["user_info_morning_ping"] : null;
+                string? eveningPing = string.IsNullOrEmpty(req.Info["user_info_evening_ping"]) ? null : TimeOnly.TryParseExact(req.Info["user_info_evening_ping"], "HH:mm", out var e) == true ? req.Info["user_info_evening_ping"] : null;
+                short? timeslide = string.IsNullOrEmpty(req.Info["user_info_timeslide"]) ? null : short.Parse(req.Info["user_info_timeslide"]);
+
                 if (usi == null)
                 {
                     _context.Userinfos.Add(new Userinfo
@@ -426,6 +430,9 @@ namespace NutriDbService.Controllers
                     usi.Weight = weight;
                     usi.Height = height;
                     usi.Gender = gender;
+                    usi.MorningPing = morningPing;
+                    usi.EveningPing = eveningPing;
+                    usi.Timeslide = timeslide;
                     _context.Update(usi);
                 }
                 _context.SaveChanges();
@@ -465,6 +472,30 @@ namespace NutriDbService.Controllers
                     }
 
                     usi.Extra = Newtonsoft.Json.JsonConvert.SerializeObject(dbInfo);
+
+
+                    short? age = string.IsNullOrEmpty(req.Info["user_info_age"]) ? null : short.Parse(req.Info["user_info_age"]);
+                    if (age != null)
+                        usi.Age = age;
+                    float? weight = string.IsNullOrEmpty(req.Info["user_info_weight"]) ? null : float.Parse(req.Info["user_info_weight"]);
+                    if (weight != null)
+                        usi.Weight = weight;
+                    float? height = string.IsNullOrEmpty(req.Info["user_info_height"]) ? null : float.Parse(req.Info["user_info_height"]);
+                    if (height != null)
+                        usi.Height = height;
+                    string? gender = string.IsNullOrEmpty(req.Info["user_info_gender"]) ? null : req.Info["user_info_gender"];
+                    if (gender != null)
+                        usi.Gender = gender;
+                    string? morningPing = string.IsNullOrEmpty(req.Info["user_info_morning_ping"]) ? null : TimeOnly.TryParseExact(req.Info["user_info_morning_ping"], "HH:mm", out var m) == true ? req.Info["user_info_morning_ping"] : null;
+                    if (morningPing != null)
+                        usi.MorningPing = morningPing;
+                    string? eveningPing = string.IsNullOrEmpty(req.Info["user_info_evening_ping"]) ? null : TimeOnly.TryParseExact(req.Info["user_info_evening_ping"], "HH:mm", out var e) == true ? req.Info["user_info_evening_ping"] : null;
+                    if (eveningPing != null)
+                        usi.EveningPing = eveningPing;
+                    short? timeslide = string.IsNullOrEmpty(req.Info["user_info_timeslide"]) ? null : short.Parse(req.Info["user_info_timeslide"]);
+                    if (timeslide != null)
+                        usi.Timeslide = timeslide;
+
                     _context.Update(usi);
                 }
                 _context.SaveChanges();
@@ -539,6 +570,67 @@ namespace NutriDbService.Controllers
                 //resString = resString.Remove(resString.Length - 1, 1);
                 //resString += "}";
                 return Ok(res2);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+                return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
+            }
+        }
+
+        [HttpGet]
+        public ActionResult<GetUserPingResponse> GetUserPing(long UserTgId, short TimeOfDay)
+        {
+            try
+            {
+                var userId = _context.Users.SingleOrDefault(x => x.TgId == UserTgId).Id;
+                var usi = _context.Userinfos.SingleOrDefault(x => x.UserId == userId);
+                var now = DateTime.UtcNow.ToLocalTime().AddHours(3);
+                if (!TimeOnly.TryParseExact(usi.MorningPing, "HH:mm", out var morningPing) || !TimeOnly.TryParseExact(usi.EveningPing, "HH:mm", out var eveningPing) || usi.Timeslide == null)
+                    return new GetUserPingResponse { MskTime = null };
+                DateTime ping = DateTime.UtcNow;
+                if (TimeOfDay == 0)//утро
+                {
+                    ping = DateOnly.FromDateTime(now).ToDateTime(morningPing);
+                }
+                else if (TimeOfDay == 1)
+                {
+                    ping = DateOnly.FromDateTime(now).ToDateTime(morningPing);
+                }
+
+                var slicePing = ping.AddHours(double.Parse(usi.Timeslide.ToString()));
+                var correct = (slicePing - ping).TotalDays;
+                return new GetUserPingResponse { MskTime = $"{slicePing.Hour}:{slicePing.Minute}", DayCorrection = (short)correct };
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+                return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
+            }
+        }
+        [HttpGet]
+        public ActionResult<GetUserPingResponse> GetCustomPing(long UserTgId, string TimeToSlide)
+        {
+            try
+            {
+                var userId = _context.Users.SingleOrDefault(x => x.TgId == UserTgId).Id;
+                var usi = _context.Userinfos.SingleOrDefault(x => x.UserId == userId);
+                var now = DateTime.UtcNow.ToLocalTime().AddHours(3);
+                if (usi.Timeslide == null)
+                    return new GetUserPingResponse { MskTime = null };
+
+                var isparse=TimeOnly.TryParseExact(TimeToSlide, "HH:mm", out var timetoslide);
+                if (!isparse)
+                    return new GetUserPingResponse { MskTime = null };
+
+                var ping = DateOnly.FromDateTime(now).ToDateTime(timetoslide);
+
+
+                var slicePing = ping.AddHours(double.Parse(usi.Timeslide.ToString()));
+                var correct = (slicePing - ping).TotalDays;
+                return new GetUserPingResponse { MskTime = $"{slicePing.Hour}:{slicePing.Minute}", DayCorrection = (short)correct };
+
             }
             catch (Exception ex)
             {

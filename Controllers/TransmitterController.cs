@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Logging;
 using NutriDbService.DbModels;
 using NutriDbService.Helpers;
-using NutriDbService.NoCodeModels;
+using NutriDbService.PythModels.Request;
 using NutriDbService.PythModels.Response;
 using System;
 using System.Threading;
@@ -26,7 +26,7 @@ namespace NutriDbService.Controllers
         }
 
         [HttpPost]
-        public async Task<CreateGPTResponse> CreateGPTRequset(CreateGPTRequest req)
+        public async Task<CreateGPTResponse> CreateGPTRequset(CreateGPTNoCodeRequest req)
         {
             try
             {
@@ -51,13 +51,13 @@ namespace NutriDbService.Controllers
         }
 
         [HttpPost]
-        public string Test(CreateGPTRequest req)
+        public string Test(CreateGPTNoCodeRequest req)
         {
             return _transmitterHelper.Test(req);
         }
 
         [HttpPost]
-        public string Testinner(CreateGPTRequest req)
+        public string Testinner(CreateGPTNoCodeRequest req)
         {
             return _transmitterHelper.TestInner(req);
 

@@ -1,4 +1,4 @@
-﻿namespace NutriDbService.NoCodeModels
+﻿namespace NutriDbService.PythModels.Request
 {
     public class CheckGPTRequest
     {

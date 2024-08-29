@@ -272,9 +272,9 @@ namespace NutriDbService.DbModels
                     .HasMaxLength(255)
                     .HasColumnName("donelessonlist");
 
-                entity.Property(e => e.Email)
+                entity.Property(e => e.EveningPing)
                     .HasMaxLength(255)
-                    .HasColumnName("email");
+                    .HasColumnName("eveningPing");
 
                 entity.Property(e => e.Extra).HasColumnName("extra");
 
@@ -284,9 +284,11 @@ namespace NutriDbService.DbModels
 
                 entity.Property(e => e.Height).HasColumnName("height");
 
-                entity.Property(e => e.Phone)
+                entity.Property(e => e.MorningPing)
                     .HasMaxLength(255)
-                    .HasColumnName("phone");
+                    .HasColumnName("morningPing");
+
+                entity.Property(e => e.Timeslide).HasColumnName("timeslide");
 
                 entity.Property(e => e.UserId).HasColumnName("userId");
 
