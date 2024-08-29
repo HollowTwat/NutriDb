@@ -303,18 +303,21 @@ namespace NutriDbService.Controllers
                 {
                     case Periods.day:
                         startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-1).Date;
-                        daysinperiod = 1;
                         break;
                     case Periods.week:
                         startDate = GetFirstDayOfWeek(now);
-                        daysinperiod = now.Day - startDate.Day;
+                        break;
+                    case Periods.mathweek:
+                        startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-7).Date;
+                        break;
+                    case Periods.math3weeks:
+                        startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-21).Date;
                         break;
                     case Periods.month:
                         startDate = new DateTime(now.Year, now.Month, 1);
-                        daysinperiod = now.Day - startDate.Day;
                         break;
                 }
-
+                daysinperiod = now.Day - startDate.Day;
                 var mealsIds = _context.Meals.Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).Select(x => x.Id).ToList();
                 var dishes = _context.Dishes.Where(x => mealsIds.Contains(x.MealId)).ToList();
                 var resp = new GetMealTotalResponse();
