@@ -408,7 +408,7 @@ namespace NutriDbService.Controllers
 
                 string? morningPing = string.IsNullOrEmpty(req.Info["user_info_morning_ping"]) ? null : TimeOnly.TryParseExact(req.Info["user_info_morning_ping"], "HH:mm", out var m) == true ? req.Info["user_info_morning_ping"] : null;
                 string? eveningPing = string.IsNullOrEmpty(req.Info["user_info_evening_ping"]) ? null : TimeOnly.TryParseExact(req.Info["user_info_evening_ping"], "HH:mm", out var e) == true ? req.Info["user_info_evening_ping"] : null;
-                short? timeslide = string.IsNullOrEmpty(req.Info["user_info_timeslide"]) ? null : short.Parse(req.Info["user_info_timeslide"]);
+                float? timeslide = string.IsNullOrEmpty(req.Info["user_info_timeslide"]) ? null : float.Parse(req.Info["user_info_timeslide"]);
 
                 if (usi == null)
                 {
@@ -474,25 +474,25 @@ namespace NutriDbService.Controllers
                     usi.Extra = Newtonsoft.Json.JsonConvert.SerializeObject(dbInfo);
 
 
-                    short? age = string.IsNullOrEmpty(req.Info["user_info_age"]) ? null : short.Parse(req.Info["user_info_age"]);
+                    short? age = req.Info.ContainsKey("user_info_age") == true ? (string.IsNullOrEmpty(req?.Info["user_info_age"]) ? null : short.Parse(req.Info["user_info_age"])) : null;
                     if (age != null)
                         usi.Age = age;
-                    float? weight = string.IsNullOrEmpty(req.Info["user_info_weight"]) ? null : float.Parse(req.Info["user_info_weight"]);
+                    float? weight = req.Info.ContainsKey("user_info_weight") == true ? (string.IsNullOrEmpty(req.Info["user_info_weight"]) ? null : float.Parse(req.Info["user_info_weight"])) : null;
                     if (weight != null)
                         usi.Weight = weight;
-                    float? height = string.IsNullOrEmpty(req.Info["user_info_height"]) ? null : float.Parse(req.Info["user_info_height"]);
+                    float? height = req.Info.ContainsKey("user_info_height") == true ? (string.IsNullOrEmpty(req.Info["user_info_height"]) ? null : float.Parse(req.Info["user_info_height"])) : null;
                     if (height != null)
                         usi.Height = height;
-                    string? gender = string.IsNullOrEmpty(req.Info["user_info_gender"]) ? null : req.Info["user_info_gender"];
+                    string? gender = req.Info.ContainsKey("user_info_gender") == true ? (string.IsNullOrEmpty(req.Info["user_info_gender"]) ? null : req.Info["user_info_gender"]) : null;
                     if (gender != null)
                         usi.Gender = gender;
-                    string? morningPing = string.IsNullOrEmpty(req.Info["user_info_morning_ping"]) ? null : TimeOnly.TryParseExact(req.Info["user_info_morning_ping"], "HH:mm", out var m) == true ? req.Info["user_info_morning_ping"] : null;
+                    string? morningPing = req.Info.ContainsKey("user_info_morning_ping") == true ? (string.IsNullOrEmpty(req.Info["user_info_morning_ping"]) ? null : TimeOnly.TryParseExact(req.Info["user_info_morning_ping"], "HH:mm", out var m) == true ? req.Info["user_info_morning_ping"] : null) : null;
                     if (morningPing != null)
                         usi.MorningPing = morningPing;
-                    string? eveningPing = string.IsNullOrEmpty(req.Info["user_info_evening_ping"]) ? null : TimeOnly.TryParseExact(req.Info["user_info_evening_ping"], "HH:mm", out var e) == true ? req.Info["user_info_evening_ping"] : null;
+                    string? eveningPing = req.Info.ContainsKey("user_info_evening_ping") == true ? (string.IsNullOrEmpty(req.Info["user_info_evening_ping"]) ? null : TimeOnly.TryParseExact(req.Info["user_info_evening_ping"], "HH:mm", out var e) == true ? req.Info["user_info_evening_ping"] : null) : null;
                     if (eveningPing != null)
                         usi.EveningPing = eveningPing;
-                    short? timeslide = string.IsNullOrEmpty(req.Info["user_info_timeslide"]) ? null : short.Parse(req.Info["user_info_timeslide"]);
+                    float? timeslide = req.Info.ContainsKey("user_info_timeslide") == true ? (req.Info.ContainsKey("user_info_timeslide") == true ? (string.IsNullOrEmpty(req.Info["user_info_timeslide"]) ? null : float.Parse(req.Info["user_info_timeslide"])) : null) : null;
                     if (timeslide != null)
                         usi.Timeslide = timeslide;
 
@@ -620,7 +620,7 @@ namespace NutriDbService.Controllers
                 if (usi.Timeslide == null)
                     return new GetUserPingResponse { MskTime = null };
 
-                var isparse=TimeOnly.TryParseExact(TimeToSlide, "HH:mm", out var timetoslide);
+                var isparse = TimeOnly.TryParseExact(TimeToSlide, "HH:mm", out var timetoslide);
                 if (!isparse)
                     return new GetUserPingResponse { MskTime = null };
 

@@ -15,6 +15,6 @@ namespace NutriDbService.DbModels
         public string Donelessonlist { get; set; }
         public string MorningPing { get; set; }
         public string EveningPing { get; set; }
-        public short? Timeslide { get; set; }
+        public float? Timeslide { get; set; }
     }
 }
