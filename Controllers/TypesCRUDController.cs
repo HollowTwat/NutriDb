@@ -248,7 +248,7 @@ namespace NutriDbService.Controllers
                 var meals = _context.Meals.Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).ToList();
                 var dishes = _context.Dishes.Where(x => meals.Select(x => x.Id).ToList().Contains(x.MealId));
                 var resp = new List<GetWeekMealStatusResponse>();
-                for (var i = 0; i < 7; i++)
+                for (var i = 1; i <= 7; i++)
                 {
                     var ndate = startDate.AddDays(i);
                     var daymeals = new List<MealStatus>();
