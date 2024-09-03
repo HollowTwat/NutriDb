@@ -83,6 +83,12 @@ namespace NutriDbService.DbModels
             {
                 entity.ToTable("gptrequest");
 
+                entity.HasIndex(e => e.Id, "gpt_id_index")
+                    .HasMethod("hash");
+
+                entity.HasIndex(e => e.Request, "gpt_req_index")
+                    .HasMethod("hash");
+
                 entity.Property(e => e.Id)
                     .HasColumnName("id")
                     .HasDefaultValueSql("nextval('gptrequest_id_auto_inc'::regclass)");
@@ -105,6 +111,8 @@ namespace NutriDbService.DbModels
                     .IsRequired()
                     .HasMaxLength(50)
                     .HasColumnName("req_type");
+
+                entity.Property(e => e.Request).HasColumnName("request");
 
                 entity.Property(e => e.UserTgid).HasColumnName("user_tgid");
             });

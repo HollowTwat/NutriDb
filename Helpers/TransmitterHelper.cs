@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using DocumentFormat.OpenXml.Drawing;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using NutriDbService.DbModels;
@@ -30,9 +31,9 @@ namespace NutriDbService.Helpers
         public async Task<int> CreateGPTRequest(CreateGPTNoCodeRequest request)
         {
 
-            var req = new Gptrequest { Iserror = false, Done = false, UserTgid = request.UserTgId, CreationDate = DateTime.UtcNow.ToLocalTime().AddHours(3), ReqType = string.IsNullOrEmpty(request.Type) ? "empty" : request.Type };
+            var req = new Gptrequest { Iserror = false, Request = JsonConvert.SerializeObject(request), Done = false, UserTgid = request.UserTgId, CreationDate = DateTime.UtcNow.ToLocalTime().AddHours(3), ReqType = string.IsNullOrEmpty(request.Type) ? "empty" : request.Type };
+            bool send = true;
 
-            await _nutriDbContext.Gptrequests.AddAsync(req);
             var usrId = _nutriDbContext.Users.SingleOrDefault(x => x.TgId == request.UserTgId).Id;
             var isEmptyExtra = _nutriDbContext.Userinfos.Any(x => x.UserId == usrId && string.IsNullOrEmpty(x.Extra));
 
@@ -82,13 +83,21 @@ namespace NutriDbService.Helpers
                     reqparams.id = request.UserTgId.ToString();
                     reqparams.txt = request.Question.ToString();
                     reqparams.assistanttype = request.AssistantType;//week,smol,mid,big
+                    var lastreq = _nutriDbContext.Gptrequests.LastOrDefault(x => x.Request == req.Request);
+                    if (lastreq != null)
+                    {
+                        send = false;
+                        req.Answer = lastreq.Answer;
+                    }
                     break;
                 default:
                     throw new ArgumentNullException("Пустой type");
             }
+            await _nutriDbContext.Gptrequests.AddAsync(req);
             var url = $"{BaseUrl}/{request.Type}";
             await _nutriDbContext.SaveChangesAsync();
-            Task.Run(() => { ExecuteRequest(reqparams, url, req.Id); });
+            if (send)
+                Task.Run(() => { ExecuteRequest(reqparams, url, req.Id); });
             return req.Id;
         }
 

@@ -13,5 +13,6 @@ namespace NutriDbService.DbModels
         public DateTime CreationDate { get; set; }
         public DateTime? FinishDate { get; set; }
         public string ReqType { get; set; }
+        public string Request { get; set; }
     }
 }
