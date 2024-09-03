@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Reflection;
 
 namespace NutriDbService.PythModels.Response
 {
@@ -8,7 +11,19 @@ namespace NutriDbService.PythModels.Response
         public List<MealResponse> Meals { get; set; }
 
         public string pretty { get; set; }
+        public static string GetEnumDescription(Enum value)
+        {
+            FieldInfo fi = value.GetType().GetField(value.ToString());
 
+            DescriptionAttribute[] attributes = fi.GetCustomAttributes(typeof(DescriptionAttribute), false) as DescriptionAttribute[];
+
+            if (attributes != null && attributes.Any())
+            {
+                return attributes.First().Description;
+            }
+
+            return value.ToString();
+        }
         public GetMealResponse(List<MealResponse> meals)
         {
             Meals = meals;
@@ -16,6 +31,8 @@ namespace NutriDbService.PythModels.Response
             foreach (var meal in Meals)
             {
                 pretty += $"Прием пищи {meal.mealId}";
+
+                pretty += $"\n{GetEnumDescription((mealtype)meal.meal.type)}";
                 var i = 0;
                 foreach (var item in meal.meal.food)
                 {
