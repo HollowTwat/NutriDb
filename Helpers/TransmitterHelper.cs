@@ -83,7 +83,7 @@ namespace NutriDbService.Helpers
                     reqparams.id = request.UserTgId.ToString();
                     reqparams.txt = request.Question.ToString();
                     reqparams.assistanttype = request.AssistantType;//week,smol,mid,big
-                    var lastreq = _nutriDbContext.Gptrequests.OrderBy(x => x.Id).LastOrDefault(x => x.Request == req.Request);
+                    var lastreq = _nutriDbContext.Gptrequests.OrderByDescending(x => x.Id).FirstOrDefault(x => x.Request == req.Request);
                     if (lastreq != null)
                     {
                         send = false;
