@@ -1,8 +1,4 @@
-﻿using DocumentFormat.OpenXml.Drawing;
-using DocumentFormat.OpenXml.Presentation;
-using DocumentFormat.OpenXml.Spreadsheet;
-using DocumentFormat.OpenXml.Vml.Office;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using NutriDbService.DbModels;
 using NutriDbService.Helpers;
@@ -13,8 +9,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Net.NetworkInformation;
-using System.Security.Cryptography.Xml;
 using System.Text.RegularExpressions;
 
 namespace NutriDbService.Controllers
@@ -26,11 +20,13 @@ namespace NutriDbService.Controllers
         private readonly ILogger<TypesCRUDController> _logger;
         private railwayContext _context;
         private MealHelper _mealHelper;
-        public TypesCRUDController(railwayContext context, MealHelper mealHelper, ILogger<TypesCRUDController> logger)
+        private PlotHelper _plotHelper;
+        public TypesCRUDController(railwayContext context, MealHelper mealHelper, ILogger<TypesCRUDController> logger, PlotHelper plotHelper)
         {
             _context = context;
             _mealHelper = mealHelper;
             _logger = logger;
+            _plotHelper = plotHelper;
         }
 
         #region AllCRUDS
@@ -281,12 +277,14 @@ namespace NutriDbService.Controllers
                 return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
         }
+
         private static DateTime GetFirstDayOfWeek(DateTime date)
         {
             DayOfWeek firstDay = DayOfWeek.Monday;
             int diff = (7 + (date.DayOfWeek - firstDay)) % 7;
             return date.AddDays(-1 * diff).Date;
         }
+
         [HttpGet]
         public ActionResult<GetMealTotalResponse> GetUserMealsTotal(long userTgId, Periods period)
         {
@@ -402,13 +400,14 @@ namespace NutriDbService.Controllers
                 var info = Newtonsoft.Json.JsonConvert.SerializeObject(req.Info);
 
                 short? age = string.IsNullOrEmpty(req.Info["user_info_age"]) ? null : short.Parse(req.Info["user_info_age"]);
-                float? weight = string.IsNullOrEmpty(req.Info["user_info_weight"]) ? null : float.Parse(req.Info["user_info_weight"]);
-                float? height = string.IsNullOrEmpty(req.Info["user_info_height"]) ? null : float.Parse(req.Info["user_info_height"]);
+                decimal? weight = string.IsNullOrEmpty(req.Info["user_info_weight"]) ? null : decimal.Parse(req.Info["user_info_weight"]);
+                decimal? height = string.IsNullOrEmpty(req.Info["user_info_height"]) ? null : decimal.Parse(req.Info["user_info_height"]);
                 string? gender = string.IsNullOrEmpty(req.Info["user_info_gender"]) ? null : req.Info["user_info_gender"];
+                decimal? goalkk = string.IsNullOrEmpty(req.Info["target_calories"]) ? null : decimal.Parse(req.Info["target_calories"]);
 
                 string? morningPing = string.IsNullOrEmpty(req.Info["user_info_morning_ping"]) ? null : TimeOnly.TryParseExact(req.Info["user_info_morning_ping"], "HH:mm", out var m) == true ? req.Info["user_info_morning_ping"] : null;
                 string? eveningPing = string.IsNullOrEmpty(req.Info["user_info_evening_ping"]) ? null : TimeOnly.TryParseExact(req.Info["user_info_evening_ping"], "HH:mm", out var e) == true ? req.Info["user_info_evening_ping"] : null;
-                float? timeslide = string.IsNullOrEmpty(req.Info["user_info_timeslide"]) ? null : float.Parse(req.Info["user_info_timeslide"]);
+                decimal? timeslide = string.IsNullOrEmpty(req.Info["user_info_timeslide"]) ? null : decimal.Parse(req.Info["user_info_timeslide"]);
 
                 if (usi == null)
                 {
@@ -419,7 +418,8 @@ namespace NutriDbService.Controllers
                         Age = age,
                         Weight = weight,
                         Height = height,
-                        Gender = gender
+                        Gender = gender,
+                        Goalkk = goalkk,
 
                     });
                 }
@@ -430,6 +430,7 @@ namespace NutriDbService.Controllers
                     usi.Weight = weight;
                     usi.Height = height;
                     usi.Gender = gender;
+                    usi.Goalkk = goalkk;
                     usi.MorningPing = morningPing;
                     usi.EveningPing = eveningPing;
                     usi.Timeslide = timeslide;
@@ -477,22 +478,32 @@ namespace NutriDbService.Controllers
                     short? age = req.Info.ContainsKey("user_info_age") == true ? (string.IsNullOrEmpty(req?.Info["user_info_age"]) ? null : short.Parse(req.Info["user_info_age"])) : null;
                     if (age != null)
                         usi.Age = age;
-                    float? weight = req.Info.ContainsKey("user_info_weight") == true ? (string.IsNullOrEmpty(req.Info["user_info_weight"]) ? null : float.Parse(req.Info["user_info_weight"])) : null;
+
+                    decimal? weight = req.Info.ContainsKey("user_info_weight") == true ? (string.IsNullOrEmpty(req.Info["user_info_weight"]) ? null : decimal.Parse(req.Info["user_info_weight"])) : null;
                     if (weight != null)
                         usi.Weight = weight;
-                    float? height = req.Info.ContainsKey("user_info_height") == true ? (string.IsNullOrEmpty(req.Info["user_info_height"]) ? null : float.Parse(req.Info["user_info_height"])) : null;
+
+                    decimal? height = req.Info.ContainsKey("user_info_height") == true ? (string.IsNullOrEmpty(req.Info["user_info_height"]) ? null : decimal.Parse(req.Info["user_info_height"])) : null;
                     if (height != null)
                         usi.Height = height;
+
                     string? gender = req.Info.ContainsKey("user_info_gender") == true ? (string.IsNullOrEmpty(req.Info["user_info_gender"]) ? null : req.Info["user_info_gender"]) : null;
                     if (gender != null)
                         usi.Gender = gender;
+
+                    decimal? goalkk = req.Info.ContainsKey("target_calories") == true ? (string.IsNullOrEmpty(req.Info["target_calories"]) ? null : decimal.Parse(req.Info["target_calories"])) : null;
+                    if (goalkk != null)
+                        usi.Goalkk = goalkk;
+
                     string? morningPing = req.Info.ContainsKey("user_info_morning_ping") == true ? (string.IsNullOrEmpty(req.Info["user_info_morning_ping"]) ? null : TimeOnly.TryParseExact(req.Info["user_info_morning_ping"], "HH:mm", out var m) == true ? req.Info["user_info_morning_ping"] : null) : null;
                     if (morningPing != null)
                         usi.MorningPing = morningPing;
+
                     string? eveningPing = req.Info.ContainsKey("user_info_evening_ping") == true ? (string.IsNullOrEmpty(req.Info["user_info_evening_ping"]) ? null : TimeOnly.TryParseExact(req.Info["user_info_evening_ping"], "HH:mm", out var e) == true ? req.Info["user_info_evening_ping"] : null) : null;
                     if (eveningPing != null)
                         usi.EveningPing = eveningPing;
-                    float? timeslide = req.Info.ContainsKey("user_info_timeslide") == true ? (req.Info.ContainsKey("user_info_timeslide") == true ? (string.IsNullOrEmpty(req.Info["user_info_timeslide"]) ? null : float.Parse(req.Info["user_info_timeslide"])) : null) : null;
+
+                    decimal? timeslide = req.Info.ContainsKey("user_info_timeslide") == true ? (req.Info.ContainsKey("user_info_timeslide") == true ? (string.IsNullOrEmpty(req.Info["user_info_timeslide"]) ? null : decimal.Parse(req.Info["user_info_timeslide"])) : null) : null;
                     if (timeslide != null)
                         usi.Timeslide = timeslide;
 
@@ -680,6 +691,53 @@ namespace NutriDbService.Controllers
         }
         #endregion
         #endregion
+        [HttpPost]
+        public ActionResult<bool> GetUserWeekPlot(long userTgId)
+        {
+            try
+            {
+                var user = _context.Users.SingleOrDefault(x => x.TgId == userTgId);
+                if (user == null)
+                    throw new Exception($"I Cant Find User : {userTgId}");
+
+                DateTime startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-7).Date;
+                int daysinperiod = 0;
+                var now = DateTime.UtcNow.ToLocalTime().AddHours(3).Date;
+
+                daysinperiod = now.Day - startDate.Day;
+                var meals = _context.Meals.Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).ToList();
+                var dishes = _context.Dishes.Where(x => meals.Select(x => x.Id).Contains(x.MealId)).ToList();
+                //List<(string, decimal)> plotPairs = new List<(string, decimal)>();
+                decimal[] values = new decimal[7];
+                string[] labels = new string[7];
+                for (var i = 1; i <= 7; i++)
+                {
+                    var ndate = startDate.AddDays(i);
+                    var todaymeals = meals.Where(x => x.MealTime.Date == ndate.Date);
+                    decimal todaykk = 0.0m;
+
+                    if (todaymeals.Any())
+                    {
+                        var todayDishes = dishes.Where(x => todaymeals.Select(x => x.Id).Contains(x.MealId));
+
+                        foreach (var dish in todayDishes)
+                        {
+                            todaykk += dish.Kkal;
+                        }
+                    }
+                    labels[i - 1] = ndate.Date.ToString("dd.MM");
+                    values[i - 1] = todaykk;
+                }
+                if (values.Any(x => x > 0))
+                    _plotHelper.SendPlot(values, labels, 389054202);
+                return Ok(true);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+                return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
+            }
+        }
 
 
     }

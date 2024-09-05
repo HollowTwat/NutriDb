@@ -36,6 +36,7 @@ namespace NutriDbService
             //services.AddScoped<NutriDbContext>();
             services.AddTransient<MealHelper>();
             services.AddTransient<TransmitterHelper>();
+            services.AddTransient<PlotHelper>();
             //services.AddTransient(_ => ActivatorUtilities.CreateInstance<TransmitterHelper>(_,
             //   _.GetRequiredService<railwayContext>(),
             //   ApplicationSettings.Instance.Config,

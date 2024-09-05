@@ -290,17 +290,27 @@ namespace NutriDbService.DbModels
                     .HasMaxLength(255)
                     .HasColumnName("gender");
 
-                entity.Property(e => e.Height).HasColumnName("height");
+                entity.Property(e => e.Goalkk)
+                    .HasPrecision(10, 2)
+                    .HasColumnName("goalkk");
+
+                entity.Property(e => e.Height)
+                    .HasPrecision(10, 2)
+                    .HasColumnName("height");
 
                 entity.Property(e => e.MorningPing)
                     .HasMaxLength(255)
                     .HasColumnName("morningPing");
 
-                entity.Property(e => e.Timeslide).HasColumnName("timeslide");
+                entity.Property(e => e.Timeslide)
+                    .HasPrecision(10, 2)
+                    .HasColumnName("timeslide");
 
                 entity.Property(e => e.UserId).HasColumnName("userId");
 
-                entity.Property(e => e.Weight).HasColumnName("weight");
+                entity.Property(e => e.Weight)
+                    .HasPrecision(10, 2)
+                    .HasColumnName("weight");
             });
 
             modelBuilder.HasSequence("dish_id_auto_inc");
