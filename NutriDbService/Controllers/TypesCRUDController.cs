@@ -402,11 +402,11 @@ namespace NutriDbService.Controllers
                 short? age = string.IsNullOrEmpty(req.Info["user_info_age"]) ? null : short.Parse(req.Info["user_info_age"]);
                 decimal? weight = string.IsNullOrEmpty(req.Info["user_info_weight"]) ? null : decimal.Parse(req.Info["user_info_weight"]);
                 decimal? height = string.IsNullOrEmpty(req.Info["user_info_height"]) ? null : decimal.Parse(req.Info["user_info_height"]);
-                string? gender = string.IsNullOrEmpty(req.Info["user_info_gender"]) ? null : req.Info["user_info_gender"];
+                string gender = string.IsNullOrEmpty(req.Info["user_info_gender"]) ? null : req.Info["user_info_gender"];
                 decimal? goalkk = string.IsNullOrEmpty(req.Info["target_calories"]) ? null : decimal.Parse(req.Info["target_calories"]);
 
-                string? morningPing = string.IsNullOrEmpty(req.Info["user_info_morning_ping"]) ? null : TimeOnly.TryParseExact(req.Info["user_info_morning_ping"], "HH:mm", out var m) == true ? req.Info["user_info_morning_ping"] : null;
-                string? eveningPing = string.IsNullOrEmpty(req.Info["user_info_evening_ping"]) ? null : TimeOnly.TryParseExact(req.Info["user_info_evening_ping"], "HH:mm", out var e) == true ? req.Info["user_info_evening_ping"] : null;
+                string morningPing = string.IsNullOrEmpty(req.Info["user_info_morning_ping"]) ? null : TimeOnly.TryParseExact(req.Info["user_info_morning_ping"], "HH:mm", out var m) == true ? req.Info["user_info_morning_ping"] : null;
+                string eveningPing = string.IsNullOrEmpty(req.Info["user_info_evening_ping"]) ? null : TimeOnly.TryParseExact(req.Info["user_info_evening_ping"], "HH:mm", out var e) == true ? req.Info["user_info_evening_ping"] : null;
                 decimal? timeslide = string.IsNullOrEmpty(req.Info["user_info_timeslide"]) ? null : decimal.Parse(req.Info["user_info_timeslide"]);
 
                 if (usi == null)
@@ -487,7 +487,7 @@ namespace NutriDbService.Controllers
                     if (height != null)
                         usi.Height = height;
 
-                    string? gender = req.Info.ContainsKey("user_info_gender") == true ? (string.IsNullOrEmpty(req.Info["user_info_gender"]) ? null : req.Info["user_info_gender"]) : null;
+                    string gender = req.Info.ContainsKey("user_info_gender") == true ? (string.IsNullOrEmpty(req.Info["user_info_gender"]) ? null : req.Info["user_info_gender"]) : null;
                     if (gender != null)
                         usi.Gender = gender;
 
@@ -495,11 +495,11 @@ namespace NutriDbService.Controllers
                     if (goalkk != null)
                         usi.Goalkk = goalkk;
 
-                    string? morningPing = req.Info.ContainsKey("user_info_morning_ping") == true ? (string.IsNullOrEmpty(req.Info["user_info_morning_ping"]) ? null : TimeOnly.TryParseExact(req.Info["user_info_morning_ping"], "HH:mm", out var m) == true ? req.Info["user_info_morning_ping"] : null) : null;
+                    string morningPing = req.Info.ContainsKey("user_info_morning_ping") == true ? (string.IsNullOrEmpty(req.Info["user_info_morning_ping"]) ? null : TimeOnly.TryParseExact(req.Info["user_info_morning_ping"], "HH:mm", out var m) == true ? req.Info["user_info_morning_ping"] : null) : null;
                     if (morningPing != null)
                         usi.MorningPing = morningPing;
 
-                    string? eveningPing = req.Info.ContainsKey("user_info_evening_ping") == true ? (string.IsNullOrEmpty(req.Info["user_info_evening_ping"]) ? null : TimeOnly.TryParseExact(req.Info["user_info_evening_ping"], "HH:mm", out var e) == true ? req.Info["user_info_evening_ping"] : null) : null;
+                    string eveningPing = req.Info.ContainsKey("user_info_evening_ping") == true ? (string.IsNullOrEmpty(req.Info["user_info_evening_ping"]) ? null : TimeOnly.TryParseExact(req.Info["user_info_evening_ping"], "HH:mm", out var e) == true ? req.Info["user_info_evening_ping"] : null) : null;
                     if (eveningPing != null)
                         usi.EveningPing = eveningPing;
 
