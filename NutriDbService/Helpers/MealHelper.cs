@@ -1,10 +1,7 @@
-﻿using DocumentFormat.OpenXml.InkML;
-using DocumentFormat.OpenXml.Presentation;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NutriDbService.DbModels;
-using NutriDbService.PythModels;
 using NutriDbService.PythModels.Request;
 using System;
 using System.Collections.Generic;

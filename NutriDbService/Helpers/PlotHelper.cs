@@ -4,9 +4,13 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Telegram.Bot;
-using System.Drawing.Imaging;
-using System.Drawing;
+using SixLabors.Fonts;
 using System.Linq;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Drawing.Processing;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Drawing;
 
 namespace NutriDbService.Helpers
 {
@@ -23,7 +27,7 @@ namespace NutriDbService.Helpers
             string filePath = $"{Guid.NewGuid().ToString()}.png";
 
             string homePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            filePath = Path.Combine(homePath, "barchart.png");
+            filePath = System.IO.Path.Combine(homePath, "barchart.png");
 
 
             CreateBarChart(values, labels, filePath);
@@ -45,7 +49,7 @@ namespace NutriDbService.Helpers
 
                 // Чтение файла изображения
                 using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
-                var inputOnlineFile = new Telegram.Bot.Types.InputFiles.InputOnlineFile(fileStream, Path.GetFileName(filePath));
+                var inputOnlineFile = new Telegram.Bot.Types.InputFiles.InputOnlineFile(fileStream, System.IO.Path.GetFileName(filePath));
 
                 // Отправка изображения
                 await botClient.SendPhotoAsync(
@@ -60,57 +64,132 @@ namespace NutriDbService.Helpers
                 throw;
             }
         }
-
         public static void CreateBarChart(decimal[] values, string[] labels, string filePath)
         {
             int width = 600;
             int height = 400;
-
-            // Создание битмапа 
-            using Bitmap bitmap = new Bitmap(width, height);
-            using Graphics graphics = Graphics.FromImage(bitmap);
-
-            // Заполнение фона белым цветом
-            graphics.Clear(System.Drawing.Color.White);
-
-            // Перья для осей и баров
-            Pen axisPen = new Pen(System.Drawing.Color.Black, 2);
-            Brush barBrush = new SolidBrush(System.Drawing.Color.LightBlue);
-            Brush textBrush = new SolidBrush(Color.Black);
-
-            Font font = new Font("Arial", 10);
-
-            // Значения для начальных отступов
             int margin = 40;
             int barWidth = (width - 2 * margin) / values.Length;
             int maxHeight = height - 2 * margin;
 
             decimal maxValue = values.Max();
 
-            // Рисуем оси
-            graphics.DrawLine(axisPen, margin, height - margin, width - margin, height - margin); // X-axis
-            graphics.DrawLine(axisPen, margin, height - margin, margin, margin); // Y-axis
+            // Создание битмапа 
+            using var image = new Image<Rgba32>(width, height);
 
-            for (int i = 0; i < values.Length; i++)
+            // Настройки кисти и пера
+            var pen = Pens.Solid(Color.Black, 2);
+
+            // Загружаем системный шрифт
+            var fontCollection = new FontCollection();
+
+            // Change FontFamily name as per your system installed fonts
+            FontFamily fontFamily = SystemFonts.Families.FirstOrDefault(f => f.Name == "Arial"); //?? SystemFonts.Collection.AddSystemFontCollection().Families.First();
+            Font font = fontFamily.CreateFont(11, SixLabors.Fonts.FontStyle.Regular);
+
+            image.Mutate(ctx =>
             {
-                // Высота баров в зависимости от значений
-                int barHeight = (int)(values[i] / maxValue * maxHeight);
+                // Заполнение фона белым цветом
+                ctx.Fill(Color.White);
 
-                // Координаты баров
-                int x = margin + i * barWidth;
-                int y = height - margin - barHeight;
+                // Нарисуйте оси
+                ctx.DrawLine(pen, new PointF[]
+                {
+                new PointF(margin, height - margin),
+                new PointF(width - margin, height - margin)
+                }); // X-Ось
 
-                // Рисуем бары
-                graphics.FillRectangle(barBrush, x, y, barWidth - 10, barHeight);
+                ctx.DrawLine(pen, new PointF[]
+                {
+                new PointF(margin, height - margin),
+                new PointF(margin, margin)
+                }); // Y-Ось
 
-                // Добавляем метки по оси X
-                graphics.DrawString(labels[i], font, textBrush, x, height - margin + 5);
-            }
+                for (int i = 0; i < values.Length; i++)
+                {
+                    // Определение высоты баров
+                    float barHeight = (float)(values[i] / maxValue * maxHeight);
+                    var barRectangle = new RectangularPolygon(
+                                      x: margin + i * barWidth,
+                                      y: height - margin - barHeight,
+                                      width: barWidth - 10,
+                                      height: barHeight);
+
+                    ctx.Fill(Color.LightBlue, barRectangle);
+                    ctx.DrawText(labels[i], font, Color.Black, new PointF(margin + i * barWidth + (barWidth - 10) / 4, height - margin + 5));
+                }
+            });
 
             // Сохранение битмапа в файл
-            bitmap.Save(filePath, ImageFormat.Png);
+            using var fileStream = new FileStream(filePath, FileMode.Create);
+            image.SaveAsPng(fileStream);
         }
     }
+    //public static void CreateBarChart(decimal[] values, string[] labels, string filePath)
+    //{
+    //    int width = 600;
+    //    int height = 400;
+    //    int margin = 40;
+    //    int barWidth = (width - 2 * margin) / values.Length;
+    //    int maxHeight = height - 2 * margin;
+
+    //    decimal maxValue = values.Max();
+
+    //    // Создание битмапа 
+    //    using var image = new Image<Rgba32>(width, height);
+
+    //    // Добавим fill и draw
+    //    var options = new DrawingOptions()
+    //    {
+    //        GraphicsOptions = new GraphicsOptions()
+    //        {
+    //            Antialias = true
+    //        }
+    //    };
+
+    //    // Создание шрифта
+    //    var fontCollection = new FontCollection();
+    //    var fontFamily = fontCollection.Add("Arial.ttf"); // Используйте корректный путь к шрифту, или платформенные системные шрифты.
+    //    Font font = fontFamily.CreateFont(11);
+
+    //    image.Mutate(ctx =>
+    //    {
+    //        // Заполнение фона белым цветом
+    //        ctx.Fill(Color.White);
+
+    //        // Нарисуйте оси
+    //        ctx.DrawLine(Color.Black, 2, new PointF[]
+    //        {
+    //        new PointF(margin, height - margin),
+    //        new PointF(width - margin, height - margin)
+    //        }); // X-Oсь
+
+    //        ctx.DrawLine(Color.Black, 2, new PointF[]
+    //        {
+    //        new PointF(margin, height - margin),
+    //        new PointF(margin, margin)
+    //        }); // Y-Ось
+
+    //        for (int i = 0; i < values.Length; i++)
+    //        {
+    //            // Определение высоты баров
+    //            float barHeight = (float)(values[i] / maxValue * maxHeight);
+    //            var barRectangle = new RectangularPolygon(
+    //                x: margin + i * barWidth,
+    //                y: height - margin - barHeight,
+    //                width: barWidth - 10,
+    //                height: barHeight);
+
+    //            ctx.Fill(Color.LightBlue, barRectangle);
+    //            ctx.DrawText(labels[i], font, Color.Black, new PointF(margin + i * barWidth + (barWidth - 10) / 4, height - margin + 5));
+    //        }
+    //    });
+
+    //    // Сохранить битмап в файл
+    //    using var fileStream = new FileStream(filePath, FileMode.Create);
+    //    image.SaveAsPng(fileStream);
+    //}
+}
     //public static void CreateBarChart(decimal[] values, string[] labels, string filePath)
     //{
     //    // Создаем модель графика
@@ -193,5 +272,4 @@ namespace NutriDbService.Helpers
     //        throw;
     //    }
     //}
-}
 
