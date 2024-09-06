@@ -11,6 +11,7 @@ using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Drawing;
+using System.Reflection;
 
 namespace NutriDbService.Helpers
 {
@@ -84,9 +85,12 @@ namespace NutriDbService.Helpers
             var fontCollection = new FontCollection();
 
             // Change FontFamily name as per your system installed fonts
-            FontFamily fontFamily = SystemFonts.Families.FirstOrDefault(f => f.Name == "Arial"); //?? SystemFonts.Collection.AddSystemFontCollection().Families.First();
-            Font font = fontFamily.CreateFont(11, SixLabors.Fonts.FontStyle.Regular);
-
+            //FontFamily fontFamily = SystemFonts.Families.FirstOrDefault(f => f.Name == "Arial"); //?? SystemFonts.Collection.AddSystemFontCollection().Families.First();
+            //Font font = fontFamily.CreateFont(11, SixLabors.Fonts.FontStyle.Regular);
+           
+            var fontPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "Roboto-Black.ttf");
+            FontFamily fontFamily = fontCollection.Add(fontPath);
+            Font font = fontFamily.CreateFont(11, FontStyle.Regular);
             image.Mutate(ctx =>
             {
                 // Заполнение фона белым цветом
