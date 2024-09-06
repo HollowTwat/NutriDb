@@ -6,5 +6,6 @@
         public int? day { get; set; }
         public string dayStr { get; set; }
         public mealtype? typemeal { get; set; }
+        public Periods period { get; set; }
     }
 }
