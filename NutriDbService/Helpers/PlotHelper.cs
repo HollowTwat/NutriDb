@@ -22,7 +22,7 @@ namespace NutriDbService.Helpers
         public void SendPlot(decimal[] values, string[] labels, long userTgId)
         {
             string filePath = $"{Guid.NewGuid().ToString()}.png";
-             filePath = "barchart.png";
+            filePath = "barchart.png";
             CreateBarChart(values, labels, filePath);
             SendPhotoAsync(userTgId, filePath).GetAwaiter().GetResult();
             System.IO.File.Delete(filePath);
@@ -81,7 +81,7 @@ namespace NutriDbService.Helpers
             plotModel.Series.Add(barSeries);
 
             // Убедитесь, что путь к файлу существует и папки все доступны
-            Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+            Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), filePath));
 
             // Экспортируем диаграмму в формате PNG
             PngExporter.Export(plotModel, filePath, 600, 400);
