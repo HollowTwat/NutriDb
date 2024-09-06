@@ -81,8 +81,9 @@ namespace NutriDbService.Helpers
             plotModel.Series.Add(barSeries);
 
             // Убедитесь, что путь к файлу существует и папки все доступны
-            Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), filePath));
+            //Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), filePath));
 
+            filePath=Path.Combine(Path.GetTempPath(), filePath);
             // Экспортируем диаграмму в формате PNG
             PngExporter.Export(plotModel, filePath, 600, 400);
         }
