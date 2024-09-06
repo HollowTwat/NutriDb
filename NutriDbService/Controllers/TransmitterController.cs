@@ -46,6 +46,8 @@ namespace NutriDbService.Controllers
         [HttpPost]
         public CheckGPTResponse CheckGPTStatus(CheckGPTRequest req)
         {
+            if (req.RequestId == 0)
+                return new CheckGPTResponse { Done = true, IsError = true };
             var res = _transmitterHelper.CheckGPT(req.RequestId);
             return res;
         }

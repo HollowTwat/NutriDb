@@ -87,6 +87,8 @@ namespace NutriDbService.Helpers
                     {
                         send = false;
                         req.Answer = lastreq.Answer;
+                        req.Done = true;
+                        req.Iserror = false;
                     }
                     break;
                 default:
