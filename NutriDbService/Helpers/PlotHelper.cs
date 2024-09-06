@@ -1,13 +1,12 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using OxyPlot.Axes;
-using OxyPlot.Series;
-using OxyPlot;
 using System;
 using System.IO;
 using System.Threading.Tasks;
 using Telegram.Bot;
-using OxyPlot.SkiaSharp;
+using System.Drawing.Imaging;
+using System.Drawing;
+using System.Linq;
 
 namespace NutriDbService.Helpers
 {
@@ -22,7 +21,11 @@ namespace NutriDbService.Helpers
         public void SendPlot(decimal[] values, string[] labels, long userTgId)
         {
             string filePath = $"{Guid.NewGuid().ToString()}.png";
-            filePath = "barchart.png";
+
+            string homePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            filePath = Path.Combine(homePath, "barchart.png");
+
+
             CreateBarChart(values, labels, filePath);
             SendPhotoAsync(userTgId, filePath).GetAwaiter().GetResult();
             System.IO.File.Delete(filePath);
@@ -60,165 +63,135 @@ namespace NutriDbService.Helpers
 
         public static void CreateBarChart(decimal[] values, string[] labels, string filePath)
         {
-            // Создаем модель графика
-            var plotModel = new PlotModel { Title = "Bar Chart" };
+            int width = 600;
+            int height = 400;
 
-            // Определяем ось X как категорию
-            var categoryAxis = new CategoryAxis { Position = AxisPosition.Bottom, Angle = 45 };
-            categoryAxis.Labels.AddRange(labels);
-            plotModel.Axes.Add(categoryAxis);
+            // Создание битмапа 
+            using Bitmap bitmap = new Bitmap(width, height);
+            using Graphics graphics = Graphics.FromImage(bitmap);
 
-            // Определяем ось Y как число
-            var valueAxis = new LinearAxis { Position = AxisPosition.Left, MinimumPadding = 0, AbsoluteMinimum = 0 };
-            plotModel.Axes.Add(valueAxis);
+            // Заполнение фона белым цветом
+            graphics.Clear(System.Drawing.Color.White);
 
-            // Создаем столбчатую диаграмму и добавляем значения
-            var barSeries = new BarSeries();
+            // Перья для осей и баров
+            Pen axisPen = new Pen(System.Drawing.Color.Black, 2);
+            Brush barBrush = new SolidBrush(System.Drawing.Color.LightBlue);
+            Brush textBrush = new SolidBrush(Color.Black);
+
+            Font font = new Font("Arial", 10);
+
+            // Значения для начальных отступов
+            int margin = 40;
+            int barWidth = (width - 2 * margin) / values.Length;
+            int maxHeight = height - 2 * margin;
+
+            decimal maxValue = values.Max();
+
+            // Рисуем оси
+            graphics.DrawLine(axisPen, margin, height - margin, width - margin, height - margin); // X-axis
+            graphics.DrawLine(axisPen, margin, height - margin, margin, margin); // Y-axis
+
             for (int i = 0; i < values.Length; i++)
             {
-                barSeries.Items.Add(new BarItem { Value = (double)values[i] });
+                // Высота баров в зависимости от значений
+                int barHeight = (int)(values[i] / maxValue * maxHeight);
+
+                // Координаты баров
+                int x = margin + i * barWidth;
+                int y = height - margin - barHeight;
+
+                // Рисуем бары
+                graphics.FillRectangle(barBrush, x, y, barWidth - 10, barHeight);
+
+                // Добавляем метки по оси X
+                graphics.DrawString(labels[i], font, textBrush, x, height - margin + 5);
             }
-            plotModel.Series.Add(barSeries);
 
-            // Убедитесь, что путь к файлу существует и папки все доступны
-            //Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), filePath));
-
-            filePath=Path.Combine(Path.GetTempPath(), filePath);
-            // Экспортируем диаграмму в формате PNG
-            PngExporter.Export(plotModel, filePath, 600, 400);
+            // Сохранение битмапа в файл
+            bitmap.Save(filePath, ImageFormat.Png);
         }
-
-        //static void CreateBarChart(decimal[] values, string[] labels, string filePath)
-        //{
-        //    var plt = new ScottPlot.Plot();
-
-        //    // Добавить столбцы данные
-        //    var bar = plt.AddBar(values.Select(x => (double)x).ToArray());
-
-        //    // Настройка оси X с метками
-        //    plt.XTicks(labels);
-
-        //    // Заголовок и ограничения для диаграммы
-        //    plt.Title("Неделя");
-        //    plt.YLabel("ККалории");
-
-        //    // Убедитесь, что путь к файлу существует и доступен
-        //    //Directory.CreateDirectory(Path.GetDirectoryName(filePath));
-
-        //    // Сохранить изображение диаграммы в файл
-        //    plt.SaveFig(filePath);
-        //}
-
-
-        //static void CreateBarChart(decimal[] values, string[] labels, string filePath)
-        //{
-        //    int width = 600;
-        //    int height = 400;
-        //    int barWidth = 60;
-        //    int spaceBetweenBars = 20;
-        //    int chartHeight = 300;
-
-        //    using var bitmap = new SKBitmap(width, height);
-        //    using var canvas = new SKCanvas(bitmap);
-        //    using var paint = new SKPaint
-        //    {
-        //        TextSize = 10,
-        //        IsAntialias = true,
-        //        Color = new SKColor(0, 0, 0),
-        //        IsStroke = false
-        //    };
-
-        //    canvas.Clear(SKColors.White);
-
-        //    decimal minValue = 0;
-        //    decimal maxValue = decimal.MinValue;
-        //    foreach (decimal value in values)
-        //    {
-        //        if (value > maxValue) maxValue = value;
-        //    }
-
-        //    for (int i = 0; i < values.Length; i++)
-        //    {
-        //        decimal value = values[i];
-        //        decimal proportion = value / maxValue;
-        //        int barHeight = (int)(proportion * chartHeight);
-        //        int x = (i * (barWidth + spaceBetweenBars)) + spaceBetweenBars;
-        //        int y = height - barHeight - 50;
-
-        //        using var barPaint = new SKPaint
-        //        {
-        //            Color = SKColors.Blue,
-        //            IsStroke = false
-        //        };
-        //        canvas.DrawRect(x, y, barWidth, barHeight, barPaint);
-
-        //        string label = labels[i];
-        //        canvas.DrawText(label, x, height - 45, paint);
-
-        //        string valueLabel = value.ToString("0.0");
-        //        float valueLabelWidth = paint.MeasureText(valueLabel);
-        //        float valueX = x + (barWidth / 2) - (valueLabelWidth / 2);
-        //        float valueY = y - 20;
-        //        canvas.DrawText(valueLabel, valueX, valueY, paint);
-        //    }
-
-        //    using var image = SKImage.FromBitmap(bitmap);
-        //    using var data = image.Encode(SKEncodedImageFormat.Png, 100);
-        //    using var stream = File.OpenWrite(filePath);
-        //    data.SaveTo(stream);
-        //}
-
-        //private void CreateBarChart(decimal[] values, string[] labels, string filePath)
-        //{
-        //    try
-        //    {
-        //        int width = 600;
-        //        int height = 400;
-        //        int barWidth = 60;
-        //        int spaceBetweenBars = 20;
-        //        int chartHeight = 300;
-
-        //        using var bitmap = new Bitmap(width, height);
-        //        using var graphics = Graphics.FromImage(bitmap);
-        //        using var font = new Font("Arial", 10);
-
-        //        graphics.Clear(System.Drawing.Color.White);
-
-        //        decimal minValue = 0;
-        //        decimal maxValue = decimal.MinValue;
-        //        foreach (decimal value in values)
-        //        {
-        //            if (value > maxValue) maxValue = value;
-        //        }
-
-        //        for (int i = 0; i < values.Length; i++)
-        //        {
-        //            decimal value = values[i];
-        //            decimal proportion = value / maxValue;
-        //            int barHeight = (int)(proportion * chartHeight);
-        //            int x = (i * (barWidth + spaceBetweenBars)) + spaceBetweenBars;
-        //            int y = height - barHeight - 50;
-
-        //            using var brush = new SolidBrush(System.Drawing.Color.Blue);
-        //            graphics.FillRectangle(brush, x, y, barWidth, barHeight);
-
-        //            string label = labels[i];
-        //            graphics.DrawString(label, font, Brushes.Black, x, height - 45);
-
-        //            string valueLabel = value.ToString("0.0");
-        //            float valueLabelWidth = graphics.MeasureString(valueLabel, font).Width;
-        //            float valueX = x + (barWidth / 2) - (valueLabelWidth / 2);
-        //            float valueY = y - 20;
-        //            graphics.DrawString(valueLabel, font, Brushes.Black, valueX, valueY);
-        //        }
-        //        bitmap.Save(filePath, ImageFormat.Png);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
-        //        throw;
-        //    }
-        //}
     }
+    //public static void CreateBarChart(decimal[] values, string[] labels, string filePath)
+    //{
+    //    // Создаем модель графика
+    //    var plotModel = new PlotModel { Title = "Bar Chart" };
 
+    //    // Определяем ось X как категорию
+    //    var categoryAxis = new CategoryAxis { Position = AxisPosition.Bottom, Angle = 45 };
+    //    categoryAxis.Labels.AddRange(labels);
+    //    plotModel.Axes.Add(categoryAxis);
+
+    //    // Определяем ось Y как число
+    //    var valueAxis = new LinearAxis { Position = AxisPosition.Left, MinimumPadding = 0, AbsoluteMinimum = 0 };
+    //    plotModel.Axes.Add(valueAxis);
+
+    //    // Создаем столбчатую диаграмму и добавляем значения
+    //    var barSeries = new BarSeries();
+    //    for (int i = 0; i < values.Length; i++)
+    //    {
+    //        barSeries.Items.Add(new BarItem { Value = (double)values[i] });
+    //    }
+    //    plotModel.Series.Add(barSeries);
+
+    //    // Убедитесь, что путь к файлу существует и папки все доступны
+    //    //Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), filePath));
+
+
+    //    // Экспортируем диаграмму в формате PNG
+    //    PngExporter.Export(plotModel, filePath, 600, 400);
+    //}
+
+
+    //private void CreateBarChart(decimal[] values, string[] labels, string filePath)
+    //{
+    //    try
+    //    {
+    //        int width = 600;
+    //        int height = 400;
+    //        int barWidth = 60;
+    //        int spaceBetweenBars = 20;
+    //        int chartHeight = 300;
+
+    //        using var bitmap = new Bitmap(width, height);
+    //        using var graphics = Graphics.FromImage(bitmap);
+    //        using var font = new Font("Arial", 10);
+
+    //        graphics.Clear(System.Drawing.Color.White);
+
+    //        decimal minValue = 0;
+    //        decimal maxValue = decimal.MinValue;
+    //        foreach (decimal value in values)
+    //        {
+    //            if (value > maxValue) maxValue = value;
+    //        }
+
+    //        for (int i = 0; i < values.Length; i++)
+    //        {
+    //            decimal value = values[i];
+    //            decimal proportion = value / maxValue;
+    //            int barHeight = (int)(proportion * chartHeight);
+    //            int x = (i * (barWidth + spaceBetweenBars)) + spaceBetweenBars;
+    //            int y = height - barHeight - 50;
+
+    //            using var brush = new SolidBrush(System.Drawing.Color.Blue);
+    //            graphics.FillRectangle(brush, x, y, barWidth, barHeight);
+
+    //            string label = labels[i];
+    //            graphics.DrawString(label, font, Brushes.Black, x, height - 45);
+
+    //            string valueLabel = value.ToString("0.0");
+    //            float valueLabelWidth = graphics.MeasureString(valueLabel, font).Width;
+    //            float valueX = x + (barWidth / 2) - (valueLabelWidth / 2);
+    //            float valueY = y - 20;
+    //            graphics.DrawString(valueLabel, font, Brushes.Black, valueX, valueY);
+    //        }
+    //        bitmap.Save(filePath, ImageFormat.Png);
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        _logger.LogError(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
+    //        throw;
+    //    }
+    //}
 }
+
