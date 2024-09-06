@@ -748,7 +748,7 @@ namespace NutriDbService.Controllers
                     values[i - 1] = todaykk;
                 }
                 if (values.Any(x => x > 0))
-                    _plotHelper.SendPlot(values, labels, 389054202);
+                    _plotHelper.SendPlot(values, labels, userTgId);
                 return Ok(true);
             }
             catch (Exception ex)
