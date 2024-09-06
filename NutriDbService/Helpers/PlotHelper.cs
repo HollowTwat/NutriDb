@@ -1,11 +1,13 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using ScottPlot;
+using OxyPlot.Axes;
+using OxyPlot.Series;
+using OxyPlot;
 using System;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Telegram.Bot;
+using OxyPlot.SkiaSharp;
 
 namespace NutriDbService.Helpers
 {
@@ -19,10 +21,11 @@ namespace NutriDbService.Helpers
         }
         public void SendPlot(decimal[] values, string[] labels, long userTgId)
         {
-            var filepath = $"{Guid.NewGuid().ToString()}.png";
-            CreateBarChart(values, labels, filepath);
-            SendPhotoAsync(userTgId, filepath).GetAwaiter().GetResult();
-            System.IO.File.Delete(filepath);
+            string filePath = $"{Guid.NewGuid().ToString()}.png";
+             filePath = "barchart.png";
+            CreateBarChart(values, labels, filePath);
+            SendPhotoAsync(userTgId, filePath).GetAwaiter().GetResult();
+            System.IO.File.Delete(filePath);
         }
         private async Task SendPhotoAsync(long chatId, string filePath)
         {
@@ -55,26 +58,55 @@ namespace NutriDbService.Helpers
             }
         }
 
-        static void CreateBarChart(decimal[] values, string[] labels, string filePath)
+        public static void CreateBarChart(decimal[] values, string[] labels, string filePath)
         {
-            var plt = new ScottPlot.Plot();
+            // Создаем модель графика
+            var plotModel = new PlotModel { Title = "Bar Chart" };
 
-            // Добавить столбцы данные
-            var bar = plt.AddBar(values.Select(x => (double)x).ToArray());
+            // Определяем ось X как категорию
+            var categoryAxis = new CategoryAxis { Position = AxisPosition.Bottom, Angle = 45 };
+            categoryAxis.Labels.AddRange(labels);
+            plotModel.Axes.Add(categoryAxis);
 
-            // Настройка оси X с метками
-            plt.XTicks(labels);
+            // Определяем ось Y как число
+            var valueAxis = new LinearAxis { Position = AxisPosition.Left, MinimumPadding = 0, AbsoluteMinimum = 0 };
+            plotModel.Axes.Add(valueAxis);
 
-            // Заголовок и ограничения для диаграммы
-            plt.Title("Неделя");
-            plt.YLabel("ККалории");
+            // Создаем столбчатую диаграмму и добавляем значения
+            var barSeries = new BarSeries();
+            for (int i = 0; i < values.Length; i++)
+            {
+                barSeries.Items.Add(new BarItem { Value = (double)values[i] });
+            }
+            plotModel.Series.Add(barSeries);
 
-            // Убедитесь, что путь к файлу существует и доступен
-            //Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+            // Убедитесь, что путь к файлу существует и папки все доступны
+            Directory.CreateDirectory(Path.GetDirectoryName(filePath));
 
-            // Сохранить изображение диаграммы в файл
-            plt.SaveFig(filePath);
+            // Экспортируем диаграмму в формате PNG
+            PngExporter.Export(plotModel, filePath, 600, 400);
         }
+
+        //static void CreateBarChart(decimal[] values, string[] labels, string filePath)
+        //{
+        //    var plt = new ScottPlot.Plot();
+
+        //    // Добавить столбцы данные
+        //    var bar = plt.AddBar(values.Select(x => (double)x).ToArray());
+
+        //    // Настройка оси X с метками
+        //    plt.XTicks(labels);
+
+        //    // Заголовок и ограничения для диаграммы
+        //    plt.Title("Неделя");
+        //    plt.YLabel("ККалории");
+
+        //    // Убедитесь, что путь к файлу существует и доступен
+        //    //Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+
+        //    // Сохранить изображение диаграммы в файл
+        //    plt.SaveFig(filePath);
+        //}
 
 
         //static void CreateBarChart(decimal[] values, string[] labels, string filePath)
