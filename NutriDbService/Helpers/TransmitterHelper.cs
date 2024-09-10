@@ -51,6 +51,10 @@ namespace NutriDbService.Helpers
                     reqparams.id = request.UserTgId.ToString();
                     reqparams.outputtype = String.IsNullOrEmpty(request.OutputType) == true ? "0" : request.OutputType;
                     break;
+                case "etik":
+                    reqparams.url = request.Question.ToString();
+                    reqparams.id = request.UserTgId.ToString();
+                    break;
                 case "edit_oga":
                     reqparams.url = request.Question.ToString();
                     reqparams.id = request.UserTgId.ToString();
