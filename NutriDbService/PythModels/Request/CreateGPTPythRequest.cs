@@ -8,7 +8,7 @@
 
         public string url { get; set; }
 
-        public string oldmeal { get; set; }
+        public string extra { get; set; }
 
         public string assistanttype { get; set; }
 

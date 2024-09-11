@@ -54,17 +54,18 @@ namespace NutriDbService.Helpers
                 case "etik":
                     reqparams.url = request.Question.ToString();
                     reqparams.id = request.UserTgId.ToString();
+                    reqparams.extra = request.Extra.ToString();
                     break;
                 case "edit_oga":
                     reqparams.url = request.Question.ToString();
                     reqparams.id = request.UserTgId.ToString();
-                    reqparams.oldmeal = request.Oldmeal.ToString();
+                    reqparams.extra = request.Extra.ToString();
                     reqparams.outputtype = String.IsNullOrEmpty(request.OutputType) == true ? "0" : request.OutputType;
                     break;
                 case "edit_txt":
                     reqparams.txt = request.Question.ToString();
                     reqparams.id = request.UserTgId.ToString();
-                    reqparams.oldmeal = request.Oldmeal.ToString();
+                    reqparams.extra = request.Extra.ToString();
                     reqparams.outputtype = String.IsNullOrEmpty(request.OutputType) == true ? "0" : request.OutputType;
                     break;
                 case "day1/yapp_oga":

@@ -6,7 +6,7 @@
 
         public string Question { get; set; }
 
-        public string Oldmeal { get; set; }
+        public string Extra { get; set; }
 
         public string Type { get; set; }
 
