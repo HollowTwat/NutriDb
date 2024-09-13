@@ -57,12 +57,14 @@ namespace NutriDbService.Helpers
                     reqparams.extra = request.Extra.ToString();
                     break;
                 case "edit_oga":
+                case "recipe_oga":
                     reqparams.url = request.Question.ToString();
                     reqparams.id = request.UserTgId.ToString();
                     reqparams.extra = request.Extra.ToString();
                     reqparams.outputtype = String.IsNullOrEmpty(request.OutputType) == true ? "0" : request.OutputType;
                     break;
                 case "edit_txt":
+                case "recipe_txt":
                     reqparams.txt = request.Question.ToString();
                     reqparams.id = request.UserTgId.ToString();
                     reqparams.extra = request.Extra.ToString();
