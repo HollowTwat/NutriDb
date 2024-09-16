@@ -146,7 +146,7 @@ namespace NutriDbService.Helpers
                     mealresp = mealHelper.GetMeals(new GetUserMealsRequest { userTgId = ratereq.UserTgId, period = PythModels.Periods.mathweek });
                     break;
                 case "twone":
-                    mealresp = mealHelper.GetMeals(new GetUserMealsRequest { userTgId = ratereq.UserTgId, period = PythModels.Periods.mathweek });
+                    mealresp = mealHelper.GetMeals(new GetUserMealsRequest { userTgId = ratereq.UserTgId, period = PythModels.Periods.math3weeks });
                     break;
                 default:
                     throw new ArgumentNullException("Пустой AssistantType");
