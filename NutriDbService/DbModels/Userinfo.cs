@@ -17,5 +17,6 @@ namespace NutriDbService.DbModels
         public string EveningPing { get; set; }
         public decimal? Timeslide { get; set; }
         public decimal? Goalkk { get; set; }
+        public string Goal { get; set; }
     }
 }

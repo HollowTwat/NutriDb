@@ -18,11 +18,14 @@ namespace NutriDbService.Controllers
         private readonly ILogger<TransmitterController> _logger;
         private railwayContext _context;
         private TransmitterHelper _transmitterHelper;
-        public TransmitterController(railwayContext context, TransmitterHelper transmitterHelper, ILogger<TransmitterController> logger)
+        private MealHelper _mealHelper;
+
+        public TransmitterController(railwayContext context, TransmitterHelper transmitterHelper, ILogger<TransmitterController> logger, MealHelper mealHelper)
         {
             _context = context;
             _transmitterHelper = transmitterHelper;
             _logger = logger;
+            _mealHelper = mealHelper;
         }
 
         [HttpPost]
@@ -31,6 +34,27 @@ namespace NutriDbService.Controllers
             try
             {
                 _logger.LogWarning($"На вход пришло {Newtonsoft.Json.JsonConvert.SerializeObject(req)}");
+                var res = await _transmitterHelper.CreateGPTRequest(req);
+                if (res == 0)
+                    return new CreateGPTResponse { isError = true, RequestId = 0 };
+                return new CreateGPTResponse(res);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+                return new CreateGPTResponse() { isError = true };
+            }
+        }
+
+        [HttpPost]
+        public async Task<CreateGPTResponse> CreateGPTLongRateRequset(RateRequest rateReq)
+        {
+            try
+            {
+                _logger.LogWarning($"На вход пришло {Newtonsoft.Json.JsonConvert.SerializeObject(rateReq)}");
+
+                var req = _transmitterHelper.CreateRateRequest(rateReq, _mealHelper);
+
                 var res = await _transmitterHelper.CreateGPTRequest(req);
                 if (res == 0)
                     return new CreateGPTResponse { isError = true, RequestId = 0 };

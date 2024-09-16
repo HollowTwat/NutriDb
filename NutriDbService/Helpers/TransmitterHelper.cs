@@ -4,7 +4,9 @@ using Newtonsoft.Json;
 using NutriDbService.DbModels;
 using NutriDbService.PythModels.Request;
 using NutriDbService.PythModels.Response;
+using SixLabors.Fonts.Unicode;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -133,6 +135,25 @@ namespace NutriDbService.Helpers
                 _logger.LogError(ex, "упали при попытке получить статус");
                 return new CheckGPTResponse { IsError = true, Done = true, Response = new GPTResponse { pretty = "Мы упали" } };
             }
+        }
+
+        public CreateGPTNoCodeRequest CreateRateRequest(RateRequest ratereq, MealHelper mealHelper)
+        {
+            var mealresp = new List<MealResponse>();
+            switch (ratereq.AssistantType)
+            {
+                case "week":
+                    mealresp = mealHelper.GetMeals(new GetUserMealsRequest { userTgId = ratereq.UserTgId, period = PythModels.Periods.mathweek });
+                    break;
+                case "twone":
+                    mealresp = mealHelper.GetMeals(new GetUserMealsRequest { userTgId = ratereq.UserTgId, period = PythModels.Periods.mathweek });
+                    break;
+                default:
+                    throw new ArgumentNullException("Пустой AssistantType");
+            }
+            var gptRequest = new CreateGPTNoCodeRequest { AssistantType = ratereq.AssistantType, Type = "rate_any", UserTgId = ratereq.UserTgId, Question = Newtonsoft.Json.JsonConvert.SerializeObject(new GetMealResponse(mealresp)) };
+
+            return gptRequest;
         }
 
         public async Task<string> SendRequest(CreateGPTPythRequest reqparams, string reqUrl)

@@ -290,6 +290,10 @@ namespace NutriDbService.DbModels
                     .HasMaxLength(255)
                     .HasColumnName("gender");
 
+                entity.Property(e => e.Goal)
+                    .HasMaxLength(5)
+                    .HasColumnName("goal");
+
                 entity.Property(e => e.Goalkk)
                     .HasPrecision(10, 2)
                     .HasColumnName("goalkk");

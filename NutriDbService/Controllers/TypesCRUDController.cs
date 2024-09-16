@@ -178,69 +178,7 @@ namespace NutriDbService.Controllers
         {
             try
             {
-                var user = _context.Users.SingleOrDefault(x => x.TgId == req.userTgId);
-                if (user == null)
-                    throw new Exception($"I Cant Find User : {req.userTgId}");
-                //var inDay = (DayOfWeek)day;
-                var now = DateTime.UtcNow.ToLocalTime().AddHours(3).Date;
-                var startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-7).Date;
-                switch (req.period)
-                {
-                    case Periods.day:
-                        startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-1).Date;
-                        break;
-                    case Periods.week:
-                        startDate = GetFirstDayOfWeek(now);
-                        break;
-                    case Periods.mathweek:
-                        startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-7).Date;
-                        break;
-                    case Periods.math3weeks:
-                        startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-21).Date;
-                        break;
-                    case Periods.month:
-                        startDate = new DateTime(now.Year, now.Month, 1);
-                        break;
-                }
-                //var meals = _context.Meals.Where(x => x.UserId == user.Id && x.MealTime.Value.Date > startDate && x.MealTime.Value.DayOfWeek == (DayOfWeek)day).ToList();
-                var meals = _context.Meals.Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).ToList();
-                if (req.day != null)
-                {
-                    meals = meals.Where(x => x.MealTime.DayOfWeek == (DayOfWeek)req.day).ToList();
-                }
-                if (!String.IsNullOrEmpty(req.dayStr))
-                {
-                    meals = meals.Where(x => x.MealTime.Date == DateTime.ParseExact($"{req.dayStr}.{startDate.Year}", "dd.MM.yyyy", CultureInfo.InvariantCulture).Date).ToList();
-                }
-                if (req.typemeal != null)
-                {
-                    meals = meals.Where(x => x.Type == ((short)req.typemeal)).ToList();
-                }
-                var mealsId = meals.Select(x => x.Id).ToList();
-                var dishes = _context.Dishes.Where(x => mealsId.Contains(x.MealId));
-                var resp = new List<MealResponse>() { };
-                foreach (var meal in meals)
-                {
-
-                    resp.Add(new MealResponse()
-                    {
-                        mealId = meal.Id,
-                        eatedAt = meal.MealTime,
-                        userId = meal.UserId,
-                        meal = new PythModels.PythMeal
-                        {
-                            description = meal.Description,
-                            totalWeight = meal.Weight,
-                            type = (mealtype)meal.Type,
-                            food = dishes.Where(x => x.MealId == meal.Id).ToList().Select(x => new PythModels.PythFood()
-                            {
-                                description = x.Description,
-                                weight = x.Weight,
-                                nutritional_value = new PythModels.NutriProps(x.Fats, x.Carbs, x.Protein, x.Kkal)
-                            }).ToList(),
-                        }
-                    });
-                }
+                var resp = _mealHelper.GetMeals(req);
                 return Ok(Newtonsoft.Json.JsonConvert.SerializeObject(new GetMealResponse(resp)));
             }
             catch (Exception ex)
@@ -297,12 +235,7 @@ namespace NutriDbService.Controllers
             }
         }
 
-        private static DateTime GetFirstDayOfWeek(DateTime date)
-        {
-            DayOfWeek firstDay = DayOfWeek.Monday;
-            int diff = (7 + (date.DayOfWeek - firstDay)) % 7;
-            return date.AddDays(-1 * diff).Date;
-        }
+
 
         [HttpGet]
         public ActionResult<GetMealTotalResponse> GetUserMealsTotal(long userTgId, Periods period)
@@ -322,7 +255,7 @@ namespace NutriDbService.Controllers
                         startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-1).Date;
                         break;
                     case Periods.week:
-                        startDate = GetFirstDayOfWeek(now);
+                        startDate = MealHelper.GetFirstDayOfWeek(now);
                         break;
                     case Periods.mathweek:
                         startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-7).Date;
@@ -428,6 +361,9 @@ namespace NutriDbService.Controllers
                 string eveningPing = string.IsNullOrEmpty(req.Info["user_info_evening_ping"]) ? null : TimeOnly.TryParseExact(req.Info["user_info_evening_ping"], "HH:mm", out var e) == true ? req.Info["user_info_evening_ping"] : null;
                 decimal? timeslide = string.IsNullOrEmpty(req.Info["user_info_timeslide"]) ? null : decimal.Parse(req.Info["user_info_timeslide"]);
 
+                string goal = string.IsNullOrEmpty(req.Info["user_info_goal"]) ? null : req.Info["user_info_goal"];
+
+
                 if (usi == null)
                 {
                     _context.Userinfos.Add(new Userinfo
@@ -439,7 +375,7 @@ namespace NutriDbService.Controllers
                         Height = height,
                         Gender = gender,
                         Goalkk = goalkk,
-
+                        Goal = goal
                     });
                 }
                 else
@@ -453,6 +389,7 @@ namespace NutriDbService.Controllers
                     usi.MorningPing = morningPing;
                     usi.EveningPing = eveningPing;
                     usi.Timeslide = timeslide;
+                    usi.Goal = goal;
                     _context.Update(usi);
                 }
                 _context.SaveChanges();
@@ -525,6 +462,11 @@ namespace NutriDbService.Controllers
                     decimal? timeslide = req.Info.ContainsKey("user_info_timeslide") == true ? (req.Info.ContainsKey("user_info_timeslide") == true ? (string.IsNullOrEmpty(req.Info["user_info_timeslide"]) ? null : decimal.Parse(req.Info["user_info_timeslide"])) : null) : null;
                     if (timeslide != null)
                         usi.Timeslide = timeslide;
+
+                    string goal = req.Info.ContainsKey("user_info_goal") == true ? (string.IsNullOrEmpty(req.Info["user_info_goal"]) ? null : req.Info["user_info_goal"]) : null;
+                    if (goal != null)
+                        usi.Goal = goal;
+
 
                     _context.Update(usi);
                 }
