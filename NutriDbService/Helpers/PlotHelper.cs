@@ -81,17 +81,21 @@ namespace NutriDbService.Helpers
             int barWidth = (width - 2 * margin) / values.Length;
             int maxHeight = height - 2 * margin;
 
+            decimal goalDelta = 0.0m;
             decimal maxValue = values.Max();
 
             float goalYPos = 0;
             float goalHYPos = 0;
             float goalLYPos = 0;
-            if (goalkk != null && goalkk > 0 && goalkk <= maxValue)
+            if (goalkk != null && goalkk > 0)
             {
+                goalDelta = decimal.Round((decimal)goalkk * 0.1M, 0);
+                if (goalkk > maxValue)
+                    maxValue = (decimal)goalkk;
                 goalkk = Decimal.Round((decimal)goalkk, 0);
                 goalYPos = height - margin - ((float)goalkk / (float)maxValue * maxHeight);
-                goalHYPos = height - margin - ((float)(goalkk + goalkk * 0.1M) / (float)maxValue * maxHeight);
-                goalLYPos = height - margin - ((float)(goalkk - goalkk * 0.1M) / (float)maxValue * maxHeight);
+                goalHYPos = height - margin - ((float)(goalkk + goalDelta) / (float)maxValue * maxHeight);
+                goalLYPos = height - margin - ((float)(goalkk - goalDelta) / (float)maxValue * maxHeight);
             }
 
 
@@ -168,7 +172,7 @@ namespace NutriDbService.Helpers
 
                 const int labelPadding = 5;
 
-                if (goalkk != null && goalkk > 0 && goalkk <= maxValue)
+                if (goalkk != null && goalkk > 0)
                 {
                     ctx.DrawLine(Pens.Solid(Color.LightSeaGreen, 1), new PointF(margin, goalYPos), new PointF(width - margin, goalYPos));
                     ctx.DrawText(((decimal)goalkk).ToString("#"), font, Color.LightSeaGreen, new PointF(margin - textFromAxe, goalYPos - labelPadding));
@@ -181,7 +185,7 @@ namespace NutriDbService.Helpers
                         ctx.DrawLine(Pens.Solid(Color.Cyan, 1), new PointF(x, goalLYPos), new PointF(xEnd, goalLYPos));
                     }
                     // ctx.DrawLine(dashedPen, new PointF(margin, goalLYPos), new PointF(width - margin, goalLYPos));
-                    ctx.DrawText(((decimal)goalkk - 100).ToString("#"), font, Color.Black, new PointF(margin - textFromAxe, goalLYPos - labelPadding));
+                    ctx.DrawText(((decimal)goalkk - goalDelta).ToString("#"), font, Color.Black, new PointF(margin - textFromAxe, goalLYPos - labelPadding));
 
                     for (float x = margin; x < width - margin; x += dashLength + spaceLength)
                     {
@@ -189,7 +193,7 @@ namespace NutriDbService.Helpers
                         ctx.DrawLine(Pens.Solid(Color.Cyan, 1), new PointF(x, goalHYPos), new PointF(xEnd, goalHYPos));
                     }
                     //ctx.DrawLine(dashedPen, new PointF(margin, goalHYPos), new PointF(width - margin, goalHYPos));
-                    ctx.DrawText(((decimal)goalkk + 100).ToString("#"), font, Color.Black, new PointF(margin - textFromAxe, goalHYPos - labelPadding));
+                    ctx.DrawText(((decimal)goalkk + goalDelta).ToString("#"), font, Color.Black, new PointF(margin - textFromAxe, goalHYPos - labelPadding));
                 }
             });
 
