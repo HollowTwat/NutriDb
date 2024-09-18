@@ -151,7 +151,23 @@ namespace NutriDbService.Helpers
                 default:
                     throw new ArgumentNullException("Пустой AssistantType");
             }
-            var gptRequest = new CreateGPTNoCodeRequest { AssistantType = ratereq.AssistantType, Type = "rate_any", UserTgId = ratereq.UserTgId, Question = Newtonsoft.Json.JsonConvert.SerializeObject(new GetMealResponse(mealresp)) };
+            var useri = _nutriDbContext.Userinfos.Single(x => x.UserId == _nutriDbContext.Users.Single(x => x.TgId == ratereq.UserTgId).Id);
+            var ext = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, string>>(useri.Extra);
+            RateQuestion rateQuestion = new RateQuestion
+            {
+                food = Newtonsoft.Json.JsonConvert.SerializeObject(new GetMealResponse(mealresp)),
+                user_info = new QuesUserInfo
+                {
+                    age = useri.Age,
+                    target_calories = useri.Goalkk,
+                    bmi = string.IsNullOrEmpty(ext["user_info_bmi"]) ? null : decimal.Parse(ext["user_info_bmi"]),
+                    bmr = string.IsNullOrEmpty(ext["bmr"]) ? null : decimal.Parse(ext["bmr"]),
+                    allergies = string.IsNullOrEmpty(ext["user_info_meals_ban"]) ? null : ext["user_info_meals_ban"],
+                    gender = useri.Gender,
+                    goal = useri.Goal,
+                }
+            };
+            var gptRequest = new CreateGPTNoCodeRequest { AssistantType = ratereq.AssistantType, Type = "rate_any", UserTgId = ratereq.UserTgId, Question = Newtonsoft.Json.JsonConvert.SerializeObject(rateQuestion) };
 
             return gptRequest;
         }
