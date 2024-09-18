@@ -24,7 +24,11 @@ namespace NutriDbService.Helpers
         {
             _logger = serviceProvider.GetRequiredService<ILogger<TransmitterHelper>>(); ;
         }
-        public void SendPlot(decimal[] values, string[] labels, long userTgId)
+        public PlotHelper()
+        {
+            //_logger = serviceProvider.GetRequiredService<ILogger<TransmitterHelper>>(); ;
+        }
+        public void SendPlot(decimal[] values, string[] labels, long userTgId, decimal? goalkk)
         {
             string filePath = $"{Guid.NewGuid().ToString()}.png";
 
@@ -32,7 +36,7 @@ namespace NutriDbService.Helpers
             filePath = System.IO.Path.Combine(homePath, filePath);
 
 
-            CreateBarChart(values, labels, filePath);
+            CreateBarChart(values, labels, filePath, goalkk);
             SendPhotoAsync(userTgId, filePath).GetAwaiter().GetResult();
             System.IO.File.Delete(filePath);
         }
@@ -66,21 +70,37 @@ namespace NutriDbService.Helpers
                 throw;
             }
         }
-        public static void CreateBarChart(decimal[] values, string[] labels, string filePath)
+        public static void CreateBarChart(decimal[] values, string[] labels, string filePath, decimal? goalkk)
         {
-            int width = 600;
-            int height = 400;
-            int margin = 40;
+
+            int width = 800;
+            int height = 600;
+            int margin = 80;
+            int textFromAxe = 70;
+            int barSpace = 20;
             int barWidth = (width - 2 * margin) / values.Length;
             int maxHeight = height - 2 * margin;
 
             decimal maxValue = values.Max();
+
+            float goalYPos = 0;
+            float goalHYPos = 0;
+            float goalLYPos = 0;
+            if (goalkk != null && goalkk > 0 && goalkk <= maxValue)
+            {
+                goalkk = Decimal.Round((decimal)goalkk, 0);
+                goalYPos = height - margin - ((float)goalkk / (float)maxValue * maxHeight);
+                goalHYPos = height - margin - ((float)(goalkk + goalkk * 0.1M) / (float)maxValue * maxHeight);
+                goalLYPos = height - margin - ((float)(goalkk - goalkk * 0.1M) / (float)maxValue * maxHeight);
+            }
+
 
             // Создание битмапа 
             using var image = new Image<Rgba32>(width, height);
 
             // Настройки кисти и пера
             var pen = Pens.Solid(Color.Black, 2);
+            var dashedPen = Pens.Dash(Color.Cyan, 1);// { DashPattern = new float[] { 5, 5 } };
 
             // Загружаем системный шрифт
             var fontCollection = new FontCollection();
@@ -89,10 +109,9 @@ namespace NutriDbService.Helpers
             //FontFamily fontFamily = SystemFonts.Families.FirstOrDefault(f => f.Name == "Arial"); //?? SystemFonts.Collection.AddSystemFontCollection().Families.First();
             //Font font = fontFamily.CreateFont(11, SixLabors.Fonts.FontStyle.Regular);
 
-            var fontPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "Roboto-Black.ttf");
-            FontFamily fontFamily = fontCollection.Add(fontPath);
-            Font font = fontFamily.CreateFont(11, FontStyle.Regular);
-            Font axisFont = fontFamily.CreateFont(12, FontStyle.Bold);
+            //var fontPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "TTF","Roboto-Black.ttf");
+            var fontPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "TTF", "Roboto-Regular.ttf"); FontFamily fontFamily = fontCollection.Add(fontPath);
+            Font font = fontFamily.CreateFont(21, FontStyle.Italic);
             image.Mutate(ctx =>
             {
                 // Заполнение фона белым цветом
@@ -112,28 +131,65 @@ namespace NutriDbService.Helpers
                 }); // Y-Ось
 
                 // Получаем уникальные y значения и сортируем их
-                var uniqueValues = values.Select(v => Math.Round(v)).Distinct().OrderBy(v => v).ToArray();
-                foreach (var value in uniqueValues)
-                {
-                    float yPos = height - margin - ((float)value / (float)maxValue * maxHeight);
-                    ctx.DrawLine(pen, new PointF(margin - 5, yPos), new PointF(margin + 5, yPos));
+                //var uniqueValues = values.Select(v => Math.Round(v)).Distinct().OrderBy(v => v).ToArray();
+                //foreach (var value in uniqueValues)
+                //{
+                //    float yPos = height - margin - ((float)value / (float)maxValue * maxHeight);
+                //    ctx.DrawLine(pen, new PointF(margin - 5, yPos), new PointF(margin + 5, yPos));
 
-                    string label = value.ToString("0");
-                    ctx.DrawText(label, font, Color.Black, new PointF(5, yPos - 10));
-                }
+                //    string label = value.ToString("0");
+                //    ctx.DrawText(label, font, Color.Black, new PointF(5, yPos - 10));
+                //}
+                // Добавление цели goalkk и горизонтальной линии в пределах графика
 
+                // Отрисовка колонок
                 for (int i = 0; i < values.Length; i++)
                 {
-                    // Определение высоты баров
+                    var barCollor = Color.LightSeaGreen;
                     float barHeight = (float)(values[i] / maxValue * maxHeight);
+                    if (goalkk != null && goalkk > 0 && goalkk <= maxValue)
+                    {
+                        if (height - margin - barHeight < goalHYPos)
+                            barCollor = Color.OrangeRed;
+                        if (height - margin - barHeight > goalLYPos)
+                            barCollor = Color.LightBlue;
+                    }
+                    // Определение высоты баров
+
                     var barRectangle = new RectangularPolygon(
-                                      x: margin + i * barWidth,
+                                      x: margin + barSpace + i * barWidth,
                                       y: height - margin - barHeight,
-                                      width: barWidth - 10,
+                                      width: barWidth - barSpace,
                                       height: barHeight);
 
-                    ctx.Fill(Color.LightBlue, barRectangle);
-                    ctx.DrawText(labels[i], font, Color.Black, new PointF(margin + i * barWidth + (barWidth - 10) / 4, height - margin + 5));
+                    ctx.Fill(barCollor, barRectangle);
+                    ctx.DrawText(labels[i], font, Color.Black, new PointF(margin + i * barWidth + (barWidth - barSpace) / 4, height - margin + 5));
+                }
+
+                const int labelPadding = 5;
+
+                if (goalkk != null && goalkk > 0 && goalkk <= maxValue)
+                {
+                    ctx.DrawLine(Pens.Solid(Color.LightSeaGreen, 1), new PointF(margin, goalYPos), new PointF(width - margin, goalYPos));
+                    ctx.DrawText(((decimal)goalkk).ToString("#"), font, Color.LightSeaGreen, new PointF(margin - textFromAxe, goalYPos - labelPadding));
+
+                    float dashLength = 10;
+                    float spaceLength = 10;
+                    for (float x = margin; x < width - margin; x += dashLength + spaceLength)
+                    {
+                        float xEnd = Math.Min(x + dashLength, width - margin);
+                        ctx.DrawLine(Pens.Solid(Color.Cyan, 1), new PointF(x, goalLYPos), new PointF(xEnd, goalLYPos));
+                    }
+                    // ctx.DrawLine(dashedPen, new PointF(margin, goalLYPos), new PointF(width - margin, goalLYPos));
+                    ctx.DrawText(((decimal)goalkk - 100).ToString("#"), font, Color.Black, new PointF(margin - textFromAxe, goalLYPos - labelPadding));
+
+                    for (float x = margin; x < width - margin; x += dashLength + spaceLength)
+                    {
+                        float xEnd = Math.Min(x + dashLength, width - margin);
+                        ctx.DrawLine(Pens.Solid(Color.Cyan, 1), new PointF(x, goalHYPos), new PointF(xEnd, goalHYPos));
+                    }
+                    //ctx.DrawLine(dashedPen, new PointF(margin, goalHYPos), new PointF(width - margin, goalHYPos));
+                    ctx.DrawText(((decimal)goalkk + 100).ToString("#"), font, Color.Black, new PointF(margin - textFromAxe, goalHYPos - labelPadding));
                 }
             });
 
@@ -148,17 +204,17 @@ namespace NutriDbService.Helpers
 
 
 
-    // Рисуем вертикальную подпись оси Y
-    //var yAxisText = "Frequency";
-    //var size = TextMeasurer.MeasureAdvance(yAxisText, new TextOptions(axisFont));
-    //float titleX = margin - 30;
-    //float titleY = height / 2;
+// Рисуем вертикальную подпись оси Y
+//var yAxisText = "Frequency";
+//var size = TextMeasurer.MeasureAdvance(yAxisText, new TextOptions(axisFont));
+//float titleX = margin - 30;
+//float titleY = height / 2;
 
-    //PointF origin = new PointF(titleX, titleY);
-    //Matrix3x2 transformMatrix = Matrix3x2.CreateRotation(-MathF.PI / 2, origin);
-    //var options = new DrawingOptions
-    //{
-    //    GraphicsOptions = new GraphicsOptions { Antialias = true },
-    //    Transform = transformMatrix
-    //};
+//PointF origin = new PointF(titleX, titleY);
+//Matrix3x2 transformMatrix = Matrix3x2.CreateRotation(-MathF.PI / 2, origin);
+//var options = new DrawingOptions
+//{
+//    GraphicsOptions = new GraphicsOptions { Antialias = true },
+//    Transform = transformMatrix
+//};
 

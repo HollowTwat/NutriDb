@@ -660,7 +660,7 @@ namespace NutriDbService.Controllers
                 var user = _context.Users.SingleOrDefault(x => x.TgId == userTgId);
                 if (user == null)
                     throw new Exception($"I Cant Find User : {userTgId}");
-
+                var goalkk=_context.Userinfos.SingleOrDefault(x=>x.UserId==user.Id).Goalkk;
                 DateTime startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-7).Date;
                 int daysinperiod = 0;
                 var now = DateTime.UtcNow.ToLocalTime().AddHours(3).Date;
@@ -690,7 +690,7 @@ namespace NutriDbService.Controllers
                     values[i - 1] = todaykk;
                 }
                 if (values.Any(x => x > 0))
-                    _plotHelper.SendPlot(values, labels, userTgId);
+                    _plotHelper.SendPlot(values, labels, userTgId,goalkk);
                 return Ok(true);
             }
             catch (Exception ex)
