@@ -155,7 +155,7 @@ namespace NutriDbService.Helpers
             var ext = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, string>>(useri.Extra);
             RateQuestion rateQuestion = new RateQuestion
             {
-                food = Newtonsoft.Json.JsonConvert.SerializeObject(new GetMealResponse(mealresp)),
+                food = Newtonsoft.Json.JsonConvert.SerializeObject(new GetMealResponseNoPretty { Meals = mealresp }),
                 user_info = new QuesUserInfo
                 {
                     age = useri.Age,

@@ -6,9 +6,13 @@ using System.Reflection;
 
 namespace NutriDbService.PythModels.Response
 {
-    public class GetMealResponse
+    public class GetMealResponseNoPretty
     {
         public List<MealResponse> Meals { get; set; }
+    }
+    public class GetMealResponse: GetMealResponseNoPretty
+    {
+       // public List<MealResponse> Meals { get; set; }
 
         public string pretty { get; set; }
         public static string GetEnumDescription(Enum value)
