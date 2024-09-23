@@ -341,8 +341,6 @@ namespace NutriDbService.Controllers
                 return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
         }
-
-        #endregion
         [HttpPost]
         public ActionResult<bool> GetUserWeekPlot(long userTgId)
         {
@@ -700,6 +698,9 @@ namespace NutriDbService.Controllers
                 return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
         }
+        #endregion
+
+
         #endregion
     }
 }
