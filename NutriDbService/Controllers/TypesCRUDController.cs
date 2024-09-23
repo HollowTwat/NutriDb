@@ -235,8 +235,6 @@ namespace NutriDbService.Controllers
             }
         }
 
-
-
         [HttpGet]
         public ActionResult<GetMealTotalResponse> GetUserMealsTotal(long userTgId, Periods period)
         {
@@ -295,7 +293,27 @@ namespace NutriDbService.Controllers
             }
         }
 
+        [HttpPost]
+        public ActionResult<int> CreateMealFromUnicode(string request)
+        {
+            try
+            {
+                request = request.Replace("\\\"", "\"");
+                request = Regex.Unescape(request);
+                var inp = Newtonsoft.Json.JsonConvert.DeserializeObject<EditMealRequest>(request);
+                var res = _mealHelper.CreateMeal(inp);
+                return Ok(res);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+                return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
+            }
+        }
 
+        #endregion
+
+        #region User
         [HttpGet]
         public ActionResult<GetMealResponse> EnsureUser(long userTgId, string userName)
         {
@@ -324,16 +342,47 @@ namespace NutriDbService.Controllers
             }
         }
 
+        #endregion
         [HttpPost]
-        public ActionResult<int> CreateMealFromUnicode(string request)
+        public ActionResult<bool> GetUserWeekPlot(long userTgId)
         {
             try
             {
-                request = request.Replace("\\\"", "\"");
-                request = Regex.Unescape(request);
-                var inp = Newtonsoft.Json.JsonConvert.DeserializeObject<EditMealRequest>(request);
-                var res = _mealHelper.CreateMeal(inp);
-                return Ok(res);
+                var user = _context.Users.SingleOrDefault(x => x.TgId == userTgId);
+                if (user == null)
+                    throw new Exception($"I Cant Find User : {userTgId}");
+                var goalkk = _context.Userinfos.SingleOrDefault(x => x.UserId == user.Id).Goalkk;
+                DateTime startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-7).Date;
+                int daysinperiod = 0;
+                var now = DateTime.UtcNow.ToLocalTime().AddHours(3).Date;
+
+                daysinperiod = now.Day - startDate.Day;
+                var meals = _context.Meals.Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).ToList();
+                var dishes = _context.Dishes.Where(x => meals.Select(x => x.Id).Contains(x.MealId)).ToList();
+                //List<(string, decimal)> plotPairs = new List<(string, decimal)>();
+                decimal[] values = new decimal[7];
+                string[] labels = new string[7];
+                for (var i = 1; i <= 7; i++)
+                {
+                    var ndate = startDate.AddDays(i);
+                    var todaymeals = meals.Where(x => x.MealTime.Date == ndate.Date);
+                    decimal todaykk = 0.0m;
+
+                    if (todaymeals.Any())
+                    {
+                        var todayDishes = dishes.Where(x => todaymeals.Select(x => x.Id).Contains(x.MealId));
+
+                        foreach (var dish in todayDishes)
+                        {
+                            todaykk += dish.Kkal;
+                        }
+                    }
+                    labels[i - 1] = ndate.Date.ToString("dd.MM");
+                    values[i - 1] = todaykk;
+                }
+                if (values.Any(x => x > 0))
+                    _plotHelper.SendPlot(values, labels, userTgId, goalkk);
+                return Ok(true);
             }
             catch (Exception ex)
             {
@@ -341,6 +390,7 @@ namespace NutriDbService.Controllers
                 return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
         }
+
 
         [HttpPost]
         public ActionResult<bool> AddUserExtraInfo(AddUserExtraRequest req)
@@ -572,8 +622,8 @@ namespace NutriDbService.Controllers
 
                 var slicePing = ping.AddHours(double.Parse(usi.Timeslide.ToString()));
                 var correct = (slicePing - ping).TotalDays;
-                return new GetUserPingResponse { MskTime = $"{slicePing.Hour}:{slicePing.Minute}", DayCorrection = (short)correct };
-
+                return new GetUserPingResponse { MskTime = slicePing.ToString("HH:mm"), DayCorrection = (short)correct };
+                //$"{slicePing.Hour}:{slicePing.Minute}"
             }
             catch (Exception ex)
             {
@@ -601,7 +651,7 @@ namespace NutriDbService.Controllers
 
                 var slicePing = ping.AddHours(double.Parse(usi.Timeslide.ToString()));
                 var correct = (slicePing - ping).TotalDays;
-                return new GetUserPingResponse { MskTime = $"{slicePing.Hour}:{slicePing.Minute}", DayCorrection = (short)correct };
+                return new GetUserPingResponse { MskTime = slicePing.ToString("HH:mm"), DayCorrection = (short)correct };
 
             }
             catch (Exception ex)
@@ -651,55 +701,5 @@ namespace NutriDbService.Controllers
             }
         }
         #endregion
-        #endregion
-        [HttpPost]
-        public ActionResult<bool> GetUserWeekPlot(long userTgId)
-        {
-            try
-            {
-                var user = _context.Users.SingleOrDefault(x => x.TgId == userTgId);
-                if (user == null)
-                    throw new Exception($"I Cant Find User : {userTgId}");
-                var goalkk=_context.Userinfos.SingleOrDefault(x=>x.UserId==user.Id).Goalkk;
-                DateTime startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-7).Date;
-                int daysinperiod = 0;
-                var now = DateTime.UtcNow.ToLocalTime().AddHours(3).Date;
-
-                daysinperiod = now.Day - startDate.Day;
-                var meals = _context.Meals.Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).ToList();
-                var dishes = _context.Dishes.Where(x => meals.Select(x => x.Id).Contains(x.MealId)).ToList();
-                //List<(string, decimal)> plotPairs = new List<(string, decimal)>();
-                decimal[] values = new decimal[7];
-                string[] labels = new string[7];
-                for (var i = 1; i <= 7; i++)
-                {
-                    var ndate = startDate.AddDays(i);
-                    var todaymeals = meals.Where(x => x.MealTime.Date == ndate.Date);
-                    decimal todaykk = 0.0m;
-
-                    if (todaymeals.Any())
-                    {
-                        var todayDishes = dishes.Where(x => todaymeals.Select(x => x.Id).Contains(x.MealId));
-
-                        foreach (var dish in todayDishes)
-                        {
-                            todaykk += dish.Kkal;
-                        }
-                    }
-                    labels[i - 1] = ndate.Date.ToString("dd.MM");
-                    values[i - 1] = todaykk;
-                }
-                if (values.Any(x => x > 0))
-                    _plotHelper.SendPlot(values, labels, userTgId,goalkk);
-                return Ok(true);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ex.Message);
-                return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
-            }
-        }
-
-
     }
 }
