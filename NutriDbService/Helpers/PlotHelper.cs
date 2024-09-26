@@ -75,11 +75,11 @@ namespace NutriDbService.Helpers
 
             int width = 800;
             int height = 600;
-            int margin = 80;
-            int textFromAxe = 70;
+            int margin = 150;
+            int textFromAxe = 50;
             int barSpace = 20;
             int barWidth = (width - 2 * margin) / values.Length;
-            int maxHeight = height - 2 * margin;
+            int maxHeight = height - 2 * margin - 40;
 
             decimal goalDelta = 0.0m;
             decimal maxValue = values.Max();
@@ -115,7 +115,9 @@ namespace NutriDbService.Helpers
 
             //var fontPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "TTF","Roboto-Black.ttf");
             var fontPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "TTF", "Roboto-Regular.ttf"); FontFamily fontFamily = fontCollection.Add(fontPath);
-            Font font = fontFamily.CreateFont(21, FontStyle.Italic);
+            Font font = fontFamily.CreateFont(19, FontStyle.Italic);
+            Font smallfont = fontFamily.CreateFont(10, FontStyle.Italic);
+            Font medfont = fontFamily.CreateFont(13, FontStyle.Italic);
             image.Mutate(ctx =>
             {
                 // Заполнение фона белым цветом
@@ -133,6 +135,7 @@ namespace NutriDbService.Helpers
                 new PointF(margin, height - margin),
                 new PointF(margin, margin)
                 }); // Y-Ось
+                ctx.DrawText("ккал", medfont, Color.Black, new PointF(margin - textFromAxe + 17, margin));
 
                 // Получаем уникальные y значения и сортируем их
                 //var uniqueValues = values.Select(v => Math.Round(v)).Distinct().OrderBy(v => v).ToArray();
@@ -167,6 +170,11 @@ namespace NutriDbService.Helpers
                                       height: barHeight);
 
                     ctx.Fill(barCollor, barRectangle);
+                    if (barCollor == Color.LightBlue)
+                        ctx.DrawText(values[i].ToString(), medfont, Color.Black, new PointF(margin + i * barWidth + (barWidth - barSpace) / 4 + 15, height - margin - barHeight + 5));
+                   else
+                        ctx.DrawText(values[i].ToString(), medfont, Color.White, new PointF(margin + i * barWidth + (barWidth - barSpace) / 4 + 15, height - margin - barHeight + 5));
+
                     ctx.DrawText(labels[i], font, Color.Black, new PointF(margin + i * barWidth + (barWidth - barSpace) / 4, height - margin + 5));
                 }
 
@@ -175,6 +183,7 @@ namespace NutriDbService.Helpers
                 if (goalkk != null && goalkk > 0)
                 {
                     ctx.DrawLine(Pens.Solid(Color.LightSeaGreen, 1), new PointF(margin, goalYPos), new PointF(width - margin, goalYPos));
+                    ctx.DrawText("норма", smallfont, Color.LightSeaGreen, new PointF(margin - textFromAxe - 40, goalYPos - labelPadding + 5));
                     ctx.DrawText(((decimal)goalkk).ToString("#"), font, Color.LightSeaGreen, new PointF(margin - textFromAxe, goalYPos - labelPadding));
 
                     float dashLength = 10;
@@ -185,6 +194,8 @@ namespace NutriDbService.Helpers
                         ctx.DrawLine(Pens.Solid(Color.Cyan, 1), new PointF(x, goalLYPos), new PointF(xEnd, goalLYPos));
                     }
                     // ctx.DrawLine(dashedPen, new PointF(margin, goalLYPos), new PointF(width - margin, goalLYPos));
+                    ctx.DrawText("недостаточно", smallfont, Color.Black, new PointF(margin - textFromAxe - 70, goalLYPos - labelPadding));
+                    ctx.DrawText("на 10%", smallfont, Color.Black, new PointF(margin - textFromAxe - 40, goalLYPos - labelPadding + 10));
                     ctx.DrawText(((decimal)goalkk - goalDelta).ToString("#"), font, Color.Black, new PointF(margin - textFromAxe, goalLYPos - labelPadding));
 
                     for (float x = margin; x < width - margin; x += dashLength + spaceLength)
@@ -193,6 +204,8 @@ namespace NutriDbService.Helpers
                         ctx.DrawLine(Pens.Solid(Color.Cyan, 1), new PointF(x, goalHYPos), new PointF(xEnd, goalHYPos));
                     }
                     //ctx.DrawLine(dashedPen, new PointF(margin, goalHYPos), new PointF(width - margin, goalHYPos));
+                    ctx.DrawText("превышение", smallfont, Color.Black, new PointF(margin - textFromAxe - 70, goalHYPos - labelPadding));
+                    ctx.DrawText("на 10%", smallfont, Color.Black, new PointF(margin - textFromAxe - 40, goalHYPos - labelPadding + 10));
                     ctx.DrawText(((decimal)goalkk + goalDelta).ToString("#"), font, Color.Black, new PointF(margin - textFromAxe, goalHYPos - labelPadding));
                 }
             });
