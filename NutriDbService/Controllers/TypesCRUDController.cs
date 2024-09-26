@@ -613,9 +613,9 @@ namespace NutriDbService.Controllers
                 {
                     ping = DateOnly.FromDateTime(now).ToDateTime(morningPing);
                 }
-                else if (TimeOfDay == 1)
+                else if (TimeOfDay == 1)//вечер
                 {
-                    ping = DateOnly.FromDateTime(now).ToDateTime(morningPing);
+                    ping = DateOnly.FromDateTime(now).ToDateTime(eveningPing);
                 }
 
                 var slicePing = ping.AddHours(double.Parse(usi.Timeslide.ToString()));
