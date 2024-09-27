@@ -548,6 +548,9 @@ namespace NutriDbService.Controllers
                 }
                 else
                 {
+                    if (usi.Donelessonlist == null)
+                        usi.Donelessonlist = $"{lesson}";
+                    else
                     if (!usi.Donelessonlist.Contains(lesson.ToString()))
                     {
                         usi.Donelessonlist += $",{lesson}";
