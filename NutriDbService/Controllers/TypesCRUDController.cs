@@ -423,6 +423,9 @@ namespace NutriDbService.Controllers
                         Height = height,
                         Gender = gender,
                         Goalkk = goalkk,
+                        MorningPing = morningPing,
+                        EveningPing = eveningPing,
+                        Timeslide = timeslide,
                         Goal = goal
                     });
                 }
