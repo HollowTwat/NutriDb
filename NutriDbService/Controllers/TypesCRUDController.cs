@@ -265,7 +265,7 @@ namespace NutriDbService.Controllers
                         startDate = new DateTime(now.Year, now.Month, 1);
                         break;
                 }
-                daysinperiod = now.Day - startDate.Day;
+                daysinperiod = (now - startDate).Days;
                 var mealsIds = _context.Meals.Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).Select(x => x.Id).ToList();
                 var dishes = _context.Dishes.Where(x => mealsIds.Contains(x.MealId)).ToList();
                 var resp = new GetMealTotalResponse();
