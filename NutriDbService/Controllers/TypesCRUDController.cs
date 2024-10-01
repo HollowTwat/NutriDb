@@ -188,6 +188,21 @@ namespace NutriDbService.Controllers
             }
         }
 
+        [HttpPost]
+        public ActionResult<GetMealResponseV2> GetSingleUserMeal(GetUserMealsRequest req)
+        {
+            try
+            {
+                var resp = _mealHelper.GetSingleMeal(req);
+                return Ok(Newtonsoft.Json.JsonConvert.SerializeObject(new GetMealResponseV2(resp)));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+                return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
+            }
+        }
+
         [HttpGet]
         public ActionResult<List<GetWeekMealStatusResponse>> GetUserWeekMealsStatus(long userTgId)
         {
