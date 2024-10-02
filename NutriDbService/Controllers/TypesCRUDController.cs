@@ -61,6 +61,7 @@ namespace NutriDbService.Controllers
             }
             catch (Exception ex)
             {
+                ErrorHelper.SendErrorMess("Meal Create Error", ex);
                 _logger.LogError(ex, "Meal Create Error");
                 return 0;
                 //return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
@@ -79,6 +80,34 @@ namespace NutriDbService.Controllers
             }
             catch (Exception ex)
             {
+                ErrorHelper.SendErrorMess("Meal Edit Error", ex);
+                _logger.LogError(ex, "Meal Edit Error");
+                return false;
+                //return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
+            }
+        }
+
+        [HttpPost]
+        public bool DeleteMeal(int mealId, long userTgId)
+        {
+            try
+            {
+                var res = _mealHelper.DeleteMeal(mealId, userTgId);
+                if (res != 0)
+                {
+                    _logger.LogWarning($"User={userTgId} Meal={res} was deleted");
+                    return true;
+                }
+                else
+                {
+                    _logger.LogWarning($"User={userTgId} Meal={mealId} cant delete");
+                    return false;
+                }
+                // return Ok(res);
+            }
+            catch (Exception ex)
+            {
+                ErrorHelper.SendErrorMess("Meal Delete Error", ex);
                 _logger.LogError(ex, "Meal Edit Error");
                 return false;
                 //return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
@@ -168,6 +197,7 @@ namespace NutriDbService.Controllers
             }
             catch (Exception ex)
             {
+                ErrorHelper.SendErrorMess("GetUserMealById Error", ex);
                 _logger.LogError(ex, ex.Message);
                 return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
@@ -198,6 +228,7 @@ namespace NutriDbService.Controllers
             }
             catch (Exception ex)
             {
+                ErrorHelper.SendErrorMess("GetSingleUserMeal Error", ex);
                 _logger.LogError(ex, ex.Message);
                 return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
@@ -245,6 +276,7 @@ namespace NutriDbService.Controllers
             }
             catch (Exception ex)
             {
+                ErrorHelper.SendErrorMess("GetUserWeekMealsStatus Error", ex);
                 _logger.LogError(ex, ex.Message);
                 return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
@@ -303,6 +335,7 @@ namespace NutriDbService.Controllers
             }
             catch (Exception ex)
             {
+                ErrorHelper.SendErrorMess("GetUserMealsTotal Error", ex);
                 _logger.LogError(ex, ex.Message);
                 return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
@@ -356,6 +389,7 @@ namespace NutriDbService.Controllers
                 return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
         }
+
         [HttpPost]
         public ActionResult<bool> GetUserWeekPlot(long userTgId)
         {
@@ -399,6 +433,7 @@ namespace NutriDbService.Controllers
             }
             catch (Exception ex)
             {
+                ErrorHelper.SendErrorMess("GetUserWeekPlot Error", ex);
                 _logger.LogError(ex, ex.Message);
                 return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
@@ -463,6 +498,7 @@ namespace NutriDbService.Controllers
             }
             catch (Exception ex)
             {
+                ErrorHelper.SendErrorMess("AddUserExtraInfo Error", ex);
                 _logger.LogError(ex, ex.Message);
                 return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
@@ -541,6 +577,7 @@ namespace NutriDbService.Controllers
             }
             catch (Exception ex)
             {
+                ErrorHelper.SendErrorMess("AddOrUpdateUserExtraInfo Error", ex);
                 _logger.LogError(ex, ex.Message);
                 return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
@@ -698,6 +735,7 @@ namespace NutriDbService.Controllers
             }
             catch (Exception ex)
             {
+                ErrorHelper.SendErrorMess("GetLastUserLesson Error", ex);
                 _logger.LogError(ex, ex.Message);
                 return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }

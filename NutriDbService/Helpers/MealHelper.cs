@@ -26,7 +26,11 @@ namespace NutriDbService.Helpers
         {
             var user = _nutriDbContext.Users.SingleOrDefault(x => x.TgId == createMealRequest.userTgId);
             if (user == null)
-                throw new Exception($"I Cant Find User : {createMealRequest.userTgId}");
+            {
+                var mes = $"I Cant Find User : {createMealRequest.userTgId}";
+                ErrorHelper.SendSystemMess(mes);
+                throw new Exception(mes);
+            }
             var dishes = new HashSet<Dish>();
             decimal totalweight = 0;
             foreach (var d in createMealRequest.meal.food)
@@ -60,7 +64,7 @@ namespace NutriDbService.Helpers
                 if (oldmeal != null)
                 {
                     _nutriDbContext.Database.BeginTransaction();
-                    _nutriDbContext.RemoveRange(_nutriDbContext.Dishes.Where(x => x.MealId == oldmeal.Id));
+                    _nutriDbContext.Dishes.RemoveRange(_nutriDbContext.Dishes.Where(x => x.MealId == oldmeal.Id));
                     foreach (var di in dishes)
                         di.MealId = oldmeal.Id;
 
@@ -93,6 +97,35 @@ namespace NutriDbService.Helpers
                 _nutriDbContext.Database.CommitTransaction();
                 return meal.Id;
             }
+        }
+        public int DeleteMeal(int mealId, long userTgId)
+        {
+            var user = _nutriDbContext.Users.SingleOrDefault(x => x.TgId == userTgId);
+            if (user == null)
+            {
+                var mes = $"I Cant Find User : {userTgId}";
+                ErrorHelper.SendSystemMess(mes);
+                throw new Exception(mes);
+            }
+
+            Meal meal;
+
+            var oldmeal = _nutriDbContext.Meals.SingleOrDefault(x => x.UserId == user.Id && x.Id == mealId);
+            if (oldmeal != null)
+            {
+                _nutriDbContext.Database.BeginTransaction();
+                _nutriDbContext.Dishes.RemoveRange(_nutriDbContext.Dishes.Where(x => x.MealId == oldmeal.Id));
+                _nutriDbContext.Meals.Remove(oldmeal);
+                _nutriDbContext.SaveChanges();
+                _nutriDbContext.Database.CommitTransaction();
+                return oldmeal.Id;
+            }
+            else
+            {
+                ErrorHelper.SendErrorMess($"Не найден Meal {mealId}");
+                return 0;
+            }
+
         }
 
         public int EditMeal(EditMealRequest createMealRequest)
@@ -142,7 +175,11 @@ namespace NutriDbService.Helpers
         {
             var user = _nutriDbContext.Users.SingleOrDefault(x => x.TgId == req.userTgId);
             if (user == null)
-                throw new Exception($"I Cant Find User : {req.userTgId}");
+            {
+                var mes = $"I Cant Find User : {req.userTgId}";
+                ErrorHelper.SendSystemMess(mes);
+                throw new Exception(mes);
+            }
             //var inDay = (DayOfWeek)day;
             var now = DateTime.UtcNow.ToLocalTime().AddHours(3).Date;
             var startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-7).Date;
@@ -210,7 +247,11 @@ namespace NutriDbService.Helpers
         {
             var user = _nutriDbContext.Users.SingleOrDefault(x => x.TgId == req.userTgId);
             if (user == null)
-                throw new Exception($"I Cant Find User : {req.userTgId}");
+            {
+                var mes = $"I Cant Find User : {req.userTgId}";
+                ErrorHelper.SendSystemMess(mes);
+                throw new Exception(mes);
+            }
             //var inDay = (DayOfWeek)day;
             var now = DateTime.UtcNow.ToLocalTime().AddHours(3).Date;
             var startDate = now.AddDays(-1).Date;
@@ -226,7 +267,11 @@ namespace NutriDbService.Helpers
                 meals = meals.Where(x => x.Type == ((short)req.typemeal)).ToList();
             }
             else
-                throw new ArgumentNullException("Empty typemeal");
+            {
+                var mes = $"Не пришел typemeal: {Newtonsoft.Json.JsonConvert.SerializeObject(req)}";
+                ErrorHelper.SendSystemMess(mes);
+                throw new ArgumentNullException(mes);
+            }
 
             var meal = meals.SingleOrDefault();
             if (meal == null)

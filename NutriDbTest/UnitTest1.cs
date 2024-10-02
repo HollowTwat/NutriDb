@@ -7,6 +7,9 @@ namespace NutriDbTest
         [Fact]
         public void Test1()
         {
+            //var _telegramBotClient = ErrorHelper.GetTelegramBot();
+            //ErrorHelper.SendSystemMess("À¿À¿À");
+
             decimal[] values = new decimal[] { 2222.5m, 3132.0m, 2345.7m, 2912.1m, 3123.3m, 1123.1m, 1954.6m };
             string[] labels = new string[] { "Cat 1", "Cat 2", "Cat 3", "Cat 4", "Cat 5", "Cat 6", "Cat 7" };
             long tgId = 389054202;
