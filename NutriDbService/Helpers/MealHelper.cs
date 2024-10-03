@@ -254,13 +254,18 @@ namespace NutriDbService.Helpers
             }
             //var inDay = (DayOfWeek)day;
             var now = DateTime.UtcNow.ToLocalTime().AddHours(3).Date;
-            var startDate = now.AddDays(-1).Date;
+            var startDate = now.AddDays(-7).Date;
 
             var meals = _nutriDbContext.Meals.Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).ToList();
-            if (req.day != null)
+            if (!String.IsNullOrEmpty(req.dayStr))
             {
-                meals = _nutriDbContext.Meals.Where(x => x.UserId == user.Id && x.MealTime.Date > now.AddDays(-7).Date).ToList();
-                meals = meals.Where(x => x.MealTime.DayOfWeek == (DayOfWeek)req.day).ToList();
+                meals = meals.Where(x => x.MealTime.Date == DateTime.ParseExact($"{req.dayStr}.{startDate.Year}", "dd.MM.yyyy", CultureInfo.InvariantCulture).Date).ToList();
+            }
+            else
+            {
+                var mes = $"Не пришел dayStr: {Newtonsoft.Json.JsonConvert.SerializeObject(req)}";
+                ErrorHelper.SendSystemMess(mes);
+                throw new ArgumentNullException(mes);
             }
             if (req.typemeal != null)
             {
