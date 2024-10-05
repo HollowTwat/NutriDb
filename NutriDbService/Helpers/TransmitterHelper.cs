@@ -43,12 +43,15 @@ namespace NutriDbService.Helpers
             {
 
                 case "txt":
+                case "txt2":
                     reqparams.txt = request.Question.ToString();
                     reqparams.id = request.UserTgId.ToString();
                     reqparams.outputtype = String.IsNullOrEmpty(request.OutputType) == true ? "0" : request.OutputType;
                     break;
                 case "oga":
                 case "imggg":
+                case "oga2":
+                case "imggg2":
                     reqparams.url = request.Question.ToString();
                     reqparams.id = request.UserTgId.ToString();
                     reqparams.outputtype = String.IsNullOrEmpty(request.OutputType) == true ? "0" : request.OutputType;
