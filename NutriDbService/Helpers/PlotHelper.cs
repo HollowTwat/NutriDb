@@ -123,7 +123,8 @@ namespace NutriDbService.Helpers
                 // Заполнение фона белым цветом
                 ctx.Fill(Color.White);
 
-                // Нарисуйте оси
+                // Нарисуем оси
+
                 ctx.DrawLine(pen, new PointF[]
                 {
                 new PointF(margin, height - margin),
@@ -137,21 +138,11 @@ namespace NutriDbService.Helpers
                 }); // Y-Ось
                 ctx.DrawText("ккал", medfont, Color.Black, new PointF(margin - textFromAxe + 17, margin));
 
-                // Получаем уникальные y значения и сортируем их
-                //var uniqueValues = values.Select(v => Math.Round(v)).Distinct().OrderBy(v => v).ToArray();
-                //foreach (var value in uniqueValues)
-                //{
-                //    float yPos = height - margin - ((float)value / (float)maxValue * maxHeight);
-                //    ctx.DrawLine(pen, new PointF(margin - 5, yPos), new PointF(margin + 5, yPos));
-
-                //    string label = value.ToString("0");
-                //    ctx.DrawText(label, font, Color.Black, new PointF(5, yPos - 10));
-                //}
-                // Добавление цели goalkk и горизонтальной линии в пределах графика
-
+                
                 // Отрисовка колонок
                 for (int i = 0; i < values.Length; i++)
                 {
+                    //определение цвета
                     var barCollor = Color.LightSeaGreen;
                     float barHeight = (float)(values[i] / maxValue * maxHeight);
                     if (goalkk != null && goalkk > 0 && goalkk <= maxValue)
@@ -161,8 +152,8 @@ namespace NutriDbService.Helpers
                         if (height - margin - barHeight > goalLYPos)
                             barCollor = Color.LightBlue;
                     }
-                    // Определение высоты баров
 
+                    // Определение высоты баров
                     var barRectangle = new RectangularPolygon(
                                       x: margin + barSpace + i * barWidth,
                                       y: height - margin - barHeight,
@@ -170,6 +161,7 @@ namespace NutriDbService.Helpers
                                       height: barHeight);
 
                     ctx.Fill(barCollor, barRectangle);
+                    if(values[i] >200m)
                     if (barCollor == Color.LightBlue)
                         ctx.DrawText(values[i].ToString(), medfont, Color.Black, new PointF(margin + i * barWidth + (barWidth - barSpace) / 4 + 15, height - margin - barHeight + 5));
                    else
@@ -178,7 +170,7 @@ namespace NutriDbService.Helpers
                     ctx.DrawText(labels[i], font, Color.Black, new PointF(margin + i * barWidth + (barWidth - barSpace) / 4, height - margin + 5));
                 }
 
-                const int labelPadding = 5;
+                const int labelPadding = -5;
 
                 if (goalkk != null && goalkk > 0)
                 {
