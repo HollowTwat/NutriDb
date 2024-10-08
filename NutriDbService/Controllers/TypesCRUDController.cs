@@ -683,7 +683,7 @@ namespace NutriDbService.Controllers
                 }
 
                 var slicePing = ping.AddHours(double.Parse(usi.Timeslide.ToString()));
-                var correct = (slicePing - ping).TotalDays;
+                var correct = (slicePing.Date - ping.Date).TotalDays;
                 return new GetUserPingResponse { MskTime = slicePing.ToString("HH:mm"), DayCorrection = (short)correct };
                 //$"{slicePing.Hour}:{slicePing.Minute}"
             }
@@ -712,7 +712,7 @@ namespace NutriDbService.Controllers
 
 
                 var slicePing = ping.AddHours(double.Parse(usi.Timeslide.ToString()));
-                var correct = (slicePing - ping).TotalDays;
+                var correct = (slicePing.Date - ping.Date).TotalDays;
                 return new GetUserPingResponse { MskTime = slicePing.ToString("HH:mm"), DayCorrection = (short)correct };
 
             }
