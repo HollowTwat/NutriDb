@@ -189,15 +189,17 @@ namespace NutriDbService.Helpers
             string responseString = string.Empty;
             try
             {
+                _logger.LogWarning($"GPT Req № {requstId}=\n{JsonConvert.SerializeObject(reqparams)}");
                 responseString = await SendRequest(reqparams, reqUrl);
-                _logger.LogWarning(responseString);
+                _logger.LogWarning($"GPT Resp № {requstId}=\n {responseString}");
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Упали при создании реквеста");
+                ErrorHelper.SendErrorMess("Упали при создании реквеста", ex);
                 using (var scope = _serviceProviderFactory.CreateScope().ServiceProvider.CreateScope())
                 {
                     var _nutriDbContext = scope.ServiceProvider.GetRequiredService<railwayContext>();
-                    _logger.LogError(ex, "Упали при создании реквеста");
                     var dbreq = _nutriDbContext.Gptrequests.SingleOrDefault(x => x.Id == requstId);
                     if (dbreq == null)
                         throw new NullReferenceException($"В бд нет реквеста с id={requstId}");
