@@ -50,6 +50,8 @@ namespace NutriDbService.Helpers
             Meal meal;
             if (createMealRequest.mealId == null)
             {
+                var IsTyme = DateTime.TryParseExact(createMealRequest.EatedAt, "dd.MM.yyyy_HH:mm", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var parseTime);
+
                 meal = new Meal()
                 {
                     UserId = user.Id,
@@ -57,7 +59,8 @@ namespace NutriDbService.Helpers
                     Dishes = dishes,
                     Description = createMealRequest.meal.description,
                     Type = (short)createMealRequest.meal.type,
-                    MealTime = DateTime.UtcNow.ToLocalTime().AddHours(3)//DateTime.TryParseExact(createMealRequest.EatedAt, "dd.MM.yyyy_HH:mm", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var parseTime) == true ? parseTime : null
+
+                    MealTime = IsTyme ? parseTime : DateTime.UtcNow.ToLocalTime().AddHours(3)
                 };
 
                 var oldmeal = _nutriDbContext.Meals.SingleOrDefault(x => x.UserId == meal.UserId && x.MealTime.Date == meal.MealTime.Date && x.Type == meal.Type && x.Type != 5);
