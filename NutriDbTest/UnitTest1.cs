@@ -24,17 +24,19 @@ namespace NutriDbTest
         [Fact]
         public async void Test2()
         {
-         
-            EditMealRequest request = new EditMealRequest()
+            for (int i = 0; i < 30; i++)
             {
-                userTgId = 186556585,
-                EatedAt = DateTime.Now.ToString("dd.MM.yyyy_HH:mm"),
-                meal = new NutriDbService.PythModels.PythMeal
+                Thread.Sleep(800);
+                EditMealRequest request = new EditMealRequest()
                 {
-                    description = "TestFood",
-                    totalWeight = 350,
-                    type = NutriDbService.PythModels.mealtype.breakfast,
-                    food = new List<NutriDbService.PythModels.PythFood>
+                    userTgId = 186556585,
+                    EatedAt = DateTime.Now.AddDays(-i).ToString("dd.MM.yyyy_HH:mm"),
+                    meal = new NutriDbService.PythModels.PythMeal
+                    {
+                        description = "TestBreak",
+                        totalWeight = 350,
+                        type = NutriDbService.PythModels.mealtype.breakfast,
+                        food = new List<NutriDbService.PythModels.PythFood>
                          {
                             new NutriDbService.PythModels.PythFood
                             {
@@ -55,14 +57,15 @@ namespace NutriDbTest
                                  }
                             }
                          }
-                }
-            };
-            var reqUrl = "https://nutridb-production.up.railway.app/api/TypesCRUD/CreateMeal";
-            HttpClient client = new HttpClient();
-            client.Timeout = TimeSpan.FromSeconds(90);
-            HttpContent content = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json");
-            var response = await client.PostAsync(reqUrl, content);
-            var r= await response.Content.ReadAsStringAsync();
+                    }
+                };
+                var reqUrl = "https://nutridb-production.up.railway.app/api/TypesCRUD/CreateMeal";
+                HttpClient client = new HttpClient();
+                client.Timeout = TimeSpan.FromSeconds(90);
+                HttpContent content = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json");
+                var response = await client.PostAsync(reqUrl, content);
+                var r = await response.Content.ReadAsStringAsync();
+            }
             Assert.True(true);
         }
     }
