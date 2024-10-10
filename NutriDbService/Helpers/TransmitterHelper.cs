@@ -52,6 +52,16 @@ namespace NutriDbService.Helpers
                 case "imggg":
                 case "oga2":
                 case "imggg2":
+                    var lastimgreq = _nutriDbContext.Gptrequests.OrderByDescending(x => x.Id).FirstOrDefault(x => x.UserTgid == request.UserTgId);
+                    if (lastimgreq != null)
+                        if ((DateTime.UtcNow.ToLocalTime().AddHours(3) - lastimgreq.CreationDate).Seconds < 3)
+                        {
+                            send = false;
+                            req.Answer = "Duplicate";
+                            req.Done = true;
+                            req.Iserror = true;
+                        }
+
                     reqparams.url = request.Question.ToString();
                     reqparams.id = request.UserTgId.ToString();
                     reqparams.outputtype = String.IsNullOrEmpty(request.OutputType) == true ? "0" : request.OutputType;
@@ -118,6 +128,7 @@ namespace NutriDbService.Helpers
         {
             try
             {
+                _logger.LogWarning($"Check GPT Status № {requestId}");
                 var gptreq = _nutriDbContext.Gptrequests.SingleOrDefault(x => x.Id == requestId);
                 if (gptreq == null)
                     return new CheckGPTResponse
