@@ -36,6 +36,7 @@ namespace NutriDbService.Helpers
             bool send = true;
 
             var usrId = _nutriDbContext.Users.SingleOrDefault(x => x.TgId == request.UserTgId).Id;
+
             var isEmptyExtra = _nutriDbContext.Userinfos.Any(x => x.UserId == usrId && string.IsNullOrEmpty(x.Extra));
 
             CreateGPTPythRequest reqparams = new CreateGPTPythRequest();
@@ -104,7 +105,12 @@ namespace NutriDbService.Helpers
                     }
                     break;
                 default:
-                    throw new ArgumentNullException("Пустой type");
+                    ErrorHelper.SendErrorMess("Пустой type");
+                    send = false;
+                    req.Answer = "Пустой type";
+                    req.Done = true;
+                    req.Iserror = true;
+                    break;
             }
             await _nutriDbContext.Gptrequests.AddAsync(req);
             var url = $"{BaseUrl}/{request.Type}";
@@ -178,7 +184,7 @@ namespace NutriDbService.Helpers
         public async Task<string> SendRequest(CreateGPTPythRequest reqparams, string reqUrl)
         {
             HttpClient client = new HttpClient();
-            client.Timeout = TimeSpan.FromSeconds(90);
+            client.Timeout = TimeSpan.FromSeconds(100);
             HttpContent content = new StringContent(JsonConvert.SerializeObject(reqparams), Encoding.UTF8, "application/json");
             var response = await client.PostAsync(reqUrl, content);
             return await response.Content.ReadAsStringAsync();
@@ -239,6 +245,7 @@ namespace NutriDbService.Helpers
             }
             catch (Exception ex)
             {
+                ErrorHelper.SendErrorMess("Неизвестное падение при попытке создать запрос к ГПТ", ex);
                 _logger.LogError(ex, "Неизвестное падение при попытке создать запрос к ГПТ");
                 throw new Exception("Упали при попытке создать запрос к ГПТ", ex);
             }
