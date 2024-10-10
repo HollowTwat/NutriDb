@@ -76,18 +76,5 @@ namespace NutriDbService.Controllers
             var res = _transmitterHelper.CheckGPT(req.RequestId);
             return res;
         }
-
-        [HttpPost]
-        public string Test(CreateGPTNoCodeRequest req)
-        {
-            return _transmitterHelper.Test(req);
-        }
-
-        [HttpPost]
-        public string Testinner(CreateGPTNoCodeRequest req)
-        {
-            return _transmitterHelper.TestInner(req);
-
-        }
     }
 }

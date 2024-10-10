@@ -250,23 +250,5 @@ namespace NutriDbService.Helpers
                 throw new Exception("Упали при попытке создать запрос к ГПТ", ex);
             }
         }
-
-
-        public string Test(CreateGPTNoCodeRequest req)
-        {
-            var par = new CreateGPTPythRequest();
-            par.txt = req.Question;
-            par.id = req.UserTgId.ToString();
-            var url = $"{BaseUrl}/test";
-            return SendRequest(par, url).GetAwaiter().GetResult();
-        }
-        public string TestInner(CreateGPTNoCodeRequest req)
-        {
-            var par = new CreateGPTPythRequest();
-            par.txt = req.Question;
-            par.id = req.UserTgId.ToString();
-            var url = $"http://quart-test.railway.internal:7610/test";
-            return SendRequest(par, url).GetAwaiter().GetResult();
-        }
     }
 }
