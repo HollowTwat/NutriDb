@@ -609,7 +609,7 @@ namespace NutriDbService.Controllers
                     if (usi.Donelessonlist == null)
                         usi.Donelessonlist = $"{lesson}";
                     else
-                    if (!usi.Donelessonlist.Contains(lesson.ToString()))
+                    if (!usi.Donelessonlist.Contains($",{lesson},"))
                     {
                         usi.Donelessonlist += $",{lesson}";
                         _context.Update(usi);
