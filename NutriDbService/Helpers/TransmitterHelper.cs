@@ -41,7 +41,6 @@ namespace NutriDbService.Helpers
             CreateGPTPythRequest reqparams = new CreateGPTPythRequest();
             switch (request.Type)
             {
-
                 case "txt":
                 case "txt2":
                     reqparams.txt = request.Question.ToString();
@@ -54,7 +53,7 @@ namespace NutriDbService.Helpers
                 case "imggg2":
                     var lastimgreq = _nutriDbContext.Gptrequests.OrderByDescending(x => x.Id).FirstOrDefault(x => x.UserTgid == request.UserTgId);
                     if (lastimgreq != null)
-                        if ((DateTime.UtcNow.ToLocalTime().AddHours(3) - lastimgreq.CreationDate).Seconds < 3)
+                        if ((DateTime.UtcNow.ToLocalTime().AddHours(3) - lastimgreq.CreationDate).TotalSeconds < 3)
                         {
                             send = false;
                             req.Answer = "Duplicate";
