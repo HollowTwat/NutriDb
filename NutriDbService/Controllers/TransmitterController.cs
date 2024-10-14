@@ -43,6 +43,7 @@ namespace NutriDbService.Controllers
             {
                 _logger.LogError(ex, ex.Message);
                 ErrorHelper.SendErrorMess("CreateGPTRequset Error", ex);
+                ErrorHelper.SendErrorMess($"Input:{req}");
                 return new CreateGPTResponse() { isError = true };
             }
         }
@@ -64,6 +65,8 @@ namespace NutriDbService.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message);
+                ErrorHelper.SendErrorMess("CreateGPTLongRateRequset Error", ex);
+                ErrorHelper.SendErrorMess($"Input:{rateReq}");
                 return new CreateGPTResponse() { isError = true };
             }
         }
@@ -71,10 +74,20 @@ namespace NutriDbService.Controllers
         [HttpPost]
         public CheckGPTResponse CheckGPTStatus(CheckGPTRequest req)
         {
-            if (req.RequestId == 0)
-                return new CheckGPTResponse { Done = true, IsError = true };
-            var res = _transmitterHelper.CheckGPT(req.RequestId);
-            return res;
+            try
+            {
+                if (req.RequestId == 0)
+                    return new CheckGPTResponse { Done = true, IsError = true };
+                var res = _transmitterHelper.CheckGPT(req.RequestId);
+                return res;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+                ErrorHelper.SendErrorMess("CreateGPTLongRateRequset Error", ex);
+                ErrorHelper.SendErrorMess($"Input:{req}");
+                return new CheckGPTResponse() { IsError = true };
+            }
         }
     }
 }
