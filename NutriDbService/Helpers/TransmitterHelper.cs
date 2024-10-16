@@ -31,8 +31,8 @@ namespace NutriDbService.Helpers
 
         public async Task<int> CreateGPTRequest(CreateGPTNoCodeRequest request)
         {
-
-            var req = new Gptrequest { Iserror = false, Request = JsonConvert.SerializeObject(request), Done = false, UserTgid = request.UserTgId, CreationDate = DateTime.UtcNow.ToLocalTime().AddHours(3), ReqType = string.IsNullOrEmpty(request.Type) ? "empty" : request.Type };
+            var lastreqid = 0;
+            var req = new Gptrequest { Iserror = false, Request = JsonConvert.SerializeObject(request), Done = false, UserTgid = request.UserTgId, CreationDate = DateTime.UtcNow.ToLocalTime().AddHours(3), ReqType = string.IsNullOrEmpty(request?.Type) ? "empty" : request.Type };
             bool send = true;
 
             var usrId = _nutriDbContext.Users.SingleOrDefault(x => x.TgId == request.UserTgId).Id;
@@ -40,7 +40,7 @@ namespace NutriDbService.Helpers
             var isEmptyExtra = _nutriDbContext.Userinfos.Any(x => x.UserId == usrId && string.IsNullOrEmpty(x.Extra));
 
             CreateGPTPythRequest reqparams = new CreateGPTPythRequest();
-            switch (request.Type)
+            switch (request?.Type)
             {
 
                 case "txt":
@@ -98,6 +98,7 @@ namespace NutriDbService.Helpers
                     var lastreq = _nutriDbContext.Gptrequests.OrderByDescending(x => x.Id).FirstOrDefault(x => x.Request == req.Request);
                     if (lastreq != null && lastreq?.Iserror != true)
                     {
+                        lastreqid = lastreq.Id;
                         send = false;
                         req.Answer = lastreq.Answer;
                         req.Done = true;
@@ -113,10 +114,13 @@ namespace NutriDbService.Helpers
                     break;
             }
             await _nutriDbContext.Gptrequests.AddAsync(req);
-            var url = $"{BaseUrl}/{request.Type}";
             await _nutriDbContext.SaveChangesAsync();
+            _logger.LogWarning($"Сохранили респонз в базу {req.Id}");
+            var url = $"{BaseUrl}/{request.Type}";
             if (send)
-                Task.Run(() => { ExecuteRequest(reqparams, url, req.Id); });
+                Task.Run(() => ExecuteRequest(reqparams, url, req.Id));
+            else
+                _logger.LogWarning($"Взяли ответ для Req № {req.Id} из Req № {lastreqid}");
             return req.Id;
         }
 
@@ -142,6 +146,8 @@ namespace NutriDbService.Helpers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "упали при попытке получить статус");
+                ErrorHelper.SendErrorMess("CheckGPT Error", ex);
+                ErrorHelper.SendErrorMess($"Input:{requestId}");
                 return new CheckGPTResponse { IsError = true, Done = true, Response = new GPTResponse { pretty = "Мы упали" } };
             }
         }
@@ -245,8 +251,8 @@ namespace NutriDbService.Helpers
             }
             catch (Exception ex)
             {
-                ErrorHelper.SendErrorMess("Неизвестное падение при попытке создать запрос к ГПТ", ex);
                 _logger.LogError(ex, "Неизвестное падение при попытке создать запрос к ГПТ");
+                ErrorHelper.SendErrorMess("Неизвестное падение при попытке создать запрос к ГПТ", ex);
                 throw new Exception("Упали при попытке создать запрос к ГПТ", ex);
             }
         }

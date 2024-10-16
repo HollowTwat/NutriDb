@@ -37,7 +37,8 @@ namespace NutriDbService.Controllers
                 var res = await _transmitterHelper.CreateGPTRequest(req);
                 if (res == 0)
                     return new CreateGPTResponse { isError = true, RequestId = 0 };
-                return new CreateGPTResponse(res);
+                else
+                    return new CreateGPTResponse(res);
             }
             catch (Exception ex)
             {
@@ -84,7 +85,7 @@ namespace NutriDbService.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message);
-                ErrorHelper.SendErrorMess("CreateGPTLongRateRequset Error", ex);
+                ErrorHelper.SendErrorMess("CheckGPTStatus Error", ex);
                 ErrorHelper.SendErrorMess($"Input:{req}");
                 return new CheckGPTResponse() { IsError = true };
             }
