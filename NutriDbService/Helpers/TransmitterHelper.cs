@@ -254,8 +254,9 @@ namespace NutriDbService.Helpers
                         catch (Exception ex)
                         {
                             dbreq.Done = true;
-                            dbreq.Answer = Newtonsoft.Json.JsonConvert.SerializeObject(new GPTResponse { extra = "Пустой type" });
+                            dbreq.Answer = Newtonsoft.Json.JsonConvert.SerializeObject(new GPTResponse { extra = "Кривой ответ" });
                             dbreq.Iserror = true;
+                            ErrorHelper.SendErrorMess($"Кривой ответ:{responseString}", ex);
                         }
                     }
                     _nutriDbContext.Update(dbreq);
