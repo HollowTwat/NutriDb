@@ -14,5 +14,6 @@
 
         public bool isError { get; set; }
         public int RequestId { get; set; }
+        public string Mess { get; set; }
     }
 }

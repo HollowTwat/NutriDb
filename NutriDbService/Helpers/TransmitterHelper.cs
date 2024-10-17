@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using NutriDbService.DbModels;
+using NutriDbService.Exceptions;
 using NutriDbService.PythModels.Request;
 using NutriDbService.PythModels.Response;
 using SixLabors.Fonts.Unicode;
@@ -166,6 +167,8 @@ namespace NutriDbService.Helpers
                 default:
                     throw new ArgumentNullException("Пустой AssistantType");
             }
+            if (!mealresp.Any())
+                throw new EmptyMealException();
             var useri = _nutriDbContext.Userinfos.Single(x => x.UserId == _nutriDbContext.Users.Single(x => x.TgId == ratereq.UserTgId).Id);
             var ext = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, string>>(useri.Extra);
             RateQuestion rateQuestion = new RateQuestion

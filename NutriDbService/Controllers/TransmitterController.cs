@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using NutriDbService.DbModels;
+using NutriDbService.Exceptions;
 using NutriDbService.Helpers;
 using NutriDbService.PythModels.Request;
 using NutriDbService.PythModels.Response;
@@ -62,6 +63,12 @@ namespace NutriDbService.Controllers
                 if (res == 0)
                     return new CreateGPTResponse { isError = true, RequestId = 0 };
                 return new CreateGPTResponse(res);
+            }
+            catch (EmptyMealException ex)
+            {
+                _logger.LogError("Попытка анализа пустой недели ");
+                ErrorHelper.SendErrorMess($"Попытка анализа пустой недели :{rateReq}");
+                return new CreateGPTResponse() { isError = true, Mess = "MealEmpty" };
             }
             catch (Exception ex)
             {
