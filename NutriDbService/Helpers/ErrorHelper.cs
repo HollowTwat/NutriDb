@@ -37,7 +37,7 @@ namespace NutriDbService.Helpers
         {
             mess = string.Concat($"ERROR MESS\n {DateTime.UtcNow.ToLocalTime().AddHours(3)}", mess);
 
-            mess = string.Concat($"{mess}\n Error Text");
+            mess = string.Concat($" Error Text:\n{mess}\n");
             GetTelegramBot().SendTextMessageAsync(new ChatId(_errorChanelId), mess).GetAwaiter().GetResult();
             //client.SendTextMessageAsync(new ChatId(464682207), mess).GetAwaiter().GetResult();
         }
