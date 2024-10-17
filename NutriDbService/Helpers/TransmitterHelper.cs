@@ -107,9 +107,10 @@ namespace NutriDbService.Helpers
                     }
                     break;
                 default:
+                    _logger.LogWarning($"Пустой type");
                     ErrorHelper.SendErrorMess("Пустой type");
                     send = false;
-                    req.Answer = "Пустой type";
+                    req.Answer = Newtonsoft.Json.JsonConvert.SerializeObject(new GPTResponse { extra = "Пустой type" });
                     req.Done = true;
                     req.Iserror = true;
                     break;
@@ -136,7 +137,6 @@ namespace NutriDbService.Helpers
                         Done = false,
                         IsError = true
                     };
-
                 return new CheckGPTResponse
                 {
                     Done = gptreq.Done,
@@ -146,7 +146,7 @@ namespace NutriDbService.Helpers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "упали при попытке получить статус");
+                _logger.LogError(ex, "Упали при попытке получить статус");
                 ErrorHelper.SendErrorMess("CheckGPT Error", ex);
                 ErrorHelper.SendErrorMess($"Input:{requestId}");
                 return new CheckGPTResponse { IsError = true, Done = true, Response = new GPTResponse { pretty = "Мы упали" } };
@@ -224,6 +224,7 @@ namespace NutriDbService.Helpers
                     dbreq.Iserror = true;
                     _nutriDbContext.Update(dbreq);
                     await _nutriDbContext.SaveChangesAsync();
+                    throw;
                 }
             }
             try
@@ -238,14 +239,24 @@ namespace NutriDbService.Helpers
                     if (string.IsNullOrEmpty(responseString))
                     {
                         dbreq.Done = true;
-                        dbreq.Answer = "Response Is Empty";
+                        dbreq.Answer = Newtonsoft.Json.JsonConvert.SerializeObject(new GPTResponse { extra = "Response Is Empty" }); ;
                         dbreq.Iserror = true;
                     }
                     else
                     {
-                        dbreq.Done = true;
-                        dbreq.Answer = responseString;
-                        dbreq.Iserror = false;
+                        try
+                        {
+                            var resp = Newtonsoft.Json.JsonConvert.DeserializeObject<GPTAnswerResponse>(responseString);
+                            dbreq.Done = true;
+                            dbreq.Answer = resp.Answer;
+                            dbreq.Iserror = resp?.IsError == true ? true : false;
+                        }
+                        catch (Exception ex)
+                        {
+                            dbreq.Done = true;
+                            dbreq.Answer = Newtonsoft.Json.JsonConvert.SerializeObject(new GPTResponse { extra = "Пустой type" });
+                            dbreq.Iserror = true;
+                        }
                     }
                     _nutriDbContext.Update(dbreq);
                     await _nutriDbContext.SaveChangesAsync();
