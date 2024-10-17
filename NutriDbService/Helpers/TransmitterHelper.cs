@@ -224,7 +224,6 @@ namespace NutriDbService.Helpers
                     dbreq.Iserror = true;
                     _nutriDbContext.Update(dbreq);
                     await _nutriDbContext.SaveChangesAsync();
-                    throw;
                 }
             }
             try
