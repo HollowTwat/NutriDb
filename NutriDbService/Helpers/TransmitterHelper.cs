@@ -247,15 +247,15 @@ namespace NutriDbService.Helpers
                         {
                             var resp = Newtonsoft.Json.JsonConvert.DeserializeObject<GPTAnswerResponse>(responseString);
                             dbreq.Done = true;
-                            dbreq.Answer = resp.Answer;
+                            dbreq.Answer = JsonConvert.SerializeObject(resp.Answer);
                             dbreq.Iserror = resp?.IsError == true ? true : false;
                         }
                         catch (Exception ex)
                         {
                             dbreq.Done = true;
-                            dbreq.Answer = Newtonsoft.Json.JsonConvert.SerializeObject(new GPTResponse { extra = "Кривой ответ" });
+                            dbreq.Answer = Newtonsoft.Json.JsonConvert.SerializeObject(new GPTResponse { extra = $"Кривой ответ:\n{responseString}" });
                             dbreq.Iserror = true;
-                            ErrorHelper.SendErrorMess($"Кривой ответ:{responseString}", ex);
+                            ErrorHelper.SendErrorMess($"Кривой ответ:\n{responseString}", ex);
                         }
                     }
                     _nutriDbContext.Update(dbreq);

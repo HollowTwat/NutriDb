@@ -14,7 +14,7 @@ namespace NutriDbTest
         {
             //var _telegramBotClient = ErrorHelper.GetTelegramBot();
             //ErrorHelper.SendSystemMess("À¿À¿À");
-            var a = new GPTAnswerResponse() { IsError = true, Answer=Newtonsoft.Json.JsonConvert.SerializeObject(new GPTResponse() { extra="extra", food= new List<NutriDbService.PythModels.PythFood> { }, pretty="pretty" }) }; 
+            var a = new GPTAnswerResponse() { IsError = true, Answer=new GPTResponse() { extra="extra", food= new List<NutriDbService.PythModels.PythFood> { }, pretty="pretty" }}; 
            var b=JsonConvert.SerializeObject(a);
             decimal[] values = new decimal[] { 2222.5m, 3132.0m, 2345.7m, 2912.1m, 3123.3m, 1123.1m, 1954.6m };
             string[] labels = new string[] { "Cat 1", "Cat 2", "Cat 3", "Cat 4", "Cat 5", "Cat 6", "Cat 7" };

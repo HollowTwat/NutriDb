@@ -4,7 +4,7 @@
     {
         public bool IsError { get; set; }
 
-        public string Answer { get; set; }
+        public GPTResponse Answer { get; set; }
 
     }
 }
