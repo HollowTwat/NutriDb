@@ -255,7 +255,7 @@ namespace NutriDbService.Helpers
                             dbreq.Done = true;
                             dbreq.Answer = JsonConvert.SerializeObject(new GPTResponse { extra = $"Кривой ответ:\n{responseString}" });
                             dbreq.Iserror = true;
-                            ErrorHelper.SendErrorMess($"Кривой ответ", ex);
+                            ErrorHelper.SendErrorMess($"Кривой ответ:\n{responseString}", ex);
                         }
                     }
                     _nutriDbContext.Update(dbreq);

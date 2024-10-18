@@ -21,24 +21,47 @@ namespace NutriDbService.Helpers
         }
         public static void SendSystemMess(string mess)
         {
-            mess = string.Concat("SYSTEM MESS\n", mess);
-            GetTelegramBot().SendTextMessageAsync(new ChatId(_errorChanelId), mess).GetAwaiter().GetResult();
+            var message = $"SYSTEM MESS:\n{mess}";
+            if (message.Length > 4000)
+            {
+                for (int i = 0; i < message.Length / 4000 + 1; i++)
+                {
+                    var messagePart = message.Substring(i * 4000, message.Length - i * 4000 > 4000 ? 4000 : message.Length - i * 4000);
+                    GetTelegramBot().SendTextMessageAsync(new ChatId(_errorChanelId), messagePart).GetAwaiter().GetResult();
+                }
+            }
+            else
+                GetTelegramBot().SendTextMessageAsync(new ChatId(_errorChanelId), message).GetAwaiter().GetResult();
             //client.SendTextMessageAsync(new ChatId(464682207), mess).GetAwaiter().GetResult();
         }
         public static void SendErrorMess(string mess, Exception ex)
         {
-            mess = string.Concat($"ERROR MESS:\n {DateTime.UtcNow.ToLocalTime().AddHours(3)}", mess);
-
-            mess = string.Concat($"{mess}\n Error Text:\n", Newtonsoft.Json.JsonConvert.SerializeObject(ex));
-            GetTelegramBot().SendTextMessageAsync(new ChatId(_errorChanelId), mess).GetAwaiter().GetResult();
+            var message = $"ERROR MESS:{DateTime.UtcNow.ToLocalTime().AddHours(3)} \n {mess} \n\n Exception Text:\n{Newtonsoft.Json.JsonConvert.SerializeObject(ex)}";
+            if (message.Length > 4000)
+            {
+                for (int i = 0; i < message.Length / 4000 + 1; i++)
+                {
+                    var messagePart = message.Substring(i * 4000, message.Length - i * 4000 > 4000 ? 4000 : message.Length - i * 4000);
+                    GetTelegramBot().SendTextMessageAsync(new ChatId(_errorChanelId), messagePart).GetAwaiter().GetResult();
+                }
+            }
+            else
+                GetTelegramBot().SendTextMessageAsync(new ChatId(_errorChanelId), message).GetAwaiter().GetResult();
             //client.SendTextMessageAsync(new ChatId(464682207), mess).GetAwaiter().GetResult();
         }
         public static void SendErrorMess(string mess)
         {
-            mess = string.Concat($"ERROR MESS\n {DateTime.UtcNow.ToLocalTime().AddHours(3)}", mess);
-
-            mess = string.Concat($" Error Text:\n{mess}\n");
-            GetTelegramBot().SendTextMessageAsync(new ChatId(_errorChanelId), mess).GetAwaiter().GetResult();
+            var message = $"ERROR MESS:{DateTime.UtcNow.ToLocalTime().AddHours(3)} \n Error Text:\n{mess}";
+            if (message.Length > 4000)
+            {
+                for (int i = 0; i < message.Length / 4000 + 1; i++)
+                {
+                    var messagePart = message.Substring(i * 4000, message.Length - i * 4000 > 4000 ? 4000 : message.Length - i * 4000);
+                    GetTelegramBot().SendTextMessageAsync(new ChatId(_errorChanelId), messagePart).GetAwaiter().GetResult();
+                }
+            }
+            else
+                GetTelegramBot().SendTextMessageAsync(new ChatId(_errorChanelId), message).GetAwaiter().GetResult();
             //client.SendTextMessageAsync(new ChatId(464682207), mess).GetAwaiter().GetResult();
         }
     }
