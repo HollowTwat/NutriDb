@@ -270,7 +270,7 @@ namespace NutriDbService.Controllers
                     resp.Add(new GetWeekMealStatusResponse
                     {
 
-                        DisplayDay = ndate.ToString("dd.MM"),
+                        DisplayDay = ndate.ToString("dd.MM.yyyy"),
                         MealStatus = daymeals,
                         isEmpty = isEptyDay,
                         TotalKkal = isEptyDay ? 0.0m : dishes.Where(x => mlIds.Contains(x.MealId)).Select(x => x.Kkal).ToList().Sum()

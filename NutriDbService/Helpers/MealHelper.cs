@@ -50,7 +50,7 @@ namespace NutriDbService.Helpers
             Meal meal;
             if (createMealRequest.mealId == null)
             {
-                //var IsTyme = DateTime.TryParseExact(createMealRequest.EatedAt, "dd.MM.yyyy_HH:mm", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var parseTime);
+                var IsTyme = DateTime.TryParseExact(createMealRequest.EatedAt, "dd.MM.yyyy", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var parseTime);
 
                 meal = new Meal()
                 {
@@ -60,7 +60,7 @@ namespace NutriDbService.Helpers
                     Description = createMealRequest.meal.description,
                     Type = (short)createMealRequest.meal.type,
 
-                    MealTime = DateTime.UtcNow.ToLocalTime().AddHours(3)//IsTyme ? parseTime : DateTime.UtcNow.ToLocalTime().AddHours(3)
+                    MealTime = IsTyme ? parseTime : DateTime.UtcNow.ToLocalTime().AddHours(3)
                 };
 
                 var oldmeal = _nutriDbContext.Meals.SingleOrDefault(x => x.UserId == meal.UserId && x.MealTime.Date == meal.MealTime.Date && x.Type == meal.Type);
@@ -263,7 +263,7 @@ namespace NutriDbService.Helpers
             var meals = _nutriDbContext.Meals.Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).ToList();
             if (!String.IsNullOrEmpty(req.dayStr))
             {
-                meals = meals.Where(x => x.MealTime.Date == DateTime.ParseExact($"{req.dayStr}.{startDate.Year}", "dd.MM.yyyy", CultureInfo.InvariantCulture).Date).ToList();
+                meals = meals.Where(x => x.MealTime.Date == DateTime.ParseExact(req.dayStr, "dd.MM.yyyy", CultureInfo.InvariantCulture).Date).ToList();
             }
             else
             {
