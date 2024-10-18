@@ -220,7 +220,7 @@ namespace NutriDbService.Helpers
                         throw new NullReferenceException($"В бд нет реквеста с id={requstId}");
                     dbreq.FinishDate = DateTime.UtcNow.ToLocalTime().AddHours(3);
                     dbreq.Done = true;
-                    dbreq.Answer = Newtonsoft.Json.JsonConvert.SerializeObject(ex);
+                    dbreq.Answer = JsonConvert.SerializeObject(ex);
                     dbreq.Iserror = true;
                     _nutriDbContext.Update(dbreq);
                     await _nutriDbContext.SaveChangesAsync();
@@ -238,14 +238,14 @@ namespace NutriDbService.Helpers
                     if (string.IsNullOrEmpty(responseString))
                     {
                         dbreq.Done = true;
-                        dbreq.Answer = Newtonsoft.Json.JsonConvert.SerializeObject(new GPTResponse { extra = "Response Is Empty" }); ;
+                        dbreq.Answer = JsonConvert.SerializeObject(new GPTResponse { extra = "Response Is Empty" }); ;
                         dbreq.Iserror = true;
                     }
                     else
                     {
                         try
                         {
-                            var resp = Newtonsoft.Json.JsonConvert.DeserializeObject<GPTAnswerResponse>(responseString);
+                            GPTAnswerResponse resp = JsonConvert.DeserializeObject<GPTAnswerResponse>(responseString);
                             dbreq.Done = true;
                             dbreq.Answer = JsonConvert.SerializeObject(resp.Answer);
                             dbreq.Iserror = resp?.IsError == true ? true : false;
@@ -253,9 +253,9 @@ namespace NutriDbService.Helpers
                         catch (Exception ex)
                         {
                             dbreq.Done = true;
-                            dbreq.Answer = Newtonsoft.Json.JsonConvert.SerializeObject(new GPTResponse { extra = $"Кривой ответ:\n{responseString}" });
+                            dbreq.Answer = JsonConvert.SerializeObject(new GPTResponse { extra = $"Кривой ответ:\n{responseString}" });
                             dbreq.Iserror = true;
-                            ErrorHelper.SendErrorMess($"Кривой ответ:\n{responseString}", ex);
+                            ErrorHelper.SendErrorMess($"Кривой ответ", ex);
                         }
                     }
                     _nutriDbContext.Update(dbreq);

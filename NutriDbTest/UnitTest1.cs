@@ -14,8 +14,11 @@ namespace NutriDbTest
         {
             //var _telegramBotClient = ErrorHelper.GetTelegramBot();
             //ErrorHelper.SendSystemMess("ЛАЛАЛ");
-            var a = new GPTAnswerResponse() { IsError = true, Answer=new GPTResponse() { extra="extra", food= new List<NutriDbService.PythModels.PythFood> { }, pretty="pretty" }}; 
-           var b=JsonConvert.SerializeObject(a);
+            var a = "{   \"IsError\": \"False\",   \"Answer\": \"{'extra': '<b>Лучше положить в корзину что-нибудь другое. Этот продукт не очень полезный. </b>\\\\n\\\\n<b>Вот почему:</b>\\\\n\\\\nВ нём 11 г сахара на 100 г. ВОЗ   рекомендует есть не больше 25 г сахара в день. Подумай, точно ли этот продукт стоит того, чтобы потратить на него большую часть дневной нормы.'}\" }";
+            var c = "{   \"IsError\": \"False\",   \"Answer\": {'extra': '<b>Лучше положить в корзину что-нибудь другое. Этот продукт не очень полезный. </b>\\\\n\\\\n<b>Вот почему:</b>\\\\n\\\\nВ нём 11 г сахара на 100 г. ВОЗ   рекомендует есть не больше 25 г сахара в день. Подумай, точно ли этот продукт стоит того, чтобы потратить на него большую часть дневной нормы.'} }";
+            var b = JsonConvert.DeserializeObject<GPTAnswerResponse>(c);
+                // var a = new GPTAnswerResponse() { IsError = true, Answer=new GPTResponse() { extra="extra", food= new List<NutriDbService.PythModels.PythFood> { }, pretty="pretty" }}; 
+           //var b=JsonConvert.SerializeObject(a);
             decimal[] values = new decimal[] { 2222.5m, 3132.0m, 2345.7m, 2912.1m, 3123.3m, 1123.1m, 1954.6m };
             string[] labels = new string[] { "Cat 1", "Cat 2", "Cat 3", "Cat 4", "Cat 5", "Cat 6", "Cat 7" };
             long tgId = 389054202;
