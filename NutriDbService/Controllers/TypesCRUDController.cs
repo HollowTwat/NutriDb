@@ -379,6 +379,7 @@ namespace NutriDbService.Controllers
                 {
                     user.UserNoId = userNoId;
                     _context.Users.Update(user);
+                    _context.SaveChanges();
                     return Ok(true);
                 }
                 _context.Users.Add(new DbModels.User
