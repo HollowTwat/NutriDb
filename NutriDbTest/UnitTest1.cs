@@ -23,6 +23,8 @@ namespace NutriDbTest
         [Fact]
         public async void Test2()
         {
+            //NotificationHelper help=new NotificationHelper();
+            //await help.SendNotification();
             for (int i = 0; i < 30; i++)
             {
                 Thread.Sleep(800);

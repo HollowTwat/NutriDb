@@ -18,5 +18,6 @@ namespace NutriDbService.DbModels
         public decimal? Timeslide { get; set; }
         public decimal? Goalkk { get; set; }
         public string Goal { get; set; }
+        public DateTime? LastlessonTime { get; set; }
     }
 }

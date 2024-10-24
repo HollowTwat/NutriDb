@@ -380,6 +380,7 @@ namespace NutriDbService.Controllers
                 _context.Users.Add(new DbModels.User
                 {
                     TgId = userTgId,
+                    UserNoId = userNoId,
                     Timezone = 0,
                     StageId = 0,
                     LessonId = 0,
@@ -611,11 +612,13 @@ namespace NutriDbService.Controllers
                     _context.Userinfos.Add(new Userinfo
                     {
                         UserId = userId,
-                        Donelessonlist = lesson.ToString()
+                        Donelessonlist = lesson.ToString(),
+                        LastlessonTime = DateTime.Now,
                     });
                 }
                 else
                 {
+                    usi.LastlessonTime = DateTime.Now;
                     if (usi.Donelessonlist == null)
                         usi.Donelessonlist = $"{lesson}";
                     else

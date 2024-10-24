@@ -261,6 +261,8 @@ namespace NutriDbService.DbModels
 
                 entity.Property(e => e.Timezone).HasColumnName("timezone");
 
+                entity.Property(e => e.UserNoId).HasColumnName("userNoId");
+
                 entity.Property(e => e.Username)
                     .HasMaxLength(255)
                     .HasColumnName("username");
@@ -301,6 +303,11 @@ namespace NutriDbService.DbModels
                 entity.Property(e => e.Height)
                     .HasPrecision(10, 2)
                     .HasColumnName("height");
+
+                entity.Property(e => e.LastlessonTime)
+                    .HasColumnType("timestamp(0) without time zone")
+                    .HasColumnName("lastlessonTime")
+                    .HasDefaultValueSql("now()");
 
                 entity.Property(e => e.MorningPing)
                     .HasMaxLength(255)
