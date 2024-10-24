@@ -376,7 +376,11 @@ namespace NutriDbService.Controllers
                 _logger.LogWarning($"User \n:userTgId={userTgId} userName={userName} userNoId={userNoId}");
                 var user = _context.Users.SingleOrDefault(x => x.TgId == userTgId);
                 if (user != null)
+                {
+                    user.UserNoId = userNoId;
+                    _context.Users.Update(user);
                     return Ok(true);
+                }
                 _context.Users.Add(new DbModels.User
                 {
                     TgId = userTgId,
