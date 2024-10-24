@@ -369,10 +369,11 @@ namespace NutriDbService.Controllers
 
         #region User
         [HttpGet]
-        public ActionResult<GetMealResponse> EnsureUser(long userTgId, string userName)
+        public ActionResult<GetMealResponse> EnsureUser(long userTgId, string userName, long userNoId)
         {
             try
             {
+                _logger.LogWarning($"User \n:userTgId={userTgId} userName={userName} userNoId={userNoId}");
                 var user = _context.Users.SingleOrDefault(x => x.TgId == userTgId);
                 if (user != null)
                     return Ok(true);
