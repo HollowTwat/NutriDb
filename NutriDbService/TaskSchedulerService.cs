@@ -33,6 +33,7 @@ namespace NutriDbService
         //private List<UserPing> _userPings;
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger _logger;
+        private static readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
         public TaskSchedulerService(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
@@ -40,19 +41,19 @@ namespace NutriDbService
         }
         private List<UserPing> GetUserPings()
         {
-            using(var scope = _serviceProvider.CreateScope())
+            using (var scope = _serviceProvider.CreateScope())
             {
                 var _context = scope.ServiceProvider.GetRequiredService<railwayContext>();
-                //List<int> validUsers = new List<int>() { 3, 13, 17 };
+                List<int> validUsers = new List<int>() { 3, 13, 17 };
                 var users = _context.Userinfos.Include(x => x.User).Where(x => x.MorningPing != null).OrderByDescending(x => x.MorningPing)
                     .Select(x => new UserPing { Id = x.UserId, UserNoId = x.User.UserNoId, Ping = (TimeOnly)x.MorningPing, Slide = x.Timeslide }).ToList();
-                //users = users.Where(x => validUsers.Contains(x.Id)).ToList();
-               return users;
+                users = users.Where(x => validUsers.Contains(x.Id)).ToList();
+                return users;
             }
         }
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            var users=GetUserPings();
+            var users = GetUserPings();
             ScheduleTasks(users);
             return Task.CompletedTask;
         }
@@ -108,8 +109,9 @@ namespace NutriDbService
             }
         }
 
-        public void TimerRestart()
+        public async Task TimerRestart()
         {
+            await _semaphore.WaitAsync();
             try
             {
                 lock (_lock)
@@ -132,6 +134,11 @@ namespace NutriDbService
                 _logger.LogError($"TimerRestartError ", ex);
                 ErrorHelper.SendErrorMess($"TimerRestartError ", ex).GetAwaiter().GetResult();
             }
+            finally
+            {
+                _semaphore.Release(); // Высвобождение доступа для других вызовов
+            }
+
         }
 
         //public void UserTimerRestart(int userId)

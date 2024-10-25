@@ -61,7 +61,7 @@ namespace NutriDbService.Controllers
             try
             {
                 var mealId = await _mealHelper.CreateMeal(request);
-                _taskSchedulerService.TimerRestart();
+                await _taskSchedulerService.TimerRestart();
                 //return 0;
                 _logger.LogWarning($"UserTG={request.userTgId} Meal={mealId} was added");
                 return mealId;
@@ -633,7 +633,7 @@ namespace NutriDbService.Controllers
                     }
                 }
                 await _context.SaveChangesAsync();
-                _taskSchedulerService.TimerRestart();
+                //await _taskSchedulerService.TimerRestart();
                 return Ok(true);
             }
             catch (Exception ex)
