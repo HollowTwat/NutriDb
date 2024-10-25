@@ -46,16 +46,16 @@ namespace NutriDbService.Helpers
                     isMealSend = true;
                 if (userInfo.LastlessonTime < DateTime.UtcNow.AddHours(3).AddDays(-1))
                     isDiarySend = true;
-                await SendNot(user.UserNoId, _bothmess);
-                //if (isMealSend && isDiarySend)
-                //    await SendNot(user.UserNoId, _bothmess);
-                //else
-                //{
-                //    if (isDiarySend)
-                //        await SendNot(user.UserNoId, _diarymess);
-                //    if (isMealSend)
-                //        await SendNot(user.UserNoId, _mealmess);
-            //}
+
+                if (isMealSend && isDiarySend)
+                    await SendNot(user.UserNoId, _bothmess);
+                else
+                {
+                    if (isDiarySend)
+                        await SendNot(user.UserNoId, _diarymess);
+                    if (isMealSend)
+                        await SendNot(user.UserNoId, _mealmess);
+                }
                 //await SendNot(user.UserNoId, "37023544");
             }
             catch (Exception ex)
