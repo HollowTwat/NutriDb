@@ -34,7 +34,7 @@ namespace NutriDbService.Helpers
         public async Task<int> CreateGPTRequest(CreateGPTNoCodeRequest request)
         {
             var lastreqid = 0;
-            var req = new Gptrequest { Iserror = false, Request = JsonConvert.SerializeObject(request), Done = false, UserTgid = request.UserTgId, CreationDate = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.UtcNow, "Russian Standard Time"), ReqType = string.IsNullOrEmpty(request?.Type) ? "empty" : request.Type };
+            var req = new Gptrequest { Iserror = false, Request = JsonConvert.SerializeObject(request), Done = false, UserTgid = request.UserTgId, CreationDate = DateTime.UtcNow.ToLocalTime().AddHours(3), ReqType = string.IsNullOrEmpty(request?.Type) ? "empty" : request.Type };
             bool send = true;
 
             var usrId = (await _nutriDbContext.Users.SingleOrDefaultAsync(x => x.TgId == request.UserTgId)).Id;
@@ -220,7 +220,7 @@ namespace NutriDbService.Helpers
                     var dbreq = await _nutriDbContext.Gptrequests.SingleOrDefaultAsync(x => x.Id == requstId);
                     if (dbreq == null)
                         throw new NullReferenceException($"В бд нет реквеста с id={requstId}");
-                    dbreq.FinishDate = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.UtcNow, "Russian Standard Time");
+                    dbreq.FinishDate = DateTime.UtcNow.ToLocalTime().AddHours(3);
                     dbreq.Done = true;
                     dbreq.Answer = JsonConvert.SerializeObject(ex);
                     dbreq.Iserror = true;
@@ -236,7 +236,7 @@ namespace NutriDbService.Helpers
                     var dbreq = await _nutriDbContext.Gptrequests.SingleOrDefaultAsync(x => x.Id == requstId);
                     if (dbreq == null)
                         throw new NullReferenceException($"В бд нет реквеста с id={requstId}");
-                    dbreq.FinishDate = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.UtcNow, "Russian Standard Time");
+                    dbreq.FinishDate = DateTime.UtcNow.ToLocalTime().AddHours(3);
                     if (string.IsNullOrEmpty(responseString))
                     {
                         dbreq.Done = true;

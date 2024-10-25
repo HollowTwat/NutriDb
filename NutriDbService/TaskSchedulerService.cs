@@ -76,7 +76,7 @@ namespace NutriDbService
         private void ScheduleTask(UserPing userPing)
         {
             var dailyTime = userPing.Ping;
-            var currentTime = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.UtcNow, "Russian Standard Time");
+            var currentTime = DateTime.UtcNow.ToLocalTime().AddHours(3);
             var nextOccurrence = CalculateNextOccurrence(currentTime, dailyTime);
             var timeToNextOccurrence = nextOccurrence - currentTime;
 
