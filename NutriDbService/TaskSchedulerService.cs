@@ -44,10 +44,10 @@ namespace NutriDbService
             using (var scope = _serviceProvider.CreateScope())
             {
                 var _context = scope.ServiceProvider.GetRequiredService<railwayContext>();
-                List<int> validUsers = new List<int>() { 3, 13, 17 };
+                //List<int> validUsers = new List<int>() { 3, 13, 17 };
                 var users = _context.Userinfos.Include(x => x.User).Where(x => x.MorningPing != null).OrderByDescending(x => x.MorningPing)
                     .Select(x => new UserPing { Id = x.UserId, UserNoId = x.User.UserNoId, Ping = (TimeOnly)x.MorningPing, Slide = x.Timeslide }).ToList();
-                users = users.Where(x => validUsers.Contains(x.Id)).ToList();
+                //users = users.Where(x => validUsers.Contains(x.Id)).ToList();
                 return users;
             }
         }
@@ -130,12 +130,12 @@ namespace NutriDbService
             }
             catch (Exception ex)
             {
-
                 _logger.LogError($"TimerRestartError ", ex);
                 ErrorHelper.SendErrorMess($"TimerRestartError ", ex).GetAwaiter().GetResult();
             }
             finally
             {
+                _logger.LogWarning($"Notofication Restarted");
                 _semaphore.Release(); // Высвобождение доступа для других вызовов
             }
 

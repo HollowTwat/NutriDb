@@ -61,8 +61,6 @@ namespace NutriDbService.Controllers
             try
             {
                 var mealId = await _mealHelper.CreateMeal(request);
-                await _taskSchedulerService.TimerRestart();
-                //return 0;
                 _logger.LogWarning($"UserTG={request.userTgId} Meal={mealId} was added");
                 return mealId;
             }
@@ -481,7 +479,6 @@ namespace NutriDbService.Controllers
 
                 string goal = string.IsNullOrEmpty(req.Info["user_info_goal"]) ? null : req.Info["user_info_goal"];
 
-
                 if (usi == null)
                 {
                     await _context.Userinfos.AddAsync(new Userinfo
@@ -514,6 +511,8 @@ namespace NutriDbService.Controllers
                     _context.Update(usi);
                 }
                 await _context.SaveChangesAsync();
+                if (IsmorningPing)
+                    await _taskSchedulerService.TimerRestart();
                 return Ok(true);
             }
             catch (Exception ex)
@@ -533,7 +532,7 @@ namespace NutriDbService.Controllers
             {
                 var userId = (await _context.Users.SingleOrDefaultAsync(x => x.TgId == req.UserTgId)).Id;
                 var usi = await _context.Userinfos.SingleOrDefaultAsync(x => x.UserId == userId);
-
+                bool ismorningPing = false;
                 if (usi == null)
                 {
                     return Problem("У пользователя нет доп информации");
@@ -573,7 +572,7 @@ namespace NutriDbService.Controllers
                     if (goalkk != null)
                         usi.Goalkk = goalkk;
 
-                    bool ismorningPing = req.Info.ContainsKey("user_info_morning_ping") == true ? (string.IsNullOrEmpty(req.Info["user_info_morning_ping"]) ? false : TimeOnly.TryParseExact(req.Info["user_info_morning_ping"], "HH:mm", out var m)) : false;
+                    ismorningPing = req.Info.ContainsKey("user_info_morning_ping") == true ? (string.IsNullOrEmpty(req.Info["user_info_morning_ping"]) ? false : TimeOnly.TryParseExact(req.Info["user_info_morning_ping"], "HH:mm", out var m)) : false;
                     if (ismorningPing)
                         usi.MorningPing = m;
 
@@ -593,6 +592,8 @@ namespace NutriDbService.Controllers
                     _context.Update(usi);
                 }
                 await _context.SaveChangesAsync();
+                if (ismorningPing)
+                    await _taskSchedulerService.TimerRestart();
                 return Ok(true);
             }
             catch (Exception ex)
@@ -633,7 +634,6 @@ namespace NutriDbService.Controllers
                     }
                 }
                 await _context.SaveChangesAsync();
-                //await _taskSchedulerService.TimerRestart();
                 return Ok(true);
             }
             catch (Exception ex)
