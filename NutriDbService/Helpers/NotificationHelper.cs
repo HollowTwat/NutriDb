@@ -34,27 +34,34 @@ namespace NutriDbService.Helpers
         }
         public async Task SendNotification(int UserId)
         {
-            bool isMealSend = false;
-            bool isDiarySend = false;
-            var user = await _context.Users.SingleAsync(x => x.Id == UserId);
-            var userInfo = await _context.Userinfos.SingleAsync(x => x.UserId == UserId);
-            var meals = await _context.Meals.Where(x => x.UserId == UserId).OrderByDescending(x => x.MealTime).FirstOrDefaultAsync();
-            var lastMealTime = meals?.MealTime;
-            if (lastMealTime != null && lastMealTime < DateTime.UtcNow.AddHours(3).AddDays(-1))
-                isMealSend = true;
-            if (userInfo.LastlessonTime < DateTime.UtcNow.AddHours(3).AddDays(-1))
-                isDiarySend = true;
-            if (isMealSend && isDiarySend)
-                await SendNot(user.UserNoId, _bothmess);
-            else
+            try
             {
-                if (isDiarySend)
-                    await SendNot(user.UserNoId, _diarymess);
-                if (isMealSend)
-                    await SendNot(user.UserNoId, _mealmess);
+                bool isMealSend = false;
+                bool isDiarySend = false;
+                var user = await _context.Users.SingleAsync(x => x.Id == UserId);
+                var userInfo = await _context.Userinfos.SingleAsync(x => x.UserId == UserId);
+                var meals = await _context.Meals.Where(x => x.UserId == UserId).OrderByDescending(x => x.MealTime).FirstOrDefaultAsync();
+                var lastMealTime = meals?.MealTime;
+                if (lastMealTime != null && lastMealTime < DateTime.UtcNow.AddHours(3).AddDays(-1))
+                    isMealSend = true;
+                if (userInfo.LastlessonTime < DateTime.UtcNow.AddHours(3).AddDays(-1))
+                    isDiarySend = true;
+                await SendNot(user.UserNoId, _bothmess);
+                //if (isMealSend && isDiarySend)
+                //    await SendNot(user.UserNoId, _bothmess);
+                //else
+                //{
+                //    if (isDiarySend)
+                //        await SendNot(user.UserNoId, _diarymess);
+                //    if (isMealSend)
+                //        await SendNot(user.UserNoId, _mealmess);
+            //}
+                //await SendNot(user.UserNoId, "37023544");
             }
-            await SendNot(user.UserNoId, "37023544");
-
+            catch (Exception ex)
+            {
+                await ErrorHelper.SendErrorMess($"NotificationSendError for User:{UserId}", ex);
+            }
 
         }
     }
