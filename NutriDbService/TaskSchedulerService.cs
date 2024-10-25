@@ -55,7 +55,7 @@ namespace NutriDbService
             {
                 foreach (var userPing in usersPings)
                 {
-                    userPing.Ping = new TimeOnly(3, 20);
+                    //userPing.Ping = new TimeOnly(3, 25);
                     if (userPing.Slide != null)
                         userPing.Ping.AddHours((double)userPing.Slide);
                     ScheduleTask(userPing);
