@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using NutriDbService.DbModels;
@@ -36,9 +37,9 @@ namespace NutriDbService.Helpers
             var req = new Gptrequest { Iserror = false, Request = JsonConvert.SerializeObject(request), Done = false, UserTgid = request.UserTgId, CreationDate = DateTime.UtcNow.ToLocalTime().AddHours(3), ReqType = string.IsNullOrEmpty(request?.Type) ? "empty" : request.Type };
             bool send = true;
 
-            var usrId = _nutriDbContext.Users.SingleOrDefault(x => x.TgId == request.UserTgId).Id;
+            var usrId = (await _nutriDbContext.Users.SingleOrDefaultAsync(x => x.TgId == request.UserTgId)).Id;
 
-            var isEmptyExtra = _nutriDbContext.Userinfos.Any(x => x.UserId == usrId && string.IsNullOrEmpty(x.Extra));
+            var isEmptyExtra = await _nutriDbContext.Userinfos.AnyAsync(x => x.UserId == usrId && string.IsNullOrEmpty(x.Extra));
 
             CreateGPTPythRequest reqparams = new CreateGPTPythRequest();
             switch (request?.Type)
@@ -108,7 +109,7 @@ namespace NutriDbService.Helpers
                     break;
                 default:
                     _logger.LogWarning($"Пустой type");
-                    ErrorHelper.SendErrorMess("Пустой type");
+                    await ErrorHelper.SendErrorMess("Пустой type");
                     send = false;
                     req.Answer = Newtonsoft.Json.JsonConvert.SerializeObject(new GPTResponse { extra = "Пустой type" });
                     req.Done = true;
@@ -126,11 +127,11 @@ namespace NutriDbService.Helpers
             return req.Id;
         }
 
-        public CheckGPTResponse CheckGPT(int requestId)
+        public async Task<CheckGPTResponse> CheckGPT(int requestId)
         {
             try
             {
-                var gptreq = _nutriDbContext.Gptrequests.SingleOrDefault(x => x.Id == requestId);
+                var gptreq = await _nutriDbContext.Gptrequests.SingleOrDefaultAsync(x => x.Id == requestId);
                 if (gptreq == null)
                     return new CheckGPTResponse
                     {
@@ -147,29 +148,30 @@ namespace NutriDbService.Helpers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Упали при попытке получить статус");
-                ErrorHelper.SendErrorMess("CheckGPT Error", ex);
-                ErrorHelper.SendErrorMess($"Input:{requestId}");
+                await ErrorHelper.SendErrorMess("CheckGPT Error", ex);
+                await ErrorHelper.SendErrorMess($"Input:{requestId}");
                 return new CheckGPTResponse { IsError = true, Done = true, Response = new GPTResponse { pretty = "Мы упали" } };
             }
         }
 
-        public CreateGPTNoCodeRequest CreateRateRequest(RateRequest ratereq, MealHelper mealHelper)
+        public async Task<CreateGPTNoCodeRequest> CreateRateRequest(RateRequest ratereq, MealHelper mealHelper)
         {
             var mealresp = new List<MealResponse>();
             switch (ratereq.AssistantType)
             {
                 case "week":
-                    mealresp = mealHelper.GetMeals(new GetUserMealsRequest { userTgId = ratereq.UserTgId, period = PythModels.Periods.mathweek });
+                    mealresp = await mealHelper.GetMeals(new GetUserMealsRequest { userTgId = ratereq.UserTgId, period = PythModels.Periods.mathweek });
                     break;
                 case "twone":
-                    mealresp = mealHelper.GetMeals(new GetUserMealsRequest { userTgId = ratereq.UserTgId, period = PythModels.Periods.math3weeks });
+                    mealresp = await mealHelper.GetMeals(new GetUserMealsRequest { userTgId = ratereq.UserTgId, period = PythModels.Periods.math3weeks });
                     break;
                 default:
                     throw new ArgumentNullException("Пустой AssistantType");
             }
             if (!mealresp.Any())
                 throw new EmptyMealException();
-            var useri = _nutriDbContext.Userinfos.Single(x => x.UserId == _nutriDbContext.Users.Single(x => x.TgId == ratereq.UserTgId).Id);
+            var userId = (await _nutriDbContext.Users.SingleAsync(x => x.TgId == ratereq.UserTgId)).Id;
+            var useri = await _nutriDbContext.Userinfos.SingleAsync(x => x.UserId == userId);
             var ext = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, string>>(useri.Extra);
             RateQuestion rateQuestion = new RateQuestion
             {
@@ -211,11 +213,11 @@ namespace NutriDbService.Helpers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Упали при создании реквеста");
-                ErrorHelper.SendErrorMess("Упали при создании реквеста", ex);
+                await ErrorHelper.SendErrorMess("Упали при создании реквеста", ex);
                 using (var scope = _serviceProviderFactory.CreateScope().ServiceProvider.CreateScope())
                 {
                     var _nutriDbContext = scope.ServiceProvider.GetRequiredService<railwayContext>();
-                    var dbreq = _nutriDbContext.Gptrequests.SingleOrDefault(x => x.Id == requstId);
+                    var dbreq = await _nutriDbContext.Gptrequests.SingleOrDefaultAsync(x => x.Id == requstId);
                     if (dbreq == null)
                         throw new NullReferenceException($"В бд нет реквеста с id={requstId}");
                     dbreq.FinishDate = DateTime.UtcNow.ToLocalTime().AddHours(3);
@@ -231,7 +233,7 @@ namespace NutriDbService.Helpers
                 using (var scope = _serviceProviderFactory.CreateScope().ServiceProvider.CreateScope())
                 {
                     var _nutriDbContext = scope.ServiceProvider.GetRequiredService<railwayContext>();
-                    var dbreq = _nutriDbContext.Gptrequests.SingleOrDefault(x => x.Id == requstId);
+                    var dbreq = await _nutriDbContext.Gptrequests.SingleOrDefaultAsync(x => x.Id == requstId);
                     if (dbreq == null)
                         throw new NullReferenceException($"В бд нет реквеста с id={requstId}");
                     dbreq.FinishDate = DateTime.UtcNow.ToLocalTime().AddHours(3);
@@ -255,7 +257,7 @@ namespace NutriDbService.Helpers
                             dbreq.Done = true;
                             dbreq.Answer = JsonConvert.SerializeObject(new GPTResponse { extra = $"Кривой ответ:\n{responseString}" });
                             dbreq.Iserror = true;
-                            ErrorHelper.SendErrorMess($"Кривой ответ:\n{responseString}", ex);
+                            await ErrorHelper.SendErrorMess($"Кривой ответ:\n{responseString}", ex);
                         }
                     }
                     _nutriDbContext.Update(dbreq);
@@ -266,7 +268,7 @@ namespace NutriDbService.Helpers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Неизвестное падение при попытке создать запрос к ГПТ");
-                ErrorHelper.SendErrorMess("Неизвестное падение при попытке создать запрос к ГПТ", ex);
+                await ErrorHelper.SendErrorMess("Неизвестное падение при попытке создать запрос к ГПТ", ex);
                 throw new Exception("Упали при попытке создать запрос к ГПТ", ex);
             }
         }

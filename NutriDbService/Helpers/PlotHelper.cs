@@ -28,7 +28,7 @@ namespace NutriDbService.Helpers
         {
             //_logger = serviceProvider.GetRequiredService<ILogger<TransmitterHelper>>(); ;
         }
-        public void SendPlot(decimal[] values, string[] labels, long userTgId, decimal? goalkk)
+        public async Task SendPlot(decimal[] values, string[] labels, long userTgId, decimal? goalkk)
         {
             string filePath = $"{Guid.NewGuid().ToString()}.png";
 
@@ -37,7 +37,7 @@ namespace NutriDbService.Helpers
 
 
             CreateBarChart(values, labels, filePath, goalkk);
-            SendPhotoAsync(userTgId, filePath).GetAwaiter().GetResult();
+            await SendPhotoAsync(userTgId, filePath);
             System.IO.File.Delete(filePath);
         }
         private async Task SendPhotoAsync(long chatId, string filePath)

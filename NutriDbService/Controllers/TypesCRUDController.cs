@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using NutriDbService.DbModels;
 using NutriDbService.Helpers;
@@ -10,6 +11,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Telegram.Bot.Requests.Abstractions;
 
 namespace NutriDbService.Controllers
@@ -54,11 +56,11 @@ namespace NutriDbService.Controllers
 
         #region Meal
         [HttpPost]
-        public int CreateMeal(EditMealRequest request)
+        public async Task<int> CreateMeal(EditMealRequest request)
         {
             try
             {
-                var mealId = _mealHelper.CreateMeal(request);
+                var mealId = await _mealHelper.CreateMeal(request);
                 _taskSchedulerService.UserTimerRestart(_context.Users.Single(x => x.TgId == request.userTgId).Id);
                 _logger.LogWarning($"UserTG={request.userTgId} Meal={mealId} was added");
                 return mealId;
@@ -67,19 +69,19 @@ namespace NutriDbService.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Meal Create Error");
-                ErrorHelper.SendErrorMess("Meal Create Error", ex);
-                ErrorHelper.SendErrorMess($"Input: {request}");
+                await ErrorHelper.SendErrorMess("Meal Create Error", ex);
+                await ErrorHelper.SendErrorMess($"Input: {request}");
                 return 0;
                 //return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
         }
 
         [HttpPost]
-        public bool EditMeal(EditMealRequest request)
+        public async Task<bool> EditMeal(EditMealRequest request)
         {
             try
             {
-                var res = _mealHelper.EditMeal(request);
+                var res = await _mealHelper.EditMeal(request);
                 _logger.LogWarning($"User={request.userTgId} Meal={res} was edited");
                 return true;
                 // return Ok(res);
@@ -87,19 +89,19 @@ namespace NutriDbService.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Meal Edit Error");
-                ErrorHelper.SendErrorMess("Meal Edit Error", ex);
-                ErrorHelper.SendErrorMess($"Input: {request}");
+                await ErrorHelper.SendErrorMess("Meal Edit Error", ex);
+                await ErrorHelper.SendErrorMess($"Input: {request}");
                 return false;
                 //return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
         }
 
         [HttpPost]
-        public bool DeleteMeal(int mealId, long userTgId)
+        public async Task<bool> DeleteMeal(int mealId, long userTgId)
         {
             try
             {
-                var res = _mealHelper.DeleteMeal(mealId, userTgId);
+                var res = await _mealHelper.DeleteMeal(mealId, userTgId);
                 if (res != 0)
                 {
                     _logger.LogWarning($"User={userTgId} Meal={res} was deleted");
@@ -115,7 +117,7 @@ namespace NutriDbService.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Meal Edit Error");
-                ErrorHelper.SendErrorMess("Meal Delete Error", ex);
+                await ErrorHelper.SendErrorMess("Meal Delete Error", ex);
                 return false;
                 //return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
@@ -167,18 +169,18 @@ namespace NutriDbService.Controllers
         }
 
         [HttpGet]
-        public ActionResult<GetMealResponse> GetUserMealById(long userTgId, long mealId)
+        public async Task<ActionResult<GetMealResponse>> GetUserMealById(long userTgId, long mealId)
         {
             try
             {
-                var user = _context.Users.SingleOrDefault(x => x.TgId == userTgId);
+                var user = await _context.Users.SingleOrDefaultAsync(x => x.TgId == userTgId);
                 if (user == null)
                     throw new Exception($"I Cant Find User : {userTgId}");
-                var meal = _context.Meals.SingleOrDefault(x => x.UserId == user.Id && x.Id == mealId);
+                var meal = await _context.Meals.SingleOrDefaultAsync(x => x.UserId == user.Id && x.Id == mealId);
                 if (meal == null)
                     throw new Exception($"I Cant Find meal : {mealId}");
 
-                var dishes = _context.Dishes.Where(x => x.MealId == mealId);
+                var dishes = await _context.Dishes.Where(x => x.MealId == mealId).ToListAsync();
                 var resp = new List<MealResponse>
                 {
                     new MealResponse()
@@ -191,7 +193,7 @@ namespace NutriDbService.Controllers
                             description = meal.Description,
                             totalWeight = meal.Weight,
                             type = (mealtype)meal.Type,
-                            food = dishes.Where(x => x.MealId == meal.Id).ToList().Select(x => new PythModels.PythFood()
+                            food = dishes.Where(x => x.MealId == meal.Id).Select(x => new PythModels.PythFood()
                             {
                                 description = x.Description,
                                 weight = x.Weight,
@@ -205,57 +207,57 @@ namespace NutriDbService.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message);
-                ErrorHelper.SendErrorMess("GetUserMealById Error", ex);
+                await ErrorHelper.SendErrorMess("GetUserMealById Error", ex);
                 return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
         }
 
         [HttpPost]
-        public ActionResult<GetMealResponse> GetUserMeals(GetUserMealsRequest req)
+        public async Task<ActionResult<GetMealResponse>> GetUserMeals(GetUserMealsRequest req)
         {
             try
             {
-                var resp = _mealHelper.GetMeals(req);
+                var resp = await _mealHelper.GetMeals(req);
                 return Ok(Newtonsoft.Json.JsonConvert.SerializeObject(new GetMealResponse(resp)));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message);
-                ErrorHelper.SendErrorMess("GetUserMeals Error", ex);
-                ErrorHelper.SendErrorMess($"Input: {req}");
+                await ErrorHelper.SendErrorMess("GetUserMeals Error", ex);
+                await ErrorHelper.SendErrorMess($"Input: {req}");
                 return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
         }
 
         [HttpPost]
-        public ActionResult<GetMealResponseV2> GetSingleUserMeal(GetUserMealsRequest req)
+        public async Task<ActionResult<GetMealResponseV2>> GetSingleUserMeal(GetUserMealsRequest req)
         {
             try
             {
-                var resp = _mealHelper.GetSingleMeal(req);
+                var resp = await _mealHelper.GetSingleMeal(req);
                 return Ok(Newtonsoft.Json.JsonConvert.SerializeObject(new GetMealResponseV2(resp)));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message);
-                ErrorHelper.SendErrorMess("GetSingleUserMeal Error", ex);
-                ErrorHelper.SendErrorMess($"Input: {req}");
+                await ErrorHelper.SendErrorMess("GetSingleUserMeal Error", ex);
+                await ErrorHelper.SendErrorMess($"Input: {req}");
                 return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
         }
 
         [HttpGet]
-        public ActionResult<List<GetWeekMealStatusResponse>> GetUserWeekMealsStatus(long userTgId)
+        public async Task<ActionResult<List<GetWeekMealStatusResponse>>> GetUserWeekMealsStatus(long userTgId)
         {
             try
             {
-                var user = _context.Users.SingleOrDefault(x => x.TgId == userTgId);
+                var user = await _context.Users.SingleOrDefaultAsync(x => x.TgId == userTgId);
                 if (user == null)
                     throw new Exception($"I Cant Find User : {userTgId}");
 
                 var startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-7).Date;
-                var meals = _context.Meals.Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).ToList();
-                var dishes = _context.Dishes.Where(x => meals.Select(x => x.Id).ToList().Contains(x.MealId));
+                var meals = await _context.Meals.Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).ToListAsync();
+                var dishes = await _context.Dishes.Where(x => meals.Select(x => x.Id).Contains(x.MealId)).ToListAsync();
                 var resp = new List<GetWeekMealStatusResponse>();
                 for (var i = 1; i <= 7; i++)
                 {
@@ -287,17 +289,17 @@ namespace NutriDbService.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message);
-                ErrorHelper.SendErrorMess("GetUserWeekMealsStatus Error", ex);
+                await ErrorHelper.SendErrorMess("GetUserWeekMealsStatus Error", ex);
                 return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
         }
 
         [HttpGet]
-        public ActionResult<GetMealTotalResponse> GetUserMealsTotal(long userTgId, Periods period)
+        public async Task<ActionResult<GetMealTotalResponse>> GetUserMealsTotal(long userTgId, Periods period)
         {
             try
             {
-                var user = _context.Users.SingleOrDefault(x => x.TgId == userTgId);
+                var user = await _context.Users.SingleOrDefaultAsync(x => x.TgId == userTgId);
                 if (user == null)
                     throw new Exception($"I Cant Find User : {userTgId}");
 
@@ -323,8 +325,8 @@ namespace NutriDbService.Controllers
                         break;
                 }
                 daysinperiod = (now - startDate).Days;
-                var mealsIds = _context.Meals.Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).Select(x => x.Id).ToList();
-                var dishes = _context.Dishes.Where(x => mealsIds.Contains(x.MealId)).ToList();
+                var mealsIds = await _context.Meals.Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).Select(x => x.Id).ToListAsync();
+                var dishes = await _context.Dishes.Where(x => mealsIds.Contains(x.MealId)).ToListAsync();
                 var resp = new GetMealTotalResponse();
                 foreach (var dish in dishes)
                 {
@@ -334,7 +336,7 @@ namespace NutriDbService.Controllers
                     resp.TotalFats += dish.Fats;
                     resp.TotalKkal += dish.Kkal;
                 }
-                var extra = _context.Userinfos.SingleOrDefault(x => x.UserId == user.Id).Extra;
+                var extra = (await _context.Userinfos.SingleOrDefaultAsync(x => x.UserId == user.Id)).Extra;
                 if (extra == null) { resp.GoalKkal = 0.0m; }
                 else
                 {
@@ -345,21 +347,21 @@ namespace NutriDbService.Controllers
             }
             catch (Exception ex)
             {
-                ErrorHelper.SendErrorMess("GetUserMealsTotal Error", ex);
+                await ErrorHelper.SendErrorMess("GetUserMealsTotal Error", ex);
                 _logger.LogError(ex, ex.Message);
                 return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
         }
 
         [HttpPost]
-        public ActionResult<int> CreateMealFromUnicode(string request)
+        public async Task<ActionResult<int>> CreateMealFromUnicode(string request)
         {
             try
             {
                 request = request.Replace("\\\"", "\"");
                 request = Regex.Unescape(request);
                 var inp = Newtonsoft.Json.JsonConvert.DeserializeObject<EditMealRequest>(request);
-                var res = _mealHelper.CreateMeal(inp);
+                var res = await _mealHelper.CreateMeal(inp);
                 return Ok(res);
             }
             catch (Exception ex)
@@ -373,12 +375,12 @@ namespace NutriDbService.Controllers
 
         #region User
         [HttpGet]
-        public ActionResult<GetMealResponse> EnsureUser(long userTgId, string userName, long userNoId)
+        public async Task<ActionResult<GetMealResponse>> EnsureUser(long userTgId, string userName, long userNoId)
         {
             try
             {
                 _logger.LogWarning($"User \n:userTgId={userTgId} userName={userName} userNoId={userNoId}");
-                var user = _context.Users.SingleOrDefault(x => x.TgId == userTgId);
+                var user = await _context.Users.SingleOrDefaultAsync(x => x.TgId == userTgId);
                 if (user != null)
                     return Ok(true);
                 _context.Users.Add(new DbModels.User
@@ -392,7 +394,7 @@ namespace NutriDbService.Controllers
                     IsActive = true,
                     Username = string.IsNullOrEmpty(userName) ? null : userName,
                 });
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
                 return Ok(true);
             }
             catch (Exception ex)
@@ -403,21 +405,21 @@ namespace NutriDbService.Controllers
         }
 
         [HttpPost]
-        public ActionResult<bool> GetUserWeekPlot(long userTgId)
+        public async Task<ActionResult<bool>> GetUserWeekPlot(long userTgId)
         {
             try
             {
-                var user = _context.Users.SingleOrDefault(x => x.TgId == userTgId);
+                var user = await _context.Users.SingleOrDefaultAsync(x => x.TgId == userTgId);
                 if (user == null)
                     throw new Exception($"I Cant Find User : {userTgId}");
-                var goalkk = _context.Userinfos.SingleOrDefault(x => x.UserId == user.Id).Goalkk;
+                var goalkk = (await _context.Userinfos.SingleOrDefaultAsync(x => x.UserId == user.Id)).Goalkk;
                 DateTime startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-7).Date;
                 int daysinperiod = 0;
                 var now = DateTime.UtcNow.ToLocalTime().AddHours(3).Date;
 
                 daysinperiod = now.Day - startDate.Day;
-                var meals = _context.Meals.Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).ToList();
-                var dishes = _context.Dishes.Where(x => meals.Select(x => x.Id).Contains(x.MealId)).ToList();
+                var meals = await _context.Meals.Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).ToListAsync();
+                var dishes = await _context.Dishes.Where(x => meals.Select(x => x.Id).Contains(x.MealId)).ToListAsync();
                 //List<(string, decimal)> plotPairs = new List<(string, decimal)>();
                 decimal[] values = new decimal[7];
                 string[] labels = new string[7];
@@ -441,7 +443,7 @@ namespace NutriDbService.Controllers
                 }
                 if (values.Any(x => x > 0))
                 {
-                    _plotHelper.SendPlot(values, labels, userTgId, goalkk);
+                    await _plotHelper.SendPlot(values, labels, userTgId, goalkk);
                     return Ok(true);
                 }
                 else
@@ -451,7 +453,7 @@ namespace NutriDbService.Controllers
             }
             catch (Exception ex)
             {
-                ErrorHelper.SendErrorMess("GetUserWeekPlot Error", ex);
+                await ErrorHelper.SendErrorMess("GetUserWeekPlot Error", ex);
                 _logger.LogError(ex, ex.Message);
                 return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
@@ -459,12 +461,12 @@ namespace NutriDbService.Controllers
 
 
         [HttpPost]
-        public ActionResult<bool> AddUserExtraInfo(AddUserExtraRequest req)
+        public async Task<ActionResult<bool>> AddUserExtraInfo(AddUserExtraRequest req)
         {
             try
             {
-                var userId = _context.Users.SingleOrDefault(x => x.TgId == req.UserTgId).Id;
-                var usi = _context.Userinfos.SingleOrDefault(x => x.UserId == userId);
+                var userId = (await _context.Users.SingleOrDefaultAsync(x => x.TgId == req.UserTgId)).Id;
+                var usi = await _context.Userinfos.SingleOrDefaultAsync(x => x.UserId == userId);
                 var info = Newtonsoft.Json.JsonConvert.SerializeObject(req.Info);
 
                 short? age = string.IsNullOrEmpty(req.Info["user_info_age"]) ? null : short.Parse(req.Info["user_info_age"]);
@@ -482,7 +484,7 @@ namespace NutriDbService.Controllers
 
                 if (usi == null)
                 {
-                    _context.Userinfos.Add(new Userinfo
+                    await _context.Userinfos.AddAsync(new Userinfo
                     {
                         UserId = userId,
                         Extra = info,
@@ -511,26 +513,26 @@ namespace NutriDbService.Controllers
                     usi.Goal = goal;
                     _context.Update(usi);
                 }
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
                 return Ok(true);
             }
             catch (Exception ex)
             {
 
                 _logger.LogError(ex, ex.Message);
-                ErrorHelper.SendErrorMess("AddUserExtraInfo Error", ex);
-                ErrorHelper.SendErrorMess($"Input: {req}");
+                await ErrorHelper.SendErrorMess("AddUserExtraInfo Error", ex);
+                await ErrorHelper.SendErrorMess($"Input: {req}");
                 return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
         }
 
         [HttpPost]
-        public ActionResult<bool> AddOrUpdateUserExtraInfo(AddUserExtraRequest req)
+        public async Task<ActionResult<bool>> AddOrUpdateUserExtraInfo(AddUserExtraRequest req)
         {
             try
             {
-                var userId = _context.Users.SingleOrDefault(x => x.TgId == req.UserTgId).Id;
-                var usi = _context.Userinfos.SingleOrDefault(x => x.UserId == userId);
+                var userId = (await _context.Users.SingleOrDefaultAsync(x => x.TgId == req.UserTgId)).Id;
+                var usi = await _context.Userinfos.SingleOrDefaultAsync(x => x.UserId == userId);
 
                 if (usi == null)
                 {
@@ -590,28 +592,28 @@ namespace NutriDbService.Controllers
 
                     _context.Update(usi);
                 }
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
                 return Ok(true);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message);
-                ErrorHelper.SendErrorMess("AddOrUpdateUserExtraInfo Error", ex);
-                ErrorHelper.SendErrorMess($"Input={Newtonsoft.Json.JsonConvert.SerializeObject(req)}");
+                await ErrorHelper.SendErrorMess("AddOrUpdateUserExtraInfo Error", ex);
+                await ErrorHelper.SendErrorMess($"Input={Newtonsoft.Json.JsonConvert.SerializeObject(req)}");
                 return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
         }
 
         [HttpPost]
-        public ActionResult<bool> AddUserLesson(long UserTgId, int lesson)
+        public async Task<ActionResult<bool>> AddUserLesson(long UserTgId, int lesson)
         {
             try
             {
-                var userId = _context.Users.SingleOrDefault(x => x.TgId == UserTgId).Id;
-                var usi = _context.Userinfos.SingleOrDefault(x => x.UserId == userId);
+                var userId = (await _context.Users.SingleOrDefaultAsync(x => x.TgId == UserTgId)).Id;
+                var usi = await _context.Userinfos.SingleOrDefaultAsync(x => x.UserId == userId);
                 if (usi == null)
                 {
-                    _context.Userinfos.Add(new Userinfo
+                    await _context.Userinfos.AddAsync(new Userinfo
                     {
                         UserId = userId,
                         Donelessonlist = lesson.ToString(),
@@ -630,25 +632,25 @@ namespace NutriDbService.Controllers
                         _context.Update(usi);
                     }
                 }
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
                 _taskSchedulerService.UserTimerRestart(userId);
                 return Ok(true);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message);
-                ErrorHelper.SendErrorMess("AddUserLesson Error", ex);
+                await ErrorHelper.SendErrorMess("AddUserLesson Error", ex);
                 return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
         }
 
         [HttpGet]
-        public ActionResult<List<bool>> GetUserLessons(long UserTgId)
+        public async Task<ActionResult<List<bool>>> GetUserLessons(long UserTgId)
         {
             try
             {
-                var userId = _context.Users.SingleOrDefault(x => x.TgId == UserTgId).Id;
-                var usi = _context.Userinfos.SingleOrDefault(x => x.UserId == userId);
+                var userId = (await _context.Users.SingleOrDefaultAsync(x => x.TgId == UserTgId)).Id;
+                var usi = await _context.Userinfos.SingleOrDefaultAsync(x => x.UserId == userId);
                 //var res = new List<(string, bool)>();
                 var res2 = new List<bool>();
                 List<string> usisplit = new List<string>();
@@ -680,12 +682,12 @@ namespace NutriDbService.Controllers
         }
 
         [HttpGet]
-        public ActionResult<GetUserPingResponse> GetUserPing(long UserTgId, short TimeOfDay)
+        public async Task<ActionResult<GetUserPingResponse>> GetUserPing(long UserTgId, short TimeOfDay)
         {
             try
             {
-                var userId = _context.Users.SingleOrDefault(x => x.TgId == UserTgId).Id;
-                var usi = _context.Userinfos.SingleOrDefault(x => x.UserId == userId);
+                var userId = (await _context.Users.SingleOrDefaultAsync(x => x.TgId == UserTgId)).Id;
+                var usi = await _context.Userinfos.SingleOrDefaultAsync(x => x.UserId == userId);
                 var now = DateTime.UtcNow.ToLocalTime().AddHours(3);
                 if (usi.MorningPing == null || usi.EveningPing == null || usi.Timeslide == null)
                     return new GetUserPingResponse { MskTime = null };
@@ -711,12 +713,12 @@ namespace NutriDbService.Controllers
             }
         }
         [HttpGet]
-        public ActionResult<GetUserPingResponse> GetCustomPing(long UserTgId, string TimeToSlide)
+        public async Task<ActionResult<GetUserPingResponse>> GetCustomPing(long UserTgId, string TimeToSlide)
         {
             try
             {
-                var userId = _context.Users.SingleOrDefault(x => x.TgId == UserTgId).Id;
-                var usi = _context.Userinfos.SingleOrDefault(x => x.UserId == userId);
+                var userId = (await _context.Users.SingleOrDefaultAsync(x => x.TgId == UserTgId)).Id;
+                var usi = await _context.Userinfos.SingleOrDefaultAsync(x => x.UserId == userId);
                 var now = DateTime.UtcNow.ToLocalTime().AddHours(3);
                 if (usi.Timeslide == null)
                     return new GetUserPingResponse { MskTime = null };
@@ -741,12 +743,12 @@ namespace NutriDbService.Controllers
         }
 
         [HttpGet]
-        public ActionResult<int> GetLastUserLesson(long UserTgId)
+        public async Task<ActionResult<int>> GetLastUserLesson(long UserTgId)
         {
             try
             {
-                var userId = _context.Users.SingleOrDefault(x => x.TgId == UserTgId).Id;
-                var usi = _context.Userinfos.SingleOrDefault(x => x.UserId == userId);
+                var userId = (await _context.Users.SingleOrDefaultAsync(x => x.TgId == UserTgId)).Id;
+                var usi = await _context.Userinfos.SingleOrDefaultAsync(x => x.UserId == userId);
                 if (usi == null)
                 {
                     return 0;
@@ -758,19 +760,19 @@ namespace NutriDbService.Controllers
             }
             catch (Exception ex)
             {
-                ErrorHelper.SendErrorMess("GetLastUserLesson Error", ex);
+                await ErrorHelper.SendErrorMess("GetLastUserLesson Error", ex);
                 _logger.LogError(ex, ex.Message);
                 return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
         }
 
         [HttpPost]
-        public ActionResult<Dictionary<string, string>> GetUserExtraInfo(long userTgId)
+        public async Task<ActionResult<Dictionary<string, string>>> GetUserExtraInfo(long userTgId)
         {
             try
             {
-                var userId = _context.Users.SingleOrDefault(x => x.TgId == userTgId).Id;
-                var usi = _context.Userinfos.SingleOrDefault(x => x.UserId == userId);
+                var userId = (await _context.Users.SingleOrDefaultAsync(x => x.TgId == userTgId)).Id;
+                var usi = await _context.Userinfos.SingleOrDefaultAsync(x => x.UserId == userId);
                 var res = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, string>>(usi.Extra);
                 return Ok(res);
             }

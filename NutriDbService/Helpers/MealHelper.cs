@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace NutriDbService.Helpers
 {
@@ -22,13 +23,13 @@ namespace NutriDbService.Helpers
             _logger = serviceProvider.GetRequiredService<ILogger<TransmitterHelper>>();
         }
 
-        public int CreateMeal(EditMealRequest createMealRequest)
+        public async Task<int> CreateMeal(EditMealRequest createMealRequest)
         {
-            var user = _nutriDbContext.Users.SingleOrDefault(x => x.TgId == createMealRequest.userTgId);
+            var user = await _nutriDbContext.Users.SingleOrDefaultAsync(x => x.TgId == createMealRequest.userTgId);
             if (user == null)
             {
                 var mes = $"I Cant Find User : {createMealRequest.userTgId}";
-                ErrorHelper.SendSystemMess(mes);
+                await ErrorHelper.SendSystemMess(mes);
                 throw new Exception(mes);
             }
             var dishes = new HashSet<Dish>();
@@ -63,83 +64,83 @@ namespace NutriDbService.Helpers
                     MealTime = IsTyme ? parseTime : DateTime.UtcNow.ToLocalTime().AddHours(3)
                 };
 
-                var oldmeal = _nutriDbContext.Meals.SingleOrDefault(x => x.UserId == meal.UserId && x.MealTime.Date == meal.MealTime.Date && x.Type == meal.Type);
+                var oldmeal = await _nutriDbContext.Meals.SingleOrDefaultAsync(x => x.UserId == meal.UserId && x.MealTime.Date == meal.MealTime.Date && x.Type == meal.Type);
                 if (oldmeal != null)
                 {
-                    _nutriDbContext.Database.BeginTransaction();
+                    await _nutriDbContext.Database.BeginTransactionAsync();
                     if (meal.Type != 5)
                         _nutriDbContext.Dishes.RemoveRange(_nutriDbContext.Dishes.Where(x => x.MealId == oldmeal.Id));
                     foreach (var di in dishes)
                         di.MealId = oldmeal.Id;
 
-                    _nutriDbContext.Dishes.AddRange(dishes);
-                    _nutriDbContext.SaveChanges();
-                    _nutriDbContext.Database.CommitTransaction();
+                    await _nutriDbContext.Dishes.AddRangeAsync(dishes);
+                    await _nutriDbContext.SaveChangesAsync();
+                    await _nutriDbContext.Database.CommitTransactionAsync();
                     return oldmeal.Id;
                 }
                 else
                 {
-                    _nutriDbContext.Database.BeginTransaction();
-                    _nutriDbContext.Meals.Add(meal);
-                    _nutriDbContext.SaveChanges();
-                    _nutriDbContext.Database.CommitTransaction();
+                    await _nutriDbContext.Database.BeginTransactionAsync();
+                    await _nutriDbContext.Meals.AddAsync(meal);
+                    await _nutriDbContext.SaveChangesAsync();
+                    await _nutriDbContext.Database.CommitTransactionAsync();
 
                     return meal.Id;
                 }
             }
             else
             {
-                meal = _nutriDbContext.Meals.SingleOrDefault(x => x.Id == createMealRequest.mealId);
+                meal = await _nutriDbContext.Meals.SingleOrDefaultAsync(x => x.Id == createMealRequest.mealId);
                 foreach (var dish in dishes)
                     dish.MealId = (int)createMealRequest.mealId;
                 meal.Weight += createMealRequest.meal.totalWeight == 0 ? totalweight : createMealRequest.meal.totalWeight;
 
-                _nutriDbContext.Database.BeginTransaction();
+                await _nutriDbContext.Database.BeginTransactionAsync();
                 _nutriDbContext.Meals.Update(meal);
-                _nutriDbContext.Dishes.AddRange(dishes);
-                _nutriDbContext.SaveChanges();
-                _nutriDbContext.Database.CommitTransaction();
+                await _nutriDbContext.Dishes.AddRangeAsync(dishes);
+                await _nutriDbContext.SaveChangesAsync();
+                await _nutriDbContext.Database.CommitTransactionAsync();
                 return meal.Id;
             }
         }
-        public int DeleteMeal(int mealId, long userTgId)
+        public async Task<int> DeleteMeal(int mealId, long userTgId)
         {
-            var user = _nutriDbContext.Users.SingleOrDefault(x => x.TgId == userTgId);
+            var user = await _nutriDbContext.Users.SingleOrDefaultAsync(x => x.TgId == userTgId);
             if (user == null)
             {
                 var mes = $"I Cant Find User : {userTgId}";
-                ErrorHelper.SendSystemMess(mes);
+                await ErrorHelper.SendSystemMess(mes);
                 throw new Exception(mes);
             }
 
             Meal meal;
 
-            var oldmeal = _nutriDbContext.Meals.SingleOrDefault(x => x.UserId == user.Id && x.Id == mealId);
+            var oldmeal = await _nutriDbContext.Meals.SingleOrDefaultAsync(x => x.UserId == user.Id && x.Id == mealId);
             if (oldmeal != null)
             {
-                _nutriDbContext.Database.BeginTransaction();
+                await _nutriDbContext.Database.BeginTransactionAsync();
                 _nutriDbContext.Dishes.RemoveRange(_nutriDbContext.Dishes.Where(x => x.MealId == oldmeal.Id));
                 _nutriDbContext.Meals.Remove(oldmeal);
-                _nutriDbContext.SaveChanges();
-                _nutriDbContext.Database.CommitTransaction();
+                await _nutriDbContext.SaveChangesAsync();
+                await _nutriDbContext.Database.CommitTransactionAsync();
                 return oldmeal.Id;
             }
             else
             {
-                ErrorHelper.SendErrorMess($"Не найден Meal {mealId}");
+                await ErrorHelper.SendErrorMess($"Не найден Meal {mealId}");
                 return 0;
             }
 
         }
 
-        public int EditMeal(EditMealRequest createMealRequest)
+        public async Task<int> EditMeal(EditMealRequest createMealRequest)
         {
             decimal totalweight = 0;
-            var user = _nutriDbContext.Users.SingleOrDefault(x => x.TgId == createMealRequest.userTgId);
+            var user = await _nutriDbContext.Users.SingleOrDefaultAsync(x => x.TgId == createMealRequest.userTgId);
             if (user == null)
                 throw new Exception($"I Cant Find User : {createMealRequest.userTgId}");
 
-            var meal = _nutriDbContext.Meals.Include(x => x.Dishes).SingleOrDefault(x => x.Id == createMealRequest.mealId);
+            var meal = await _nutriDbContext.Meals.Include(x => x.Dishes).SingleOrDefaultAsync(x => x.Id == createMealRequest.mealId);
             if (meal == null)
                 throw new Exception($"I Cant Find Meal : {createMealRequest.mealId}");
             var olddishes = meal.Dishes;
@@ -167,21 +168,21 @@ namespace NutriDbService.Helpers
                 meal.MealTime = parseTime;
 
 
-            _nutriDbContext.Database.BeginTransaction();
+            await _nutriDbContext.Database.BeginTransactionAsync();
             _nutriDbContext.Dishes.RemoveRange(olddishes);
             _nutriDbContext.Meals.Update(meal);
-            _nutriDbContext.SaveChanges();
-            _nutriDbContext.Database.CommitTransaction();
+            await _nutriDbContext.SaveChangesAsync();
+            await _nutriDbContext.Database.CommitTransactionAsync();
             return meal.Id;
         }
 
-        public List<MealResponse> GetMeals(GetUserMealsRequest req)
+        public async Task<List<MealResponse>> GetMeals(GetUserMealsRequest req)
         {
-            var user = _nutriDbContext.Users.SingleOrDefault(x => x.TgId == req.userTgId);
+            var user = await _nutriDbContext.Users.SingleOrDefaultAsync(x => x.TgId == req.userTgId);
             if (user == null)
             {
                 var mes = $"I Cant Find User : {req.userTgId}";
-                ErrorHelper.SendSystemMess(mes);
+                await ErrorHelper.SendSystemMess(mes);
                 throw new Exception(mes);
             }
             //var inDay = (DayOfWeek)day;
@@ -206,7 +207,7 @@ namespace NutriDbService.Helpers
                     break;
             }
             //var meals = _context.Meals.Where(x => x.UserId == user.Id && x.MealTime.Value.Date > startDate && x.MealTime.Value.DayOfWeek == (DayOfWeek)day).ToList();
-            var meals = _nutriDbContext.Meals.Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).ToList();
+            var meals = await _nutriDbContext.Meals.Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).ToListAsync();
             if (req.day != null)
             {
                 meals = meals.Where(x => x.MealTime.DayOfWeek == (DayOfWeek)req.day).ToList();
@@ -220,7 +221,7 @@ namespace NutriDbService.Helpers
                 meals = meals.Where(x => x.Type == ((short)req.typemeal)).ToList();
             }
             var mealsId = meals.Select(x => x.Id).ToList();
-            var dishes = _nutriDbContext.Dishes.Where(x => mealsId.Contains(x.MealId));
+            var dishes = await _nutriDbContext.Dishes.Where(x => mealsId.Contains(x.MealId)).ToListAsync();
             var resp = new List<MealResponse>() { };
             foreach (var meal in meals)
             {
@@ -247,20 +248,20 @@ namespace NutriDbService.Helpers
             return resp;
         }
 
-        public MealResponse GetSingleMeal(GetUserMealsRequest req)
+        public async Task<MealResponse> GetSingleMeal(GetUserMealsRequest req)
         {
-            var user = _nutriDbContext.Users.SingleOrDefault(x => x.TgId == req.userTgId);
+            var user = await _nutriDbContext.Users.SingleOrDefaultAsync(x => x.TgId == req.userTgId);
             if (user == null)
             {
                 var mes = $"I Cant Find User : {req.userTgId}";
-                ErrorHelper.SendSystemMess(mes);
+                await ErrorHelper.SendSystemMess(mes);
                 throw new Exception(mes);
             }
             //var inDay = (DayOfWeek)day;
             var now = DateTime.UtcNow.ToLocalTime().AddHours(3).Date;
             var startDate = now.AddDays(-7).Date;
 
-            var meals = _nutriDbContext.Meals.Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).ToList();
+            var meals = await _nutriDbContext.Meals.Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).ToListAsync();
             if (!String.IsNullOrEmpty(req.dayStr))
             {
                 meals = meals.Where(x => x.MealTime.Date == DateTime.ParseExact(req.dayStr, "dd.MM.yyyy", CultureInfo.InvariantCulture).Date).ToList();
@@ -268,7 +269,7 @@ namespace NutriDbService.Helpers
             else
             {
                 var mes = $"Не пришел dayStr: {Newtonsoft.Json.JsonConvert.SerializeObject(req)}";
-                ErrorHelper.SendSystemMess(mes);
+                await ErrorHelper.SendSystemMess(mes);
                 throw new ArgumentNullException(mes);
             }
             if (req.typemeal != null)
@@ -278,14 +279,14 @@ namespace NutriDbService.Helpers
             else
             {
                 var mes = $"Не пришел typemeal: {Newtonsoft.Json.JsonConvert.SerializeObject(req)}";
-                ErrorHelper.SendSystemMess(mes);
+                await ErrorHelper.SendSystemMess(mes);
                 throw new ArgumentNullException(mes);
             }
 
             var meal = meals.SingleOrDefault();
             if (meal == null)
                 return new MealResponse();
-            var dishes = _nutriDbContext.Dishes.Where(x => x.MealId == meal.Id);
+            var dishes = await _nutriDbContext.Dishes.Where(x => x.MealId == meal.Id).ToListAsync();
             var resp = new MealResponse()
             {
                 mealId = meal.Id,
@@ -307,9 +308,9 @@ namespace NutriDbService.Helpers
             return resp;
         }
 
-        public List<MealResponse> GetMealInMathMonthByDate(GetUserMealsRequest req)
+        public async Task<List<MealResponse>> GetMealInMathMonthByDate(GetUserMealsRequest req)
         {
-            var user = _nutriDbContext.Users.SingleOrDefault(x => x.TgId == req.userTgId);
+            var user = await _nutriDbContext.Users.SingleOrDefaultAsync(x => x.TgId == req.userTgId);
             if (user == null)
                 throw new Exception($"I Cant Find User : {req.userTgId}");
             //var inDay = (DayOfWeek)day;
@@ -317,7 +318,7 @@ namespace NutriDbService.Helpers
             var startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddMonths(-1).Date;
 
             //var meals = _context.Meals.Where(x => x.UserId == user.Id && x.MealTime.Value.Date > startDate && x.MealTime.Value.DayOfWeek == (DayOfWeek)day).ToList();
-            var meals = _nutriDbContext.Meals.Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).ToList();
+            var meals = await _nutriDbContext.Meals.Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).ToListAsync();
 
             if (!String.IsNullOrEmpty(req.dayStr))
             {
@@ -328,7 +329,7 @@ namespace NutriDbService.Helpers
                 meals = meals.Where(x => x.Type == ((short)req.typemeal)).ToList();
             }
             var mealsId = meals.Select(x => x.Id).ToList();
-            var dishes = _nutriDbContext.Dishes.Where(x => mealsId.Contains(x.MealId));
+            var dishes = await _nutriDbContext.Dishes.Where(x => mealsId.Contains(x.MealId)).ToListAsync();
             var resp = new List<MealResponse>() { };
             foreach (var meal in meals)
             {

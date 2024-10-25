@@ -5,6 +5,8 @@ using System;
 using System.Threading.Tasks;
 using NutriDbService.DbModels;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
+using NutriDbService.PythModels;
 
 namespace NutriDbService.Helpers
 {
@@ -34,9 +36,10 @@ namespace NutriDbService.Helpers
         {
             bool isMealSend = false;
             bool isDiarySend = false;
-            var user = _context.Users.Single(x => x.Id == UserId);
-            var userInfo = _context.Userinfos.Single(x => x.UserId == UserId);
-            var lastMealTime = _context.Meals.Where(x => x.UserId == UserId).OrderByDescending(x => x.MealTime).FirstOrDefault()?.MealTime;
+            var user = await _context.Users.SingleAsync(x => x.Id == UserId);
+            var userInfo = await _context.Userinfos.SingleAsync(x => x.UserId == UserId);
+            var meals = await _context.Meals.Where(x => x.UserId == UserId).OrderByDescending(x => x.MealTime).FirstOrDefaultAsync();
+            var lastMealTime = meals?.MealTime;
             if (lastMealTime != null && lastMealTime < DateTime.UtcNow.AddDays(-1))
                 isMealSend = true;
             if (userInfo.LastlessonTime < DateTime.UtcNow.AddDays(-1))

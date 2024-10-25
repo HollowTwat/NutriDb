@@ -44,8 +44,8 @@ namespace NutriDbService.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message);
-                ErrorHelper.SendErrorMess("CreateGPTRequset Error", ex);
-                ErrorHelper.SendErrorMess($"Input:{req}");
+                await ErrorHelper.SendErrorMess("CreateGPTRequset Error", ex);
+                await ErrorHelper.SendErrorMess($"Input:{req}");
                 return new CreateGPTResponse() { isError = true };
             }
         }
@@ -57,7 +57,7 @@ namespace NutriDbService.Controllers
             {
                 _logger.LogWarning($"На вход пришло {Newtonsoft.Json.JsonConvert.SerializeObject(rateReq)}");
 
-                var req = _transmitterHelper.CreateRateRequest(rateReq, _mealHelper);
+                var req = await _transmitterHelper.CreateRateRequest(rateReq, _mealHelper);
 
                 var res = await _transmitterHelper.CreateGPTRequest(req);
                 if (res == 0)
@@ -67,33 +67,33 @@ namespace NutriDbService.Controllers
             catch (EmptyMealException ex)
             {
                 _logger.LogError("Попытка анализа пустой недели ");
-                ErrorHelper.SendErrorMess($"Попытка анализа пустой недели :{rateReq}");
+                await ErrorHelper.SendErrorMess($"Попытка анализа пустой недели :{rateReq}");
                 return new CreateGPTResponse() { isError = true, Mess = "MealEmpty" };
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message);
-                ErrorHelper.SendErrorMess("CreateGPTLongRateRequset Error", ex);
-                ErrorHelper.SendErrorMess($"Input:{rateReq}");
+                await ErrorHelper.SendErrorMess("CreateGPTLongRateRequset Error", ex);
+                await ErrorHelper.SendErrorMess($"Input:{rateReq}");
                 return new CreateGPTResponse() { isError = true };
             }
         }
 
         [HttpPost]
-        public CheckGPTResponse CheckGPTStatus(CheckGPTRequest req)
+        public async Task<CheckGPTResponse> CheckGPTStatus(CheckGPTRequest req)
         {
             try
             {
                 if (req.RequestId == 0)
                     return new CheckGPTResponse { Done = true, IsError = true };
-                var res = _transmitterHelper.CheckGPT(req.RequestId);
+                var res =await _transmitterHelper.CheckGPT(req.RequestId);
                 return res;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message);
-                ErrorHelper.SendErrorMess("CheckGPTStatus Error", ex);
-                ErrorHelper.SendErrorMess($"Input:{req}");
+                await ErrorHelper.SendErrorMess("CheckGPTStatus Error", ex);
+                await ErrorHelper.SendErrorMess($"Input:{req}");
                 return new CheckGPTResponse() { IsError = true };
             }
         }

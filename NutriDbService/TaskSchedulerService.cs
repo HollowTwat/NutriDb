@@ -7,6 +7,7 @@ using NutriDbService.DbModels;
 using NutriDbService.Helpers;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace NutriDbService
 {
@@ -28,21 +29,23 @@ namespace NutriDbService
         private readonly object _lock = new object();
         private List<UserTimer> _timers = new List<UserTimer>();
         private List<UserPing> _userPings;
-        private railwayContext _context;
-        private NotificationHelper _notHelper;
-        public TaskSchedulerService(railwayContext context, NotificationHelper helper)
+        private readonly IServiceProvider _serviceProvider;
+        public TaskSchedulerService(IServiceProvider serviceProvider)
         {
-            _context = context;
-            _notHelper = helper;
+            _serviceProvider = serviceProvider;
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            List<int> validUsers = new List<int>() { 3, 13, 17 };
-            var users = _context.Userinfos.Include(x => x.User).Where(x => x.MorningPing != null).OrderByDescending(x => x.MorningPing)
-                .Select(x => new UserPing { Id = x.UserId, UserNoId = x.User.UserNoId, Ping = (TimeOnly)x.MorningPing, Slide = x.Timeslide }).ToList();
-            users = users.Where(x => validUsers.Contains(x.Id)).ToList();
-            ScheduleTasks(users);
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var _context = scope.ServiceProvider.GetRequiredService<railwayContext>();
+                List<int> validUsers = new List<int>() { 3, 13, 17 };
+                var users = _context.Userinfos.Include(x => x.User).Where(x => x.MorningPing != null).OrderByDescending(x => x.MorningPing)
+                    .Select(x => new UserPing { Id = x.UserId, UserNoId = x.User.UserNoId, Ping = (TimeOnly)x.MorningPing, Slide = x.Timeslide }).ToList();
+                users = users.Where(x => validUsers.Contains(x.Id)).ToList();
+                ScheduleTasks(users);
+            }
             return Task.CompletedTask;
         }
 
@@ -52,7 +55,7 @@ namespace NutriDbService
             {
                 foreach (var userPing in usersPings)
                 {
-                    userPing.Ping = new TimeOnly(2, 15);
+                    userPing.Ping = new TimeOnly(3, 20);
                     if (userPing.Slide != null)
                         userPing.Ping.AddHours((double)userPing.Slide);
                     ScheduleTask(userPing);
@@ -69,9 +72,15 @@ namespace NutriDbService
 
             Timer timer = new Timer(async x =>
             {
-                await _notHelper.SendNotification(userPing.Id);
-                // Планируем на следующий день
-                ScheduleTask(userPing);
+                using (var scope = _serviceProvider.CreateScope())
+                {
+                    var localNotHelper = scope.ServiceProvider.GetRequiredService<NotificationHelper>();
+
+                    // Используйте ассинхронную метод SendNotification
+                    await localNotHelper.SendNotification(userPing.Id);
+                    // Планируем на следующий день
+                    ScheduleTask(userPing);
+                }
             }, null, timeToNextOccurrence, Timeout.InfiniteTimeSpan);
 
             _timers.Add(new UserTimer { Id = userPing.Id, Timer = timer });
@@ -102,11 +111,15 @@ namespace NutriDbService
                 _timers.Clear();
 
                 // Настроить новые таймеры
-                var usersPings = _context.Userinfos.Include(x => x.User).Where(x => x.MorningPing != null).OrderByDescending(x => x.MorningPing)
+                using (var scope = _serviceProvider.CreateScope())
+                {
+                    var _context = scope.ServiceProvider.GetRequiredService<railwayContext>();
+                    var usersPings = _context.Userinfos.Include(x => x.User).Where(x => x.MorningPing != null).OrderByDescending(x => x.MorningPing)
              .Select(x => new UserPing { UserNoId = x.User.UserNoId, Ping = (TimeOnly)x.MorningPing, Slide = x.Timeslide }).ToList();
 
-                _userPings = usersPings;
-                ScheduleTasks(_userPings);
+                    _userPings = usersPings;
+                    ScheduleTasks(_userPings);
+                }
             }
         }
 
@@ -121,11 +134,15 @@ namespace NutriDbService
                     _timers.Remove(timer);
                 }
                 // Настроить новые таймеры
-                var usersPings = _context.Userinfos.Include(x => x.User).Where(x => x.MorningPing != null && x.UserId == userId).OrderByDescending(x => x.MorningPing)
+                using (var scope = _serviceProvider.CreateScope())
+                {
+                    var _context = scope.ServiceProvider.GetRequiredService<railwayContext>();
+                    var usersPings = _context.Userinfos.Include(x => x.User).Where(x => x.MorningPing != null && x.UserId == userId).OrderByDescending(x => x.MorningPing)
              .Select(x => new UserPing { UserNoId = x.User.UserNoId, Ping = (TimeOnly)x.MorningPing, Slide = x.Timeslide }).ToList();
 
-                _userPings = usersPings;
-                ScheduleTasks(_userPings);
+                    _userPings = usersPings;
+                    ScheduleTasks(_userPings);
+                }
             }
         }
 

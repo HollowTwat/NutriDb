@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
@@ -19,7 +20,7 @@ namespace NutriDbService.Helpers
             client = new TelegramBotClient(_token);
             return client;
         }
-        public static void SendSystemMess(string mess)
+        public static async Task SendSystemMess(string mess)
         {
             var message = $"SYSTEM MESS:\n{mess}";
             if (message.Length > 4000)
@@ -27,14 +28,14 @@ namespace NutriDbService.Helpers
                 for (int i = 0; i < message.Length / 4000 + 1; i++)
                 {
                     var messagePart = message.Substring(i * 4000, message.Length - i * 4000 > 4000 ? 4000 : message.Length - i * 4000);
-                    GetTelegramBot().SendTextMessageAsync(new ChatId(_errorChanelId), messagePart).GetAwaiter().GetResult();
+                 await   GetTelegramBot().SendTextMessageAsync(new ChatId(_errorChanelId), messagePart);
                 }
             }
             else
-                GetTelegramBot().SendTextMessageAsync(new ChatId(_errorChanelId), message).GetAwaiter().GetResult();
+                await GetTelegramBot().SendTextMessageAsync(new ChatId(_errorChanelId), message);
             //client.SendTextMessageAsync(new ChatId(464682207), mess).GetAwaiter().GetResult();
         }
-        public static void SendErrorMess(string mess, Exception ex)
+        public static async Task SendErrorMess(string mess, Exception ex)
         {
             var message = $"ERROR MESS:{DateTime.UtcNow.ToLocalTime().AddHours(3)} \n {mess} \n\n Exception Text:\n{Newtonsoft.Json.JsonConvert.SerializeObject(ex)}";
             if (message.Length > 4000)
@@ -42,14 +43,14 @@ namespace NutriDbService.Helpers
                 for (int i = 0; i < message.Length / 4000 + 1; i++)
                 {
                     var messagePart = message.Substring(i * 4000, message.Length - i * 4000 > 4000 ? 4000 : message.Length - i * 4000);
-                    GetTelegramBot().SendTextMessageAsync(new ChatId(_errorChanelId), messagePart).GetAwaiter().GetResult();
+                    await GetTelegramBot().SendTextMessageAsync(new ChatId(_errorChanelId), messagePart);
                 }
             }
             else
-                GetTelegramBot().SendTextMessageAsync(new ChatId(_errorChanelId), message).GetAwaiter().GetResult();
+                await GetTelegramBot().SendTextMessageAsync(new ChatId(_errorChanelId), message);
             //client.SendTextMessageAsync(new ChatId(464682207), mess).GetAwaiter().GetResult();
         }
-        public static void SendErrorMess(string mess)
+        public static async Task SendErrorMess(string mess)
         {
             var message = $"ERROR MESS:{DateTime.UtcNow.ToLocalTime().AddHours(3)} \n Error Text:\n{mess}";
             if (message.Length > 4000)
@@ -57,11 +58,11 @@ namespace NutriDbService.Helpers
                 for (int i = 0; i < message.Length / 4000 + 1; i++)
                 {
                     var messagePart = message.Substring(i * 4000, message.Length - i * 4000 > 4000 ? 4000 : message.Length - i * 4000);
-                    GetTelegramBot().SendTextMessageAsync(new ChatId(_errorChanelId), messagePart).GetAwaiter().GetResult();
+                    await GetTelegramBot().SendTextMessageAsync(new ChatId(_errorChanelId), messagePart);
                 }
             }
             else
-                GetTelegramBot().SendTextMessageAsync(new ChatId(_errorChanelId), message).GetAwaiter().GetResult();
+                await GetTelegramBot().SendTextMessageAsync(new ChatId(_errorChanelId), message);
             //client.SendTextMessageAsync(new ChatId(464682207), mess).GetAwaiter().GetResult();
         }
     }

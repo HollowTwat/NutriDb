@@ -32,7 +32,7 @@ namespace NutriDbService
             services.AddControllers().AddNewtonsoftJson();
 
             services.AddSwaggerGen();
-            services.AddTransient<railwayContext>();
+            services.AddScoped<railwayContext>();
             //services.AddScoped<NutriDbContext>();
             services.AddTransient<MealHelper>();
             services.AddTransient<TransmitterHelper>();
