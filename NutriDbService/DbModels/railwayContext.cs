@@ -283,7 +283,7 @@ namespace NutriDbService.DbModels
                     .HasColumnName("donelessonlist");
 
                 entity.Property(e => e.EveningPing)
-                    .HasMaxLength(255)
+                    .HasPrecision(6)
                     .HasColumnName("eveningPing");
 
                 entity.Property(e => e.Extra).HasColumnName("extra");
@@ -310,7 +310,7 @@ namespace NutriDbService.DbModels
                     .HasDefaultValueSql("now()");
 
                 entity.Property(e => e.MorningPing)
-                    .HasMaxLength(255)
+                    .HasPrecision(6)
                     .HasColumnName("morningPing");
 
                 entity.Property(e => e.Timeslide)
@@ -322,6 +322,12 @@ namespace NutriDbService.DbModels
                 entity.Property(e => e.Weight)
                     .HasPrecision(10, 2)
                     .HasColumnName("weight");
+
+                entity.HasOne(d => d.User)
+                    .WithMany(p => p.Userinfos)
+                    .HasForeignKey(d => d.UserId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("fk_userinfo_user");
             });
 
             modelBuilder.HasSequence("dish_id_auto_inc");

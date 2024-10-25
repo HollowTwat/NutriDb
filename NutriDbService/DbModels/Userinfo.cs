@@ -13,11 +13,13 @@ namespace NutriDbService.DbModels
         public string Gender { get; set; }
         public string Extra { get; set; }
         public string Donelessonlist { get; set; }
-        public string MorningPing { get; set; }
-        public string EveningPing { get; set; }
+        public TimeOnly? MorningPing { get; set; }
+        public TimeOnly? EveningPing { get; set; }
         public decimal? Timeslide { get; set; }
         public decimal? Goalkk { get; set; }
         public string Goal { get; set; }
         public DateTime? LastlessonTime { get; set; }
+
+        public virtual User User { get; set; }
     }
 }

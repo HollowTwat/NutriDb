@@ -21,7 +21,7 @@ namespace NutriDbService.Helpers
         {
             _context = context;
         }
-        public async Task SendNotification(long ClientId,string MessBoxId)
+        private async Task SendNot(long ClientId, string MessBoxId)
         {
             var reqparams = new NocodeNot { client_id = ClientId, message_id = MessBoxId };
             HttpClient client = new HttpClient();
@@ -30,19 +30,28 @@ namespace NutriDbService.Helpers
             var response = await client.PostAsync(_reqUrl, content);
             var r = await response.Content.ReadAsStringAsync();
         }
-        public async Task GetNotification(int UserId)
+        public async Task SendNotification(int UserId)
         {
-            bool isMealSend=false;
-            bool isDiarySend=false;
+            bool isMealSend = false;
+            bool isDiarySend = false;
             var user = _context.Users.Single(x => x.Id == UserId);
             var userInfo = _context.Userinfos.Single(x => x.UserId == UserId);
             var lastMealTime = _context.Meals.Where(x => x.UserId == UserId).OrderByDescending(x => x.MealTime).FirstOrDefault()?.MealTime;
             if (lastMealTime != null && lastMealTime < DateTime.UtcNow.AddDays(-1))
                 isMealSend = true;
-            if(userInfo.LastlessonTime<DateTime.UtcNow.AddDays(-1))
+            if (userInfo.LastlessonTime < DateTime.UtcNow.AddDays(-1))
                 isDiarySend = true;
-            //if (isMealSend && isDiarySend)
-            //    await SendNotification(user.UserNoId, _bothmess);
+            if (isMealSend && isDiarySend)
+                await SendNot(user.UserNoId, _bothmess);
+            else
+            {
+                if (isDiarySend)
+                    await SendNot(user.UserNoId, _diarymess);
+                if (isMealSend)
+                    await SendNot(UserId, _mealmess);
+            }
+            await SendNot(UserId, "37023544");
+
 
         }
     }

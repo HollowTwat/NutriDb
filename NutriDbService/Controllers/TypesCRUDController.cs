@@ -22,12 +22,15 @@ namespace NutriDbService.Controllers
         private railwayContext _context;
         private MealHelper _mealHelper;
         private PlotHelper _plotHelper;
-        public TypesCRUDController(railwayContext context, MealHelper mealHelper, ILogger<TypesCRUDController> logger, PlotHelper plotHelper)
+        private readonly TaskSchedulerService _taskSchedulerService;
+
+        public TypesCRUDController(railwayContext context, MealHelper mealHelper, ILogger<TypesCRUDController> logger, PlotHelper plotHelper, TaskSchedulerService taskSchedulerService)
         {
             _context = context;
             _mealHelper = mealHelper;
             _logger = logger;
             _plotHelper = plotHelper;
+            _taskSchedulerService = taskSchedulerService;
         }
 
         #region AllCRUDS
@@ -56,6 +59,7 @@ namespace NutriDbService.Controllers
             try
             {
                 var mealId = _mealHelper.CreateMeal(request);
+                _taskSchedulerService.UserTimerRestart(_context.Users.Single(x => x.TgId == request.userTgId).Id);
                 _logger.LogWarning($"UserTG={request.userTgId} Meal={mealId} was added");
                 return mealId;
                 // return Ok(res);
@@ -376,12 +380,7 @@ namespace NutriDbService.Controllers
                 _logger.LogWarning($"User \n:userTgId={userTgId} userName={userName} userNoId={userNoId}");
                 var user = _context.Users.SingleOrDefault(x => x.TgId == userTgId);
                 if (user != null)
-                {
-                    user.UserNoId = userNoId;
-                    _context.Users.Update(user);
-                    _context.SaveChanges();
                     return Ok(true);
-                }
                 _context.Users.Add(new DbModels.User
                 {
                     TgId = userTgId,
@@ -474,8 +473,8 @@ namespace NutriDbService.Controllers
                 string gender = string.IsNullOrEmpty(req.Info["user_info_gender"]) ? null : req.Info["user_info_gender"];
                 decimal? goalkk = string.IsNullOrEmpty(req.Info["target_calories"]) ? null : decimal.Parse(req.Info["target_calories"]);
 
-                string morningPing = string.IsNullOrEmpty(req.Info["user_info_morning_ping"]) ? null : TimeOnly.TryParseExact(req.Info["user_info_morning_ping"], "HH:mm", out var m) == true ? req.Info["user_info_morning_ping"] : null;
-                string eveningPing = string.IsNullOrEmpty(req.Info["user_info_evening_ping"]) ? null : TimeOnly.TryParseExact(req.Info["user_info_evening_ping"], "HH:mm", out var e) == true ? req.Info["user_info_evening_ping"] : null;
+                bool IsmorningPing = string.IsNullOrEmpty(req.Info["user_info_morning_ping"]) ? false : TimeOnly.TryParseExact(req.Info["user_info_morning_ping"], "HH:mm", out var m);
+                bool IseveningPing = string.IsNullOrEmpty(req.Info["user_info_evening_ping"]) ? false : TimeOnly.TryParseExact(req.Info["user_info_evening_ping"], "HH:mm", out var e);
                 decimal? timeslide = string.IsNullOrEmpty(req.Info["user_info_timeslide"]) ? null : decimal.Parse(req.Info["user_info_timeslide"]);
 
                 string goal = string.IsNullOrEmpty(req.Info["user_info_goal"]) ? null : req.Info["user_info_goal"];
@@ -492,8 +491,8 @@ namespace NutriDbService.Controllers
                         Height = height,
                         Gender = gender,
                         Goalkk = goalkk,
-                        MorningPing = morningPing,
-                        EveningPing = eveningPing,
+                        MorningPing = IsmorningPing ? m : null,
+                        EveningPing = IseveningPing ? e : null,
                         Timeslide = timeslide,
                         Goal = goal
                     });
@@ -506,8 +505,8 @@ namespace NutriDbService.Controllers
                     usi.Height = height;
                     usi.Gender = gender;
                     usi.Goalkk = goalkk;
-                    usi.MorningPing = morningPing;
-                    usi.EveningPing = eveningPing;
+                    usi.MorningPing = IsmorningPing ? m : null;
+                    usi.EveningPing = IseveningPing ? e : null;
                     usi.Timeslide = timeslide;
                     usi.Goal = goal;
                     _context.Update(usi);
@@ -532,8 +531,6 @@ namespace NutriDbService.Controllers
             {
                 var userId = _context.Users.SingleOrDefault(x => x.TgId == req.UserTgId).Id;
                 var usi = _context.Userinfos.SingleOrDefault(x => x.UserId == userId);
-
-
 
                 if (usi == null)
                 {
@@ -574,13 +571,13 @@ namespace NutriDbService.Controllers
                     if (goalkk != null)
                         usi.Goalkk = goalkk;
 
-                    string morningPing = req.Info.ContainsKey("user_info_morning_ping") == true ? (string.IsNullOrEmpty(req.Info["user_info_morning_ping"]) ? null : TimeOnly.TryParseExact(req.Info["user_info_morning_ping"], "HH:mm", out var m) == true ? req.Info["user_info_morning_ping"] : null) : null;
-                    if (morningPing != null)
-                        usi.MorningPing = morningPing;
+                    bool ismorningPing = req.Info.ContainsKey("user_info_morning_ping") == true ? (string.IsNullOrEmpty(req.Info["user_info_morning_ping"]) ? false : TimeOnly.TryParseExact(req.Info["user_info_morning_ping"], "HH:mm", out var m)) : false;
+                    if (ismorningPing)
+                        usi.MorningPing = m;
 
-                    string eveningPing = req.Info.ContainsKey("user_info_evening_ping") == true ? (string.IsNullOrEmpty(req.Info["user_info_evening_ping"]) ? null : TimeOnly.TryParseExact(req.Info["user_info_evening_ping"], "HH:mm", out var e) == true ? req.Info["user_info_evening_ping"] : null) : null;
-                    if (eveningPing != null)
-                        usi.EveningPing = eveningPing;
+                    bool iseveningPing = req.Info.ContainsKey("user_info_evening_ping") == true ? (string.IsNullOrEmpty(req.Info["user_info_evening_ping"]) ? false : TimeOnly.TryParseExact(req.Info["user_info_evening_ping"], "HH:mm", out var e)) : false;
+                    if (iseveningPing)
+                        usi.EveningPing = e;
 
                     decimal? timeslide = req.Info.ContainsKey("user_info_timeslide") == true ? (req.Info.ContainsKey("user_info_timeslide") == true ? (string.IsNullOrEmpty(req.Info["user_info_timeslide"]) ? null : decimal.Parse(req.Info["user_info_timeslide"])) : null) : null;
                     if (timeslide != null)
@@ -618,12 +615,12 @@ namespace NutriDbService.Controllers
                     {
                         UserId = userId,
                         Donelessonlist = lesson.ToString(),
-                        LastlessonTime = DateTime.Now,
+                        LastlessonTime = DateTime.UtcNow,
                     });
                 }
                 else
                 {
-                    usi.LastlessonTime = DateTime.Now;
+                    usi.LastlessonTime = DateTime.UtcNow;
                     if (usi.Donelessonlist == null)
                         usi.Donelessonlist = $"{lesson}";
                     else
@@ -634,6 +631,7 @@ namespace NutriDbService.Controllers
                     }
                 }
                 _context.SaveChanges();
+                _taskSchedulerService.UserTimerRestart(userId);
                 return Ok(true);
             }
             catch (Exception ex)
@@ -689,16 +687,16 @@ namespace NutriDbService.Controllers
                 var userId = _context.Users.SingleOrDefault(x => x.TgId == UserTgId).Id;
                 var usi = _context.Userinfos.SingleOrDefault(x => x.UserId == userId);
                 var now = DateTime.UtcNow.ToLocalTime().AddHours(3);
-                if (!TimeOnly.TryParseExact(usi.MorningPing, "HH:mm", out var morningPing) || !TimeOnly.TryParseExact(usi.EveningPing, "HH:mm", out var eveningPing) || usi.Timeslide == null)
+                if (usi.MorningPing == null || usi.EveningPing == null || usi.Timeslide == null)
                     return new GetUserPingResponse { MskTime = null };
                 DateTime ping = DateTime.UtcNow;
                 if (TimeOfDay == 0)//утро
                 {
-                    ping = DateOnly.FromDateTime(now).ToDateTime(morningPing);
+                    ping = DateOnly.FromDateTime(now).ToDateTime((TimeOnly)usi.MorningPing);
                 }
                 else if (TimeOfDay == 1)//вечер
                 {
-                    ping = DateOnly.FromDateTime(now).ToDateTime(eveningPing);
+                    ping = DateOnly.FromDateTime(now).ToDateTime((TimeOnly)usi.EveningPing);
                 }
 
                 var slicePing = ping.AddHours(double.Parse(usi.Timeslide.ToString()));

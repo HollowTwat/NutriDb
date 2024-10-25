@@ -11,6 +11,7 @@ namespace NutriDbService.DbModels
             Meals = new HashSet<Meal>();
             Messagelogs = new HashSet<Messagelog>();
             Subscriptions = new HashSet<Subscription>();
+            Userinfos = new HashSet<Userinfo>();
         }
 
         public int Id { get; set; }
@@ -21,11 +22,12 @@ namespace NutriDbService.DbModels
         public int? LessonId { get; set; }
         public bool IsActive { get; set; }
         public long TgId { get; set; }
-        public long? UserNoId { get; set; }
+        public long UserNoId { get; set; }
 
         public virtual ICollection<Loyalty> Loyalties { get; set; }
         public virtual ICollection<Meal> Meals { get; set; }
         public virtual ICollection<Messagelog> Messagelogs { get; set; }
         public virtual ICollection<Subscription> Subscriptions { get; set; }
+        public virtual ICollection<Userinfo> Userinfos { get; set; }
     }
 }
