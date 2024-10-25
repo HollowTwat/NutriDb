@@ -48,9 +48,9 @@ namespace NutriDbService.Helpers
                 if (isDiarySend)
                     await SendNot(user.UserNoId, _diarymess);
                 if (isMealSend)
-                    await SendNot(UserId, _mealmess);
+                    await SendNot(user.UserNoId, _mealmess);
             }
-            await SendNot(UserId, "37023544");
+            await SendNot(user.UserNoId, "37023544");
 
 
         }
