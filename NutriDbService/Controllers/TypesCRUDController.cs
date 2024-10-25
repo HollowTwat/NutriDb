@@ -784,6 +784,21 @@ namespace NutriDbService.Controllers
         }
         #endregion
 
+        [HttpPost]
+        public async Task<bool> ReloadNotify()
+        {
+            try
+            {
+                await _taskSchedulerService.TimerRestart();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "ReloadNotify");
+                await ErrorHelper.SendErrorMess("ReloadNotify", ex);
+                return false;
+            }
+        }
 
         #endregion
     }
