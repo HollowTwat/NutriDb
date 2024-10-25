@@ -24,15 +24,15 @@ namespace NutriDbService.Controllers
         private railwayContext _context;
         private MealHelper _mealHelper;
         private PlotHelper _plotHelper;
-        private readonly TaskSchedulerService _taskSchedulerService;
+        //private readonly TaskSchedulerService _taskSchedulerService;
 
-        public TypesCRUDController(railwayContext context, MealHelper mealHelper, ILogger<TypesCRUDController> logger, PlotHelper plotHelper, TaskSchedulerService taskSchedulerService)
+        public TypesCRUDController(railwayContext context, MealHelper mealHelper, ILogger<TypesCRUDController> logger, PlotHelper plotHelper/*, TaskSchedulerService taskSchedulerService*/)
         {
             _context = context;
             _mealHelper = mealHelper;
             _logger = logger;
             _plotHelper = plotHelper;
-            _taskSchedulerService = taskSchedulerService;
+            //_taskSchedulerService = taskSchedulerService;
         }
 
         #region AllCRUDS
@@ -61,7 +61,7 @@ namespace NutriDbService.Controllers
             try
             {
                 var mealId = await _mealHelper.CreateMeal(request);
-                _taskSchedulerService.UserTimerRestart(_context.Users.Single(x => x.TgId == request.userTgId).Id);
+                //_taskSchedulerService.UserTimerRestart(_context.Users.Single(x => x.TgId == request.userTgId).Id);
                 _logger.LogWarning($"UserTG={request.userTgId} Meal={mealId} was added");
                 return mealId;
                 // return Ok(res);
@@ -633,7 +633,7 @@ namespace NutriDbService.Controllers
                     }
                 }
                 await _context.SaveChangesAsync();
-                _taskSchedulerService.UserTimerRestart(userId);
+                //_taskSchedulerService.UserTimerRestart(userId);
                 return Ok(true);
             }
             catch (Exception ex)
