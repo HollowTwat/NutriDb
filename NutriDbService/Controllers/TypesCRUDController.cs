@@ -24,15 +24,15 @@ namespace NutriDbService.Controllers
         private railwayContext _context;
         private MealHelper _mealHelper;
         private PlotHelper _plotHelper;
-        //private readonly TaskSchedulerService _taskSchedulerService;
+        private readonly TaskSchedulerService _taskSchedulerService;
 
-        public TypesCRUDController(railwayContext context, MealHelper mealHelper, ILogger<TypesCRUDController> logger, PlotHelper plotHelper/*, TaskSchedulerService taskSchedulerService*/)
+        public TypesCRUDController(railwayContext context, MealHelper mealHelper, ILogger<TypesCRUDController> logger, PlotHelper plotHelper, TaskSchedulerService taskSchedulerService)
         {
             _context = context;
             _mealHelper = mealHelper;
             _logger = logger;
             _plotHelper = plotHelper;
-            //_taskSchedulerService = taskSchedulerService;
+            _taskSchedulerService = taskSchedulerService;
         }
 
         #region AllCRUDS
@@ -61,10 +61,10 @@ namespace NutriDbService.Controllers
             try
             {
                 var mealId = await _mealHelper.CreateMeal(request);
-                //_taskSchedulerService.UserTimerRestart(_context.Users.Single(x => x.TgId == request.userTgId).Id);
+                _taskSchedulerService.TimerRestart();
+                //return 0;
                 _logger.LogWarning($"UserTG={request.userTgId} Meal={mealId} was added");
                 return mealId;
-                // return Ok(res);
             }
             catch (Exception ex)
             {
@@ -132,7 +132,7 @@ namespace NutriDbService.Controllers
                 var user = _context.Users.SingleOrDefault(x => x.TgId == userTgId);
                 if (user == null)
                     throw new Exception($"I Cant Find User : {userTgId}");
-                var meals = _context.Meals.Where(x => x.UserId == user.Id && DateTime.Equals(x.MealTime.Date, DateTime.UtcNow.ToLocalTime().AddHours(3).Date)).ToList();
+                var meals = _context.Meals.Where(x => x.UserId == user.Id && DateTime.Equals(x.MealTime.Date, TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.UtcNow, "Russian Standard Time").Date)).ToList();
 
                 var mealsId = meals.Select(x => x.Id).ToList();
                 var dishes = _context.Dishes.Where(x => mealsId.Contains(x.MealId));
@@ -255,7 +255,7 @@ namespace NutriDbService.Controllers
                 if (user == null)
                     throw new Exception($"I Cant Find User : {userTgId}");
 
-                var startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-7).Date;
+                var startDate = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.UtcNow, "Russian Standard Time").AddDays(-7).Date;
                 var meals = await _context.Meals.Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).ToListAsync();
                 var dishes = await _context.Dishes.Where(x => meals.Select(x => x.Id).Contains(x.MealId)).ToListAsync();
                 var resp = new List<GetWeekMealStatusResponse>();
@@ -303,22 +303,22 @@ namespace NutriDbService.Controllers
                 if (user == null)
                     throw new Exception($"I Cant Find User : {userTgId}");
 
-                DateTime startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).Date;
+                DateTime startDate = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.UtcNow, "Russian Standard Time").Date;
                 int daysinperiod = 0;
-                var now = DateTime.UtcNow.ToLocalTime().AddHours(3).Date;
+                var now = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.UtcNow, "Russian Standard Time").Date;
                 switch (period)
                 {
                     case Periods.day:
-                        startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-1).Date;
+                        startDate = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.UtcNow, "Russian Standard Time").AddDays(-1).Date;
                         break;
                     case Periods.week:
                         startDate = MealHelper.GetFirstDayOfWeek(now);
                         break;
                     case Periods.mathweek:
-                        startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-7).Date;
+                        startDate = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.UtcNow, "Russian Standard Time").AddDays(-7).Date;
                         break;
                     case Periods.math3weeks:
-                        startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-21).Date;
+                        startDate = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.UtcNow, "Russian Standard Time").AddDays(-21).Date;
                         break;
                     case Periods.month:
                         startDate = new DateTime(now.Year, now.Month, 1);
@@ -390,7 +390,7 @@ namespace NutriDbService.Controllers
                     Timezone = 0,
                     StageId = 0,
                     LessonId = 0,
-                    RegistrationTime = DateOnly.FromDateTime(DateTime.UtcNow.ToLocalTime().AddHours(3)),
+                    RegistrationTime = DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.UtcNow, "Russian Standard Time")),
                     IsActive = true,
                     Username = string.IsNullOrEmpty(userName) ? null : userName,
                 });
@@ -413,9 +413,9 @@ namespace NutriDbService.Controllers
                 if (user == null)
                     throw new Exception($"I Cant Find User : {userTgId}");
                 var goalkk = (await _context.Userinfos.SingleOrDefaultAsync(x => x.UserId == user.Id)).Goalkk;
-                DateTime startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-7).Date;
+                DateTime startDate = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.UtcNow, "Russian Standard Time").AddDays(-7).Date;
                 int daysinperiod = 0;
-                var now = DateTime.UtcNow.ToLocalTime().AddHours(3).Date;
+                var now = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.UtcNow, "Russian Standard Time").Date;
 
                 daysinperiod = now.Day - startDate.Day;
                 var meals = await _context.Meals.Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).ToListAsync();
@@ -617,12 +617,12 @@ namespace NutriDbService.Controllers
                     {
                         UserId = userId,
                         Donelessonlist = lesson.ToString(),
-                        LastlessonTime = DateTime.UtcNow.ToLocalTime().AddHours(3),
+                        LastlessonTime = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.UtcNow, "Russian Standard Time"),
                     });
                 }
                 else
                 {
-                    usi.LastlessonTime = DateTime.UtcNow.ToLocalTime().AddHours(3);
+                    usi.LastlessonTime = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.UtcNow, "Russian Standard Time");
                     if (usi.Donelessonlist == null)
                         usi.Donelessonlist = $"{lesson}";
                     else
@@ -633,7 +633,7 @@ namespace NutriDbService.Controllers
                     }
                 }
                 await _context.SaveChangesAsync();
-                //_taskSchedulerService.UserTimerRestart(userId);
+                _taskSchedulerService.TimerRestart();
                 return Ok(true);
             }
             catch (Exception ex)
@@ -688,10 +688,10 @@ namespace NutriDbService.Controllers
             {
                 var userId = (await _context.Users.SingleOrDefaultAsync(x => x.TgId == UserTgId)).Id;
                 var usi = await _context.Userinfos.SingleOrDefaultAsync(x => x.UserId == userId);
-                var now = DateTime.UtcNow.ToLocalTime().AddHours(3);
+                var now = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.UtcNow, "Russian Standard Time");
                 if (usi.MorningPing == null || usi.EveningPing == null || usi.Timeslide == null)
                     return new GetUserPingResponse { MskTime = null };
-                DateTime ping = DateTime.UtcNow.ToLocalTime().AddHours(3);
+                DateTime ping = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.UtcNow, "Russian Standard Time");
                 if (TimeOfDay == 0)//утро
                 {
                     ping = DateOnly.FromDateTime(now).ToDateTime((TimeOnly)usi.MorningPing);
@@ -719,7 +719,7 @@ namespace NutriDbService.Controllers
             {
                 var userId = (await _context.Users.SingleOrDefaultAsync(x => x.TgId == UserTgId)).Id;
                 var usi = await _context.Userinfos.SingleOrDefaultAsync(x => x.UserId == userId);
-                var now = DateTime.UtcNow.ToLocalTime().AddHours(3);
+                var now = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.UtcNow, "Russian Standard Time");
                 if (usi.Timeslide == null)
                     return new GetUserPingResponse { MskTime = null };
 

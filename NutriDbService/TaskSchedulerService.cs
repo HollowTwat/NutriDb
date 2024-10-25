@@ -30,26 +30,30 @@ namespace NutriDbService
     {
         private readonly object _lock = new object();
         private List<UserTimer> _timers = new List<UserTimer>();
-        private List<UserPing> _userPings;
+        //private List<UserPing> _userPings;
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger _logger;
         public TaskSchedulerService(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
-            _logger = _serviceProvider.CreateScope().ServiceProvider.GetRequiredService<ILogger<NotificationHelper>>();
+            _logger = _serviceProvider.CreateScope().ServiceProvider.GetRequiredService<ILogger<TaskSchedulerService>>();
         }
-
-        public Task StartAsync(CancellationToken cancellationToken)
+        private List<UserPing> GetUserPings()
         {
-            using (var scope = _serviceProvider.CreateScope())
+            using(var scope = _serviceProvider.CreateScope())
             {
                 var _context = scope.ServiceProvider.GetRequiredService<railwayContext>();
-                //List<int> validUsers = new List<int>() { 17 };
+                //List<int> validUsers = new List<int>() { 3, 13, 17 };
                 var users = _context.Userinfos.Include(x => x.User).Where(x => x.MorningPing != null).OrderByDescending(x => x.MorningPing)
                     .Select(x => new UserPing { Id = x.UserId, UserNoId = x.User.UserNoId, Ping = (TimeOnly)x.MorningPing, Slide = x.Timeslide }).ToList();
                 //users = users.Where(x => validUsers.Contains(x.Id)).ToList();
-                ScheduleTasks(users);
+               return users;
             }
+        }
+        public Task StartAsync(CancellationToken cancellationToken)
+        {
+            var users=GetUserPings();
+            ScheduleTasks(users);
             return Task.CompletedTask;
         }
 
@@ -59,7 +63,8 @@ namespace NutriDbService
             {
                 foreach (var userPing in usersPings)
                 {
-                    //userPing.Ping = new TimeOnly(16, 33);
+                    //if (userPing.UserNoId != 403489853)
+                    //    userPing.Ping = new TimeOnly(18, 5);
                     if (userPing.Slide != null)
                         userPing.Ping.AddHours((double)userPing.Slide);
                     ScheduleTask(userPing);
@@ -70,7 +75,7 @@ namespace NutriDbService
         private void ScheduleTask(UserPing userPing)
         {
             var dailyTime = userPing.Ping;
-            var currentTime = DateTime.UtcNow.ToLocalTime().AddHours(3);
+            var currentTime = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.UtcNow, "Russian Standard Time");
             var nextOccurrence = CalculateNextOccurrence(currentTime, dailyTime);
             var timeToNextOccurrence = nextOccurrence - currentTime;
 
@@ -117,15 +122,8 @@ namespace NutriDbService
                     _timers.Clear();
 
                     // Настроить новые таймеры
-                    using (var scope = _serviceProvider.CreateScope())
-                    {
-                        var _context = scope.ServiceProvider.GetRequiredService<railwayContext>();
-                        var usersPings = _context.Userinfos.Include(x => x.User).Where(x => x.MorningPing != null).OrderByDescending(x => x.MorningPing)
-                 .Select(x => new UserPing { UserNoId = x.User.UserNoId, Ping = (TimeOnly)x.MorningPing, Slide = x.Timeslide }).ToList();
-
-                        _userPings = usersPings;
-                        ScheduleTasks(_userPings);
-                    }
+                    var users = GetUserPings();
+                    ScheduleTasks(users);
                 }
             }
             catch (Exception ex)
@@ -136,37 +134,42 @@ namespace NutriDbService
             }
         }
 
-        public void UserTimerRestart(int userId)
-        {
-            try
-            {
-                lock (_lock)
-                {
-                    // Остановить текущие таймеры
-                    foreach (var timer in _timers.Where(x => x.Id == userId))
-                    {
-                        timer.Timer.Dispose();
-                        _timers.Remove(timer);
-                    }
-                    // Настроить новые таймеры
-                    using (var scope = _serviceProvider.CreateScope())
-                    {
-                        var _context = scope.ServiceProvider.GetRequiredService<railwayContext>();
-                        var usersPings = _context.Userinfos.Include(x => x.User).Where(x => x.MorningPing != null && x.UserId == userId).OrderByDescending(x => x.MorningPing)
-                 .Select(x => new UserPing { UserNoId = x.User.UserNoId, Ping = (TimeOnly)x.MorningPing, Slide = x.Timeslide }).ToList();
+        //public void UserTimerRestart(int userId)
+        //{
+        //    try
+        //    {
+        //        lock (_lock)
+        //        {
+        //            List<UserTimer> timersToRemove = new List<UserTimer>();
+        //            // Остановить текущие таймеры
+        //            foreach (var timer in _timers.Where(x => x.Id == userId))
+        //            {
+        //                timersToRemove.Add(timer);
 
-                        _userPings = usersPings;
-                        ScheduleTasks(_userPings);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
+        //                timer.Timer.Dispose();
 
-                _logger.LogError($"UserTimerRestartError for User:{userId}", ex);
-                ErrorHelper.SendErrorMess($"UserTimerRestartError for User:{userId}", ex).GetAwaiter().GetResult();
-            }
-        }
+        //            }
+        //            foreach (var timer in timersToRemove)
+        //                _timers.Remove(timer);
+        //            // Настроить новые таймеры
+        //            using (var scope = _serviceProvider.CreateScope())
+        //            {
+        //                var _context = scope.ServiceProvider.GetRequiredService<railwayContext>();
+        //                var usersPings = _context.Userinfos.Include(x => x.User).Where(x => x.MorningPing != null && x.UserId == userId).OrderByDescending(x => x.MorningPing)
+        //         .Select(x => new UserPing { UserNoId = x.User.UserNoId, Ping = (TimeOnly)x.MorningPing, Slide = x.Timeslide }).ToList();
+
+        //                _userPings = usersPings;
+        //                ScheduleTasks(_userPings);
+        //            }
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+
+        //        _logger.LogError($"UserTimerRestartError for User:{userId}", ex);
+        //        ErrorHelper.SendErrorMess($"UserTimerRestartError for User:{userId}", ex).GetAwaiter().GetResult();
+        //    }
+        //}
 
         public Task StopAsync(CancellationToken cancellationToken)
         {

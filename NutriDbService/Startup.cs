@@ -32,20 +32,15 @@ namespace NutriDbService
             services.AddControllers().AddNewtonsoftJson();
 
             services.AddSwaggerGen();
-            services.AddScoped<railwayContext>();
+            services.AddDbContext<railwayContext>();
             //services.AddScoped<NutriDbContext>();
             services.AddTransient<MealHelper>();
             services.AddTransient<TransmitterHelper>();
             services.AddTransient<PlotHelper>();
             services.AddTransient<NotificationHelper>();
-            services.AddHostedService<TaskSchedulerService>();
-            //services.AddTransient(_ => ActivatorUtilities.CreateInstance<TransmitterHelper>(_,
-            //   _.GetRequiredService<railwayContext>(),
-            //   ApplicationSettings.Instance.Config,
-            //   _.GetRequiredService<ILogger<SuperManager>>()));
-
-            //    services.AddDbContext<RailwayContext>(options =>
-            //options.UseNpgsql(Configuration.GetConnectionString("BloggingContext")));
+            //services.AddHostedService<TaskSchedulerService>();
+            services.AddSingleton<TaskSchedulerService>();
+            services.AddHostedService(provider => provider.GetService<TaskSchedulerService>());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -61,7 +61,7 @@ namespace NutriDbService.Helpers
                     Description = createMealRequest.meal.description,
                     Type = (short)createMealRequest.meal.type,
 
-                    MealTime = IsTyme ? parseTime : DateTime.UtcNow.ToLocalTime().AddHours(3)
+                    MealTime = IsTyme ? parseTime : TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.UtcNow, "Russian Standard Time")
                 };
 
                 var oldmeal = await _nutriDbContext.Meals.SingleOrDefaultAsync(x => x.UserId == meal.UserId && x.MealTime.Date == meal.MealTime.Date && x.Type == meal.Type);
@@ -186,21 +186,21 @@ namespace NutriDbService.Helpers
                 throw new Exception(mes);
             }
             //var inDay = (DayOfWeek)day;
-            var now = DateTime.UtcNow.ToLocalTime().AddHours(3).Date;
-            var startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-7).Date;
+            var now = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.UtcNow, "Russian Standard Time").Date;
+            var startDate = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.UtcNow, "Russian Standard Time").AddDays(-7).Date;
             switch (req.period)
             {
                 case Periods.day:
-                    startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-1).Date;
+                    startDate = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.UtcNow, "Russian Standard Time").AddDays(-1).Date;
                     break;
                 case Periods.week:
                     startDate = GetFirstDayOfWeek(now);
                     break;
                 case Periods.mathweek:
-                    startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-7).Date;
+                    startDate = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.UtcNow, "Russian Standard Time").AddDays(-7).Date;
                     break;
                 case Periods.math3weeks:
-                    startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-21).Date;
+                    startDate = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.UtcNow, "Russian Standard Time").AddDays(-21).Date;
                     break;
                 case Periods.month:
                     startDate = new DateTime(now.Year, now.Month, 1);
@@ -258,7 +258,7 @@ namespace NutriDbService.Helpers
                 throw new Exception(mes);
             }
             //var inDay = (DayOfWeek)day;
-            var now = DateTime.UtcNow.ToLocalTime().AddHours(3).Date;
+            var now = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.UtcNow, "Russian Standard Time").Date;
             var startDate = now.AddDays(-7).Date;
 
             var meals = await _nutriDbContext.Meals.Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).ToListAsync();
@@ -314,8 +314,8 @@ namespace NutriDbService.Helpers
             if (user == null)
                 throw new Exception($"I Cant Find User : {req.userTgId}");
             //var inDay = (DayOfWeek)day;
-            var now = DateTime.UtcNow.ToLocalTime().AddHours(3).Date;
-            var startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddMonths(-1).Date;
+            var now = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.UtcNow, "Russian Standard Time").Date;
+            var startDate = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.UtcNow, "Russian Standard Time").AddMonths(-1).Date;
 
             //var meals = _context.Meals.Where(x => x.UserId == user.Id && x.MealTime.Value.Date > startDate && x.MealTime.Value.DayOfWeek == (DayOfWeek)day).ToList();
             var meals = await _nutriDbContext.Meals.Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).ToListAsync();
