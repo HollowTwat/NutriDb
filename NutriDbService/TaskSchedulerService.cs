@@ -66,7 +66,7 @@ namespace NutriDbService
         private void ScheduleTask(UserPing userPing)
         {
             var dailyTime = userPing.Ping;
-            var currentTime = DateTime.UtcNow;
+            var currentTime = DateTime.UtcNow.AddHours(3);
             var nextOccurrence = CalculateNextOccurrence(currentTime, dailyTime);
             var timeToNextOccurrence = nextOccurrence - currentTime;
 

@@ -40,9 +40,9 @@ namespace NutriDbService.Helpers
             var userInfo = await _context.Userinfos.SingleAsync(x => x.UserId == UserId);
             var meals = await _context.Meals.Where(x => x.UserId == UserId).OrderByDescending(x => x.MealTime).FirstOrDefaultAsync();
             var lastMealTime = meals?.MealTime;
-            if (lastMealTime != null && lastMealTime < DateTime.UtcNow.AddDays(-1))
+            if (lastMealTime != null && lastMealTime < DateTime.UtcNow.AddHours(3).AddDays(-1))
                 isMealSend = true;
-            if (userInfo.LastlessonTime < DateTime.UtcNow.AddDays(-1))
+            if (userInfo.LastlessonTime < DateTime.UtcNow.AddHours(3).AddDays(-1))
                 isDiarySend = true;
             if (isMealSend && isDiarySend)
                 await SendNot(user.UserNoId, _bothmess);
