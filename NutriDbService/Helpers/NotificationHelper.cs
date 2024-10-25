@@ -7,6 +7,8 @@ using NutriDbService.DbModels;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using NutriDbService.PythModels;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace NutriDbService.Helpers
 {
@@ -19,9 +21,11 @@ namespace NutriDbService.Helpers
         private readonly static string _mealmess = "36327038";
         private readonly static string _bothmess = "37023610";
         private railwayContext _context;
-        public NotificationHelper(railwayContext context)
+        private readonly ILogger _logger;
+        public NotificationHelper(railwayContext context, IServiceScopeFactory serviceProviderFactory)
         {
             _context = context;
+            _logger = serviceProviderFactory.CreateScope().ServiceProvider.GetRequiredService<ILogger<NotificationHelper>>();
         }
         private async Task SendNot(long ClientId, string MessBoxId)
         {
@@ -36,15 +40,16 @@ namespace NutriDbService.Helpers
         {
             try
             {
+                _logger.LogWarning($"User:{UserId} SendNotification");
                 bool isMealSend = false;
                 bool isDiarySend = false;
                 var user = await _context.Users.SingleAsync(x => x.Id == UserId);
                 var userInfo = await _context.Userinfos.SingleAsync(x => x.UserId == UserId);
                 var meals = await _context.Meals.Where(x => x.UserId == UserId).OrderByDescending(x => x.MealTime).FirstOrDefaultAsync();
                 var lastMealTime = meals?.MealTime;
-                if (lastMealTime != null && lastMealTime < DateTime.UtcNow.AddHours(3).AddDays(-1))
+                if (lastMealTime != null && lastMealTime < DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-1))
                     isMealSend = true;
-                if (userInfo.LastlessonTime < DateTime.UtcNow.AddHours(3).AddDays(-1))
+                if (userInfo.LastlessonTime < DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-1))
                     isDiarySend = true;
 
                 if (isMealSend && isDiarySend)
@@ -60,6 +65,7 @@ namespace NutriDbService.Helpers
             }
             catch (Exception ex)
             {
+                _logger.LogError($"NotificationSendError for User:{UserId}", ex);
                 await ErrorHelper.SendErrorMess($"NotificationSendError for User:{UserId}", ex);
             }
 

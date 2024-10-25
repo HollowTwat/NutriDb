@@ -37,7 +37,7 @@ namespace NutriDbService.Helpers
         }
         public static async Task SendErrorMess(string mess, Exception ex)
         {
-            var message = $"ERROR MESS:{DateTime.UtcNow.AddHours(3)} \n {mess} \n\n Exception Text:\n{Newtonsoft.Json.JsonConvert.SerializeObject(ex)}";
+            var message = $"ERROR MESS:{DateTime.UtcNow.ToLocalTime().AddHours(3)} \n {mess} \n\n Exception Text:\n{Newtonsoft.Json.JsonConvert.SerializeObject(ex)}";
             if (message.Length > 4000)
             {
                 for (int i = 0; i < message.Length / 4000 + 1; i++)
@@ -52,7 +52,7 @@ namespace NutriDbService.Helpers
         }
         public static async Task SendErrorMess(string mess)
         {
-            var message = $"ERROR MESS:{DateTime.UtcNow.AddHours(3)} \n Error Text:\n{mess}";
+            var message = $"ERROR MESS:{DateTime.UtcNow.ToLocalTime().AddHours(3)} \n Error Text:\n{mess}";
             if (message.Length > 4000)
             {
                 for (int i = 0; i < message.Length / 4000 + 1; i++)

@@ -31,7 +31,7 @@ namespace NutriDbTest
                 EditMealRequest request = new EditMealRequest()
                 {
                     userTgId = 186556585,
-                    EatedAt = DateTime.UtcNow.AddHours(3).AddDays(-i).ToString("dd.MM.yyyy_HH:mm"),
+                    EatedAt = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-i).ToString("dd.MM.yyyy_HH:mm"),
                     meal = new NutriDbService.PythModels.PythMeal
                     {
                         description = "TestBreak",
