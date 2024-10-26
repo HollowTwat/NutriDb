@@ -22,6 +22,7 @@ namespace NutriDbService.Helpers
         private readonly static string _bothmess = "37023610";
         private railwayContext _context;
         private readonly ILogger _logger;
+        
         public NotificationHelper(railwayContext context, IServiceScopeFactory serviceProviderFactory)
         {
             _context = context;

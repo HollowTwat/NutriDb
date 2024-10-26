@@ -21,12 +21,13 @@
 	  <None Remove="WebHostTemplateVer2.zip" />
 	</ItemGroup>
 	<ItemGroup>
-	  <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.31" />
-	  <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.31">
+	  <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.35" />
+	  <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.35" />
+	  <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.35">
 	    <PrivateAssets>all</PrivateAssets>
 	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 	  </PackageReference>
-	  <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.31">
+	  <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.35">
 	    <PrivateAssets>all</PrivateAssets>
 	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 	  </PackageReference>
@@ -34,10 +35,10 @@
 	  <PackageReference Include="SixLabors.Fonts" Version="2.0.4" />
 	  <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.4" />
 	  <PackageReference Include="Swashbuckle" Version="5.6.0" />
-	  <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
-	  <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="6.6.2" />
-	  <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.6.2" />
-	  <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="6.6.2" />
+	  <PackageReference Include="Swashbuckle.AspNetCore" Version="6.9.0" />
+	  <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="6.9.0" />
+	  <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.9.0" />
+	  <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="6.9.0" />
 	  <PackageReference Include="Telegram.Bot" Version="18.0.0" />
 	</ItemGroup>
 	<ItemGroup>
