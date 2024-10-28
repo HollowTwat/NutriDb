@@ -67,9 +67,16 @@ namespace NutriDbService.Controllers
             catch (EmptyMealException ex)
             {
                 _logger.LogError("Попытка анализа пустой недели ");
-                await ErrorHelper.SendErrorMess($"Попытка анализа пустой недели :{rateReq}");
+                await ErrorHelper.SendErrorMess($"Попытка анализа пустой недели :{Newtonsoft.Json.JsonConvert.SerializeObject(rateReq)}");
                 return new CreateGPTResponse() { isError = true, Mess = "MealEmpty" };
             }
+            catch (ExtraEmptyException ex)
+            {
+                _logger.LogError("Попытка анализа с пустой анкетой");
+                await ErrorHelper.SendErrorMess($"Попытка анализа с пустой анкетой :{Newtonsoft.Json.JsonConvert.SerializeObject(rateReq)}");
+                return new CreateGPTResponse() { isError = true, Mess = "ExtraEmpty" };
+            }
+
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message);
@@ -86,7 +93,7 @@ namespace NutriDbService.Controllers
             {
                 if (req.RequestId == 0)
                     return new CheckGPTResponse { Done = true, IsError = true };
-                var res =await _transmitterHelper.CheckGPT(req.RequestId);
+                var res = await _transmitterHelper.CheckGPT(req.RequestId);
                 return res;
             }
             catch (Exception ex)

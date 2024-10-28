@@ -682,6 +682,30 @@ namespace NutriDbService.Controllers
         }
 
         [HttpGet]
+        public async Task<ActionResult<int>> GetLastUserLesson(long UserTgId)
+        {
+            try
+            {
+                var userId = (await _context.Users.SingleOrDefaultAsync(x => x.TgId == UserTgId)).Id;
+                var usi = await _context.Userinfos.SingleOrDefaultAsync(x => x.UserId == userId);
+                if (usi == null)
+                {
+                    return 0;
+                }
+                else
+                {
+                    return int.Parse(usi.Donelessonlist.Split(',').ToList().Last());
+                }
+            }
+            catch (Exception ex)
+            {
+                await ErrorHelper.SendErrorMess("GetLastUserLesson Error", ex);
+                _logger.LogError(ex, ex.Message);
+                return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
+            }
+        }
+
+        [HttpGet]
         public async Task<ActionResult<GetUserPingResponse>> GetUserPing(long UserTgId, short TimeOfDay)
         {
             try
@@ -712,6 +736,7 @@ namespace NutriDbService.Controllers
                 return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
         }
+
         [HttpGet]
         public async Task<ActionResult<GetUserPingResponse>> GetCustomPing(long UserTgId, string TimeToSlide)
         {
@@ -737,30 +762,6 @@ namespace NutriDbService.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, ex.Message);
-                return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
-            }
-        }
-
-        [HttpGet]
-        public async Task<ActionResult<int>> GetLastUserLesson(long UserTgId)
-        {
-            try
-            {
-                var userId = (await _context.Users.SingleOrDefaultAsync(x => x.TgId == UserTgId)).Id;
-                var usi = await _context.Userinfos.SingleOrDefaultAsync(x => x.UserId == userId);
-                if (usi == null)
-                {
-                    return 0;
-                }
-                else
-                {
-                    return int.Parse(usi.Donelessonlist.Split(',').ToList().Last());
-                }
-            }
-            catch (Exception ex)
-            {
-                await ErrorHelper.SendErrorMess("GetLastUserLesson Error", ex);
                 _logger.LogError(ex, ex.Message);
                 return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }

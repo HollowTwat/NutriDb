@@ -171,7 +171,9 @@ namespace NutriDbService.Helpers
             if (!mealresp.Any())
                 throw new EmptyMealException();
             var userId = (await _nutriDbContext.Users.SingleAsync(x => x.TgId == ratereq.UserTgId)).Id;
-            var useri = await _nutriDbContext.Userinfos.SingleAsync(x => x.UserId == userId);
+            var useri = await _nutriDbContext.Userinfos.SingleOrDefaultAsync(x => x.UserId == userId);
+            if (String.IsNullOrEmpty(useri?.Extra))
+                throw new ExtraEmptyException();
             var ext = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, string>>(useri.Extra);
             RateQuestion rateQuestion = new RateQuestion
             {
