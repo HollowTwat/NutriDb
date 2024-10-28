@@ -334,7 +334,7 @@ namespace NutriDbService.Controllers
                     resp.TotalFats += dish.Fats;
                     resp.TotalKkal += dish.Kkal;
                 }
-                var extra = (await _context.Userinfos.SingleOrDefaultAsync(x => x.UserId == user.Id)).Extra;
+                var extra = (await _context.Userinfos.SingleOrDefaultAsync(x => x.UserId == user.Id))?.Extra;
                 if (extra == null) { resp.GoalKkal = 0.0m; }
                 else
                 {
