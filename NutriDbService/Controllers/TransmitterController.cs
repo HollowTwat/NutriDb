@@ -51,6 +51,10 @@ namespace NutriDbService.Controllers
         {
             lock (locker)
             {
+                if (!_userStatus.ContainsKey(userId))
+                {
+                    _userStatus[userId] = false;
+                }
                 var isget = _userStatus.TryGetValue(userId, out bool isUserActive);
                 if (isget && isUserActive)
                 {
@@ -68,10 +72,18 @@ namespace NutriDbService.Controllers
         {
             lock (locker)
             {
-                if (_userStatus.TryGetValue(userId, out bool isActive) && isActive)
+                if (_userStatus.ContainsKey(userId))
                 {
-                    _userStatus[userId] = false;
-
+                    if (_userStatus.TryGetValue(userId, out bool isActive) && isActive)
+                    {
+                        _userStatus[userId] = false;
+                    }
+                    else
+                        ErrorHelper.SendErrorMess($"На финише в словаре false для: {userId}").GetAwaiter().GetResult();
+                }
+                else
+                {
+                    ErrorHelper.SendErrorMess($"На финише в словаре нет {userId}").GetAwaiter().GetResult();
                 }
             }
         }
