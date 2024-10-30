@@ -51,7 +51,7 @@ namespace NutriDbService.Controllers
         {
             lock (locker)
             {
-                System.Threading.Thread.Sleep(500);
+                System.Threading.Thread.Sleep(300);
                 if (!_userStatus.ContainsKey(userId))
                     _userStatus[userId] = false;
 
@@ -101,9 +101,13 @@ namespace NutriDbService.Controllers
                     throw new DoubleUserException();
 
                 var res = await _transmitterHelper.CreateGPTRequest(req);
+                System.Threading.Thread.Sleep(100);
                 FinishMethod(req.UserTgId);
                 if (res == 0)
+                {
+                    await ErrorHelper.SendErrorMess($"DbEmpty for user:{req.UserTgId}");
                     return new CreateGPTResponse { isError = true, RequestId = 0, Mess = "DbEmpty" };
+                }
                 else
                     return new CreateGPTResponse(res);
             }
@@ -132,11 +136,14 @@ namespace NutriDbService.Controllers
                     throw new DoubleUserException();
                 System.Threading.Thread.Sleep(500);
                 var req = await _transmitterHelper.CreateRateRequest(rateReq, _mealHelper);
-
                 var res = await _transmitterHelper.CreateGPTRequest(req);
+                System.Threading.Thread.Sleep(100);
                 FinishMethod(rateReq.UserTgId);
                 if (res == 0)
+                {
+                    await ErrorHelper.SendErrorMess($"DbEmpty for user:{rateReq.UserTgId}");
                     return new CreateGPTResponse { isError = true, RequestId = 0, Mess = "DbEmpty" };
+                }
                 return new CreateGPTResponse(res);
             }
             catch (EmptyMealException ex)
