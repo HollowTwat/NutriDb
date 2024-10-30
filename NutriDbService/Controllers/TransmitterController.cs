@@ -34,9 +34,9 @@ namespace NutriDbService.Controllers
         {
             //if (IsUserActive(userId))
             //    throw new DoubleUserException();
-            //ErrorHelper.SendErrorMess($"user{userId} Start").GetAwaiter().GetResult();
-            //_userStatus[userId] = true;
 
+            //_userStatus[userId] = true;
+           
             bool existingStatus = _userStatus.AddOrUpdate(userId,
        addValueFactory: _ => true,
        updateValueFactory: (_, currentStatus) =>
@@ -45,6 +45,7 @@ namespace NutriDbService.Controllers
            {
                throw new DoubleUserException();
            }
+           ErrorHelper.SendErrorMess($"user{userId} status={currentStatus}").GetAwaiter().GetResult();
            return true;
        });
         }
