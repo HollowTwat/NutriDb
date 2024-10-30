@@ -51,6 +51,7 @@ namespace NutriDbService.Controllers
         {
             lock (locker)
             {
+                System.Threading.Thread.Sleep(500);
                 if (!_userStatus.ContainsKey(userId))
                     _userStatus[userId] = false;
 
@@ -98,7 +99,7 @@ namespace NutriDbService.Controllers
                 _logger.LogWarning($"На вход пришло {Newtonsoft.Json.JsonConvert.SerializeObject(req)}");
                 if (!StartMethod(req.UserTgId))
                     throw new DoubleUserException();
-                System.Threading.Thread.Sleep(500);
+
                 var res = await _transmitterHelper.CreateGPTRequest(req);
                 FinishMethod(req.UserTgId);
                 if (res == 0)
