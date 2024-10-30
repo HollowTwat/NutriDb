@@ -22,7 +22,7 @@ namespace NutriDbService.Controllers
         private railwayContext _context;
         private TransmitterHelper _transmitterHelper;
         private MealHelper _mealHelper;
-        private ConcurrentDictionary<long, bool> _userStatus = new ConcurrentDictionary<long, bool>();
+        private static ConcurrentDictionary<long, bool> _userStatus = new ConcurrentDictionary<long, bool>();
         private static readonly object locker = new object();
         private static readonly SemaphoreSlim semaphoreSlim = new SemaphoreSlim(1, 1);
         public TransmitterController(railwayContext context, TransmitterHelper transmitterHelper, ILogger<TransmitterController> logger, MealHelper mealHelper)
@@ -53,6 +53,7 @@ namespace NutriDbService.Controllers
             {
                 if (!_userStatus.ContainsKey(userId))
                 {
+                    ErrorHelper.SendErrorMess($"Empty key").GetAwaiter().GetResult();
                     _userStatus[userId] = false;
                 }
                 var isget = _userStatus.TryGetValue(userId, out bool isUserActive);
