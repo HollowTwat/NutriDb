@@ -32,26 +32,14 @@ namespace NutriDbService.Controllers
         }
         public void StartMethod(long userId)
         {
-            //if (IsUserActive(userId))
-            //    throw new DoubleUserException();
-
-            //_userStatus[userId] = true;
+            if (_userStatus.TryGetValue(userId, out bool value) && value)
+            {
+                ErrorHelper.SendErrorMess($"Doublicate").GetAwaiter().GetResult();
+                throw new DoubleUserException();
+            }
+            ErrorHelper.SendErrorMess($"user{userId} status={value}").GetAwaiter().GetResult();
+            _userStatus[userId] = true;
             ErrorHelper.SendErrorMess($"user{userId} Start").GetAwaiter().GetResult();
-            bool existingStatus = _userStatus.AddOrUpdate(userId,
-       addValueFactory: _ => true,
-       updateValueFactory: (_, currentStatus) =>
-       {
-           if (currentStatus)
-           {
-               ErrorHelper.SendErrorMess($"Doublicate").GetAwaiter().GetResult();
-               throw new DoubleUserException();
-           }
-           else
-           {
-               ErrorHelper.SendErrorMess($"user{userId} status={currentStatus}").GetAwaiter().GetResult();
-               return true;
-           }
-       });
         }
         public void FinishMethod(long userId)
         {
