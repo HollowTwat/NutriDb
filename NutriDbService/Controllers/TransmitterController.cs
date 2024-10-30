@@ -52,19 +52,15 @@ namespace NutriDbService.Controllers
             lock (locker)
             {
                 if (!_userStatus.ContainsKey(userId))
-                {
-                    ErrorHelper.SendErrorMess($"Empty key").GetAwaiter().GetResult();
                     _userStatus[userId] = false;
-                }
+
                 var isget = _userStatus.TryGetValue(userId, out bool isUserActive);
                 if (isget && isUserActive)
                 {
                     return false; // Установка провала
                 }
-                ErrorHelper.SendErrorMess($"IsGet={isget}").GetAwaiter().GetResult();
                 // Синхронно выполняем окончательную постобменную миссию на дальнейшую побуждение
                 _userStatus[userId] = true;
-                //await ErrorHelper.SendErrorMess($"user{userId} Start").GetAwaiter().GetResult();
 
                 return true; // Занавес со сброс эмоции
             }
@@ -102,11 +98,9 @@ namespace NutriDbService.Controllers
                 _logger.LogWarning($"На вход пришло {Newtonsoft.Json.JsonConvert.SerializeObject(req)}");
                 if (!StartMethod(req.UserTgId))
                     throw new DoubleUserException();
-                else
-                    await ErrorHelper.SendErrorMess($"user{req.UserTgId} Start");
+                System.Threading.Thread.Sleep(500);
                 var res = await _transmitterHelper.CreateGPTRequest(req);
                 FinishMethod(req.UserTgId);
-                await ErrorHelper.SendErrorMess($"user{req.UserTgId} Finish");
                 if (res == 0)
                     return new CreateGPTResponse { isError = true, RequestId = 0, Mess = "DbEmpty" };
                 else
@@ -135,13 +129,11 @@ namespace NutriDbService.Controllers
                 _logger.LogWarning($"На вход пришло {Newtonsoft.Json.JsonConvert.SerializeObject(rateReq)}");
                 if (!StartMethod(rateReq.UserTgId))
                     throw new DoubleUserException();
-                else
-                    await ErrorHelper.SendErrorMess($"user{rateReq.UserTgId} Start");
+                System.Threading.Thread.Sleep(500);
                 var req = await _transmitterHelper.CreateRateRequest(rateReq, _mealHelper);
 
                 var res = await _transmitterHelper.CreateGPTRequest(req);
                 FinishMethod(rateReq.UserTgId);
-                await ErrorHelper.SendErrorMess($"user{req.UserTgId} Finish");
                 if (res == 0)
                     return new CreateGPTResponse { isError = true, RequestId = 0, Mess = "DbEmpty" };
                 return new CreateGPTResponse(res);
