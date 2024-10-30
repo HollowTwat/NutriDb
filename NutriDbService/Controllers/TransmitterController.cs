@@ -23,6 +23,7 @@ namespace NutriDbService.Controllers
         private MealHelper _mealHelper;
         private readonly ConcurrentDictionary<long, bool> _userStatus = new ConcurrentDictionary<long, bool>();
         private static readonly object locker = new object();
+        private static readonly SemaphoreSlim semaphoreSlim = new SemaphoreSlim(1, 1);
         public TransmitterController(railwayContext context, TransmitterHelper transmitterHelper, ILogger<TransmitterController> logger, MealHelper mealHelper)
         {
             _context = context;
@@ -30,38 +31,70 @@ namespace NutriDbService.Controllers
             _logger = logger;
             _mealHelper = mealHelper;
         }
-        public void StartMethod(long userId)
+        //public void StartMethod(long userId)
+        //{
+        //    lock (locker)
+        //    {
+        //        if (_userStatus.TryGetValue(userId, out bool value) && value)
+        //        {
+        //            ErrorHelper.SendErrorMess($"Doublicate").GetAwaiter().GetResult();
+        //            throw new DoubleUserException();
+        //        }
+
+        //        // Удостоверяемся, что установка статуса происходит внутри блокировки
+        //        _userStatus[userId] = true;
+        //        ErrorHelper.SendErrorMess($"user{userId} Start").GetAwaiter().GetResult();
+        //    }
+        //}
+        public async Task StartMethod(long userId)
         {
-            lock (locker)
+            await semaphoreSlim.WaitAsync();
+            try
             {
                 if (_userStatus.TryGetValue(userId, out bool value) && value)
                 {
-                    ErrorHelper.SendErrorMess($"Doublicate").GetAwaiter().GetResult();
+                    await ErrorHelper.SendErrorMess($"Doublicate");
                     throw new DoubleUserException();
                 }
-                ErrorHelper.SendErrorMess($"user{userId} status={value}").GetAwaiter().GetResult();
+
                 _userStatus[userId] = true;
-                ErrorHelper.SendErrorMess($"user{userId} Start").GetAwaiter().GetResult();
+                await ErrorHelper.SendErrorMess($"user{userId} Start");
+            }
+            finally
+            {
+                semaphoreSlim.Release();
             }
         }
-        public void FinishMethod(long userId)
+        public async Task FinishMethod(long userId)
         {
-            ErrorHelper.SendErrorMess($"user{userId} Finish").GetAwaiter().GetResult();
-            _userStatus[userId] = false;
+            await semaphoreSlim.WaitAsync();
+            try
+            {
+                if (_userStatus.ContainsKey(userId))
+                {
+                    _userStatus[userId] = false;
+                }
+
+                await ErrorHelper.SendErrorMess($"user{userId} Finish");
+            }
+            finally
+            {
+                semaphoreSlim.Release();
+            }
         }
-        //public bool IsUserActive(long userId)
+        //public void FinishMethod(long userId)
         //{
-        //    var res = _userStatus.TryGetValue(userId, out bool isActive) && isActive;
-        //    ErrorHelper.SendErrorMess($"user{userId} status={isActive}").GetAwaiter().GetResult();
-        //    return res;
+        //    ErrorHelper.SendErrorMess($"user{userId} Finish").GetAwaiter().GetResult();
+        //    _userStatus[userId] = false;
         //}
+
         [HttpPost]
         public async Task<CreateGPTResponse> CreateGPTRequset(CreateGPTNoCodeRequest req)
         {
             try
             {
                 _logger.LogWarning($"На вход пришло {Newtonsoft.Json.JsonConvert.SerializeObject(req)}");
-                StartMethod(req.UserTgId);
+                await StartMethod(req.UserTgId);
                 var res = await _transmitterHelper.CreateGPTRequest(req);
                 if (res == 0)
                     return new CreateGPTResponse { isError = true, RequestId = 0 };
@@ -82,7 +115,7 @@ namespace NutriDbService.Controllers
             }
             finally
             {
-                FinishMethod(req.UserTgId);
+                await FinishMethod(req.UserTgId);
             }
         }
 
