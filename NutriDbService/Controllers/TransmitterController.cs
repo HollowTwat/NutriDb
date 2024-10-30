@@ -22,7 +22,7 @@ namespace NutriDbService.Controllers
         private TransmitterHelper _transmitterHelper;
         private MealHelper _mealHelper;
         private readonly ConcurrentDictionary<long, bool> _userStatus = new ConcurrentDictionary<long, bool>();
-
+        private static readonly object locker = new object();
         public TransmitterController(railwayContext context, TransmitterHelper transmitterHelper, ILogger<TransmitterController> logger, MealHelper mealHelper)
         {
             _context = context;
@@ -32,14 +32,17 @@ namespace NutriDbService.Controllers
         }
         public void StartMethod(long userId)
         {
-            if (_userStatus.TryGetValue(userId, out bool value) && value)
+            lock (locker)
             {
-                ErrorHelper.SendErrorMess($"Doublicate").GetAwaiter().GetResult();
-                throw new DoubleUserException();
+                if (_userStatus.TryGetValue(userId, out bool value) && value)
+                {
+                    ErrorHelper.SendErrorMess($"Doublicate").GetAwaiter().GetResult();
+                    throw new DoubleUserException();
+                }
+                ErrorHelper.SendErrorMess($"user{userId} status={value}").GetAwaiter().GetResult();
+                _userStatus[userId] = true;
+                ErrorHelper.SendErrorMess($"user{userId} Start").GetAwaiter().GetResult();
             }
-            ErrorHelper.SendErrorMess($"user{userId} status={value}").GetAwaiter().GetResult();
-            _userStatus[userId] = true;
-            ErrorHelper.SendErrorMess($"user{userId} Start").GetAwaiter().GetResult();
         }
         public void FinishMethod(long userId)
         {
