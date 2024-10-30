@@ -9,6 +9,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
+using Telegram.Bot.Types;
 
 namespace NutriDbService.Controllers
 {
@@ -21,7 +22,7 @@ namespace NutriDbService.Controllers
         private railwayContext _context;
         private TransmitterHelper _transmitterHelper;
         private MealHelper _mealHelper;
-        private readonly ConcurrentDictionary<long, bool> _userStatus = new ConcurrentDictionary<long, bool>();
+        private ConcurrentDictionary<long, bool> _userStatus = new ConcurrentDictionary<long, bool>();
         private static readonly object locker = new object();
         private static readonly SemaphoreSlim semaphoreSlim = new SemaphoreSlim(1, 1);
         public TransmitterController(railwayContext context, TransmitterHelper transmitterHelper, ILogger<TransmitterController> logger, MealHelper mealHelper)
@@ -50,12 +51,12 @@ namespace NutriDbService.Controllers
         {
             lock (locker)
             {
-                if (_userStatus.TryGetValue(userId, out bool isUserActive) && isUserActive)
+                var isget = _userStatus.TryGetValue(userId, out bool isUserActive);
+                if (isget && isUserActive)
                 {
-                    //await ErrorHelper.SendErrorMess("Doublicate").GetAwaiter().GetResult();
                     return false; // Установка провала
                 }
-
+                ErrorHelper.SendErrorMess($"IsGet={isget}").GetAwaiter().GetResult();
                 // Синхронно выполняем окончательную постобменную миссию на дальнейшую побуждение
                 _userStatus[userId] = true;
                 //await ErrorHelper.SendErrorMess($"user{userId} Start").GetAwaiter().GetResult();
@@ -70,7 +71,7 @@ namespace NutriDbService.Controllers
                 if (_userStatus.TryGetValue(userId, out bool isActive) && isActive)
                 {
                     _userStatus[userId] = false;
-                    //await ErrorHelper.SendErrorMess($"user{userId} Finish").GetAwaiter().GetResult();
+
                 }
             }
         }
@@ -111,6 +112,7 @@ namespace NutriDbService.Controllers
             finally
             {
                 FinishMethod(req.UserTgId);
+                await ErrorHelper.SendErrorMess($"user{req.UserTgId} Finish");
             }
         }
 
@@ -158,6 +160,7 @@ namespace NutriDbService.Controllers
             finally
             {
                 FinishMethod(rateReq.UserTgId);
+                await ErrorHelper.SendErrorMess($"user{rateReq.UserTgId} Finish");
             }
         }
 
