@@ -34,10 +34,12 @@ namespace NutriDbService.Controllers
         {
             if (IsUserActive(userId))
                 throw new DoubleUserException();
+            ErrorHelper.SendErrorMess($"user{userId} Finish");
             _userStatus[userId] = true;
         }
         public void FinishMethod(long userId)
         {
+            ErrorHelper.SendErrorMess($"user{userId} Finish");
             _userStatus[userId] = false;
         }
         public bool IsUserActive(long userId)
