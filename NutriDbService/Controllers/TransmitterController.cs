@@ -105,6 +105,8 @@ namespace NutriDbService.Controllers
                 else
                     await ErrorHelper.SendErrorMess($"user{req.UserTgId} Start");
                 var res = await _transmitterHelper.CreateGPTRequest(req);
+                FinishMethod(req.UserTgId);
+                await ErrorHelper.SendErrorMess($"user{req.UserTgId} Finish");
                 if (res == 0)
                     return new CreateGPTResponse { isError = true, RequestId = 0 };
                 else
@@ -117,15 +119,11 @@ namespace NutriDbService.Controllers
             }
             catch (Exception ex)
             {
+                FinishMethod(req.UserTgId);
                 _logger.LogError(ex, ex.Message);
                 await ErrorHelper.SendErrorMess("CreateGPTRequset Error", ex);
                 await ErrorHelper.SendErrorMess($"Input:{Newtonsoft.Json.JsonConvert.SerializeObject(req)}");
                 return new CreateGPTResponse() { isError = true };
-            }
-            finally
-            {
-                FinishMethod(req.UserTgId);
-                await ErrorHelper.SendErrorMess($"user{req.UserTgId} Finish");
             }
         }
 
@@ -142,18 +140,22 @@ namespace NutriDbService.Controllers
                 var req = await _transmitterHelper.CreateRateRequest(rateReq, _mealHelper);
 
                 var res = await _transmitterHelper.CreateGPTRequest(req);
+                FinishMethod(rateReq.UserTgId);
+                await ErrorHelper.SendErrorMess($"user{req.UserTgId} Finish");
                 if (res == 0)
                     return new CreateGPTResponse { isError = true, RequestId = 0 };
                 return new CreateGPTResponse(res);
             }
             catch (EmptyMealException ex)
             {
+                FinishMethod(rateReq.UserTgId);
                 _logger.LogError("Попытка анализа пустой недели ");
                 await ErrorHelper.SendErrorMess($"Попытка анализа пустой недели :{Newtonsoft.Json.JsonConvert.SerializeObject(rateReq)}");
                 return new CreateGPTResponse() { isError = true, Mess = "MealEmpty" };
             }
             catch (ExtraEmptyException ex)
             {
+                FinishMethod(rateReq.UserTgId);
                 _logger.LogError("Попытка анализа с пустой анкетой");
                 await ErrorHelper.SendErrorMess($"Попытка анализа с пустой анкетой :{Newtonsoft.Json.JsonConvert.SerializeObject(rateReq)}");
                 return new CreateGPTResponse() { isError = true, Mess = "ExtraEmpty" };
@@ -165,15 +167,11 @@ namespace NutriDbService.Controllers
             }
             catch (Exception ex)
             {
+                FinishMethod(rateReq.UserTgId);
                 _logger.LogError(ex, ex.Message);
                 await ErrorHelper.SendErrorMess("CreateGPTLongRateRequset Error", ex);
                 await ErrorHelper.SendErrorMess($"Input:{rateReq}");
                 return new CreateGPTResponse() { isError = true };
-            }
-            finally
-            {
-                FinishMethod(rateReq.UserTgId);
-                await ErrorHelper.SendErrorMess($"user{rateReq.UserTgId} Finish");
             }
         }
 
