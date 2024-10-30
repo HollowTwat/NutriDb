@@ -44,7 +44,9 @@ namespace NutriDbService.Controllers
         }
         public bool IsUserActive(long userId)
         {
-            return _userStatus.TryGetValue(userId, out bool isActive) && isActive;
+            var res = _userStatus.TryGetValue(userId, out bool isActive) && isActive;
+            ErrorHelper.SendErrorMess($"user{userId} status={isActive}").GetAwaiter().GetResult();
+            return res;
         }
         [HttpPost]
         public async Task<CreateGPTResponse> CreateGPTRequset(CreateGPTNoCodeRequest req)
