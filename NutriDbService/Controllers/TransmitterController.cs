@@ -88,6 +88,8 @@ namespace NutriDbService.Controllers
                 _logger.LogWarning($"На вход пришло {Newtonsoft.Json.JsonConvert.SerializeObject(req)}");
                 if (!StartMethod(req.UserTgId))
                     throw new DoubleUserException();
+                else
+                    await ErrorHelper.SendErrorMess($"user{req.UserTgId} Start");
                 var res = await _transmitterHelper.CreateGPTRequest(req);
                 if (res == 0)
                     return new CreateGPTResponse { isError = true, RequestId = 0 };
@@ -120,6 +122,8 @@ namespace NutriDbService.Controllers
                 _logger.LogWarning($"На вход пришло {Newtonsoft.Json.JsonConvert.SerializeObject(rateReq)}");
                 if (!StartMethod(rateReq.UserTgId))
                     throw new DoubleUserException();
+                else
+                    await ErrorHelper.SendErrorMess($"user{rateReq.UserTgId} Start");
                 var req = await _transmitterHelper.CreateRateRequest(rateReq, _mealHelper);
 
                 var res = await _transmitterHelper.CreateGPTRequest(req);
