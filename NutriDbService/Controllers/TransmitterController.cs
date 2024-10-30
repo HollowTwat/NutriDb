@@ -125,7 +125,7 @@ namespace NutriDbService.Controllers
             try
             {
                 _logger.LogWarning($"На вход пришло {Newtonsoft.Json.JsonConvert.SerializeObject(rateReq)}");
-                StartMethod(rateReq.UserTgId);
+             await   StartMethod(rateReq.UserTgId);
                 var req = await _transmitterHelper.CreateRateRequest(rateReq, _mealHelper);
 
                 var res = await _transmitterHelper.CreateGPTRequest(req);
@@ -159,7 +159,7 @@ namespace NutriDbService.Controllers
             }
             finally
             {
-                FinishMethod(rateReq.UserTgId);
+            await    FinishMethod(rateReq.UserTgId);
             }
         }
 
