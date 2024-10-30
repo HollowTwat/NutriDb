@@ -53,16 +53,17 @@ namespace NutriDbService.Controllers
             {
                 if (_userStatus.TryGetValue(userId, out bool value) && value)
                 {
-                    await ErrorHelper.SendErrorMess($"Doublicate");
+                    //await ErrorHelper.SendErrorMess($"Doublicate");
                     throw new DoubleUserException();
                 }
 
                 _userStatus[userId] = true;
-                await ErrorHelper.SendErrorMess($"user{userId} Start");
+                //await ErrorHelper.SendErrorMess($"user{userId} Start");
             }
             finally
             {
                 semaphoreSlim.Release();
+                await ErrorHelper.SendErrorMess($"user{userId} Start");
             }
         }
         public async Task FinishMethod(long userId)
