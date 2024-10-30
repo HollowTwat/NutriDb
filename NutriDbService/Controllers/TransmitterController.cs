@@ -43,10 +43,14 @@ namespace NutriDbService.Controllers
        {
            if (currentStatus)
            {
+               ErrorHelper.SendErrorMess($"Doublicate").GetAwaiter().GetResult();
                throw new DoubleUserException();
            }
-           ErrorHelper.SendErrorMess($"user{userId} status={currentStatus}").GetAwaiter().GetResult();
-           return true;
+           else
+           {
+               ErrorHelper.SendErrorMess($"user{userId} status={currentStatus}").GetAwaiter().GetResult();
+               return true;
+           }
        });
         }
         public void FinishMethod(long userId)
