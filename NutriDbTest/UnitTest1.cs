@@ -38,7 +38,7 @@ namespace NutriDbTest
         {
             Setup();
             var notificationHelper = new NotificationHelper(new railwayContext(), _mockServiceScopeFactory.Object);
-            await notificationHelper.SendNotification(17);
+            await notificationHelper.SendNotification(17,false);
             Xunit.Assert.True(true);
         }
 

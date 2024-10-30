@@ -16,8 +16,12 @@ namespace NutriDbService
     public class UserPing
     {
         public int Id { get; set; }
+
         public long UserNoId { get; set; }
-        public TimeOnly Ping { get; set; }
+
+        public TimeOnly MorningPing { get; set; }
+
+        public TimeOnly EveningPing { get; set; }
 
         public decimal? Slide { get; set; }
     }
@@ -45,8 +49,8 @@ namespace NutriDbService
             {
                 var _context = scope.ServiceProvider.GetRequiredService<railwayContext>();
                 //List<int> validUsers = new List<int>() { 3, 13, 17 };
-                var users = _context.Userinfos.Include(x => x.User).Where(x => x.MorningPing != null).OrderByDescending(x => x.MorningPing)
-                    .Select(x => new UserPing { Id = x.UserId, UserNoId = x.User.UserNoId, Ping = (TimeOnly)x.MorningPing, Slide = x.Timeslide }).ToList();
+                var users = _context.Userinfos.Include(x => x.User).Where(x => x.MorningPing != null && x.EveningPing != null).OrderByDescending(x => x.MorningPing)
+                    .Select(x => new UserPing { Id = x.UserId, UserNoId = x.User.UserNoId, MorningPing = (TimeOnly)x.MorningPing, EveningPing = (TimeOnly)x.EveningPing, Slide = x.Timeslide }).ToList();
                 //users = users.Where(x => validUsers.Contains(x.Id)).ToList();
                 return users;
             }
@@ -67,7 +71,10 @@ namespace NutriDbService
                     //if (userPing.UserNoId != 403489853)
                     //    userPing.Ping = new TimeOnly(18, 5);
                     if (userPing.Slide != null)
-                        userPing.Ping.AddHours((double)userPing.Slide);
+                    {
+                        userPing.EveningPing.AddHours((double)userPing.Slide);
+                        userPing.MorningPing.AddHours((double)userPing.Slide);
+                    }
                     ScheduleTask(userPing);
                 }
             }
@@ -75,25 +82,41 @@ namespace NutriDbService
 
         private void ScheduleTask(UserPing userPing)
         {
-            var dailyTime = userPing.Ping;
+            var morningTime = userPing.MorningPing;
+            var eveningTime = userPing.EveningPing;
             var currentTime = DateTime.UtcNow.ToLocalTime().AddHours(3);
-            var nextOccurrence = CalculateNextOccurrence(currentTime, dailyTime);
-            var timeToNextOccurrence = nextOccurrence - currentTime;
-
-            Timer timer = new Timer(async x =>
+            var nextMorningOccurrence = CalculateNextOccurrence(currentTime, morningTime);
+            var timeToNextMorningOccurrence = nextMorningOccurrence - currentTime;
+            var nextEveningOccurrence = CalculateNextOccurrence(currentTime, eveningTime);
+            var timeToNextEveningOccurrence = nextEveningOccurrence - currentTime;
+            Timer morningTimer = new Timer(async x =>
             {
                 using (var scope = _serviceProvider.CreateScope())
                 {
                     var localNotHelper = scope.ServiceProvider.GetRequiredService<NotificationHelper>();
 
                     // Используйте ассинхронную метод SendNotification
-                    await localNotHelper.SendNotification(userPing.Id);
+                    await localNotHelper.SendNotification(userPing.Id,true);
                     // Планируем на следующий день
                     ScheduleTask(userPing);
                 }
-            }, null, timeToNextOccurrence, Timeout.InfiniteTimeSpan);
+            }, null, timeToNextMorningOccurrence, Timeout.InfiniteTimeSpan);
 
-            _timers.Add(new UserTimer { Id = userPing.Id, Timer = timer });
+            Timer eveningTimer = new Timer(async x =>
+            {
+                using (var scope = _serviceProvider.CreateScope())
+                {
+                    var localNotHelper = scope.ServiceProvider.GetRequiredService<NotificationHelper>();
+
+                    // Используйте ассинхронную метод SendNotification
+                    await localNotHelper.SendNotification(userPing.Id, false);
+                    // Планируем на следующий день
+                    ScheduleTask(userPing);
+                }
+            }, null, timeToNextEveningOccurrence, Timeout.InfiniteTimeSpan);
+
+            _timers.Add(new UserTimer { Id = userPing.Id, Timer = morningTimer });
+            _timers.Add(new UserTimer { Id = userPing.Id, Timer = eveningTimer });
         }
 
         private DateTime CalculateNextOccurrence(DateTime currentTime, TimeOnly dailyTime)
