@@ -46,41 +46,32 @@ namespace NutriDbService.Controllers
         //        ErrorHelper.SendErrorMess($"user{userId} Start").GetAwaiter().GetResult();
         //    }
         //}
-        public async Task StartMethod(long userId)
+        public bool StartMethod(long userId)
         {
-            await semaphoreSlim.WaitAsync();
-            try
+            lock (locker)
             {
-                if (_userStatus.TryGetValue(userId, out bool value) && value)
+                if (_userStatus.TryGetValue(userId, out bool isUserActive) && isUserActive)
                 {
-                    //await ErrorHelper.SendErrorMess($"Doublicate");
-                    throw new DoubleUserException();
+                    //await ErrorHelper.SendErrorMess("Doublicate").GetAwaiter().GetResult();
+                    return false; // Установка провала
                 }
 
+                // Синхронно выполняем окончательную постобменную миссию на дальнейшую побуждение
                 _userStatus[userId] = true;
-                //await ErrorHelper.SendErrorMess($"user{userId} Start");
-            }
-            finally
-            {
-                semaphoreSlim.Release();
-                await ErrorHelper.SendErrorMess($"user{userId} Start");
+                //await ErrorHelper.SendErrorMess($"user{userId} Start").GetAwaiter().GetResult();
+
+                return true; // Занавес со сброс эмоции
             }
         }
-        public async Task FinishMethod(long userId)
+        public void FinishMethod(long userId)
         {
-            await semaphoreSlim.WaitAsync();
-            try
+            lock (locker)
             {
-                if (_userStatus.ContainsKey(userId))
+                if (_userStatus.TryGetValue(userId, out bool isActive) && isActive)
                 {
                     _userStatus[userId] = false;
+                    //await ErrorHelper.SendErrorMess($"user{userId} Finish").GetAwaiter().GetResult();
                 }
-
-                await ErrorHelper.SendErrorMess($"user{userId} Finish");
-            }
-            finally
-            {
-                semaphoreSlim.Release();
             }
         }
         //public void FinishMethod(long userId)
@@ -95,7 +86,8 @@ namespace NutriDbService.Controllers
             try
             {
                 _logger.LogWarning($"На вход пришло {Newtonsoft.Json.JsonConvert.SerializeObject(req)}");
-                await StartMethod(req.UserTgId);
+                if (!StartMethod(req.UserTgId))
+                    throw new DoubleUserException();
                 var res = await _transmitterHelper.CreateGPTRequest(req);
                 if (res == 0)
                     return new CreateGPTResponse { isError = true, RequestId = 0 };
@@ -116,7 +108,7 @@ namespace NutriDbService.Controllers
             }
             finally
             {
-                await FinishMethod(req.UserTgId);
+                FinishMethod(req.UserTgId);
             }
         }
 
@@ -126,7 +118,8 @@ namespace NutriDbService.Controllers
             try
             {
                 _logger.LogWarning($"На вход пришло {Newtonsoft.Json.JsonConvert.SerializeObject(rateReq)}");
-             await   StartMethod(rateReq.UserTgId);
+                if (!StartMethod(rateReq.UserTgId))
+                    throw new DoubleUserException();
                 var req = await _transmitterHelper.CreateRateRequest(rateReq, _mealHelper);
 
                 var res = await _transmitterHelper.CreateGPTRequest(req);
@@ -160,7 +153,7 @@ namespace NutriDbService.Controllers
             }
             finally
             {
-            await    FinishMethod(rateReq.UserTgId);
+                FinishMethod(rateReq.UserTgId);
             }
         }
 
