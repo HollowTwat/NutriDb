@@ -32,22 +32,33 @@ namespace NutriDbService.Controllers
         }
         public void StartMethod(long userId)
         {
-            if (IsUserActive(userId))
-                throw new DoubleUserException();
-            ErrorHelper.SendErrorMess($"user{userId} Start").GetAwaiter().GetResult();
-            _userStatus[userId] = true;
+            //if (IsUserActive(userId))
+            //    throw new DoubleUserException();
+            //ErrorHelper.SendErrorMess($"user{userId} Start").GetAwaiter().GetResult();
+            //_userStatus[userId] = true;
+
+            bool existingStatus = _userStatus.AddOrUpdate(userId,
+       addValueFactory: _ => true,
+       updateValueFactory: (_, currentStatus) =>
+       {
+           if (currentStatus)
+           {
+               throw new DoubleUserException();
+           }
+           return true;
+       });
         }
         public void FinishMethod(long userId)
         {
             ErrorHelper.SendErrorMess($"user{userId} Finish").GetAwaiter().GetResult();
             _userStatus[userId] = false;
         }
-        public bool IsUserActive(long userId)
-        {
-            var res = _userStatus.TryGetValue(userId, out bool isActive) && isActive;
-            ErrorHelper.SendErrorMess($"user{userId} status={isActive}").GetAwaiter().GetResult();
-            return res;
-        }
+        //public bool IsUserActive(long userId)
+        //{
+        //    var res = _userStatus.TryGetValue(userId, out bool isActive) && isActive;
+        //    ErrorHelper.SendErrorMess($"user{userId} status={isActive}").GetAwaiter().GetResult();
+        //    return res;
+        //}
         [HttpPost]
         public async Task<CreateGPTResponse> CreateGPTRequset(CreateGPTNoCodeRequest req)
         {
