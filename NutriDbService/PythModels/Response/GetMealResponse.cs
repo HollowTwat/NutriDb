@@ -10,9 +10,9 @@ namespace NutriDbService.PythModels.Response
     {
         public List<MealResponse> Meals { get; set; }
     }
-    public class GetMealResponse: GetMealResponseNoPretty
+    public class GetMealResponse : GetMealResponseNoPretty
     {
-       // public List<MealResponse> Meals { get; set; }
+        // public List<MealResponse> Meals { get; set; }
 
         public string pretty { get; set; }
         public static string GetEnumDescription(Enum value)
@@ -34,7 +34,8 @@ namespace NutriDbService.PythModels.Response
             pretty = string.Empty;
             foreach (var meal in Meals)
             {
-                pretty += $"Прием пищи {meal.mealId}";
+                //if (isSendMealId && meal.meal.type == mealtype.nightsnack)
+                //    pretty += $"Прием пищи {meal.mealId}";
 
                 pretty += $"\n{GetEnumDescription((mealtype)meal.meal.type)}";
                 var i = 0;
