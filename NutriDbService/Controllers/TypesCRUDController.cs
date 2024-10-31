@@ -511,7 +511,7 @@ namespace NutriDbService.Controllers
                     _context.Update(usi);
                 }
                 await _context.SaveChangesAsync();
-                if (IsmorningPing)
+                if (IsmorningPing || IseveningPing)
                     await _taskSchedulerService.TimerRestart();
                 return Ok(true);
             }
@@ -533,6 +533,7 @@ namespace NutriDbService.Controllers
                 var userId = (await _context.Users.SingleOrDefaultAsync(x => x.TgId == req.UserTgId)).Id;
                 var usi = await _context.Userinfos.SingleOrDefaultAsync(x => x.UserId == userId);
                 bool ismorningPing = false;
+                bool iseveningPing = false;
                 if (usi == null)
                 {
                     return Problem("У пользователя нет доп информации");
@@ -576,7 +577,7 @@ namespace NutriDbService.Controllers
                     if (ismorningPing)
                         usi.MorningPing = m;
 
-                    bool iseveningPing = req.Info.ContainsKey("user_info_evening_ping") == true ? (string.IsNullOrEmpty(req.Info["user_info_evening_ping"]) ? false : TimeOnly.TryParseExact(req.Info["user_info_evening_ping"], "HH:mm", out var e)) : false;
+                    iseveningPing = req.Info.ContainsKey("user_info_evening_ping") == true ? (string.IsNullOrEmpty(req.Info["user_info_evening_ping"]) ? false : TimeOnly.TryParseExact(req.Info["user_info_evening_ping"], "HH:mm", out var e)) : false;
                     if (iseveningPing)
                         usi.EveningPing = e;
 
@@ -592,7 +593,7 @@ namespace NutriDbService.Controllers
                     _context.Update(usi);
                 }
                 await _context.SaveChangesAsync();
-                if (ismorningPing)
+                if (ismorningPing || iseveningPing)
                     await _taskSchedulerService.TimerRestart();
                 return Ok(true);
             }

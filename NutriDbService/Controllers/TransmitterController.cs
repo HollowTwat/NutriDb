@@ -24,7 +24,8 @@ namespace NutriDbService.Controllers
         private MealHelper _mealHelper;
         private static ConcurrentDictionary<long, bool> _userStatus = new ConcurrentDictionary<long, bool>();
         private static readonly object locker = new object();
-        private static readonly SemaphoreSlim semaphoreSlim = new SemaphoreSlim(1, 1);
+        //private static readonly SemaphoreSlim semaphoreSlim = new SemaphoreSlim(1, 1);
+        private readonly int _errorTimeout = 300;
         public TransmitterController(railwayContext context, TransmitterHelper transmitterHelper, ILogger<TransmitterController> logger, MealHelper mealHelper)
         {
             _context = context;
@@ -106,6 +107,7 @@ namespace NutriDbService.Controllers
                 if (res == 0)
                 {
                     await ErrorHelper.SendErrorMess($"DbEmpty for user:{req.UserTgId}");
+                    await Task.Delay(_errorTimeout);
                     return new CreateGPTResponse { isError = true, RequestId = 0, Mess = "DbEmpty" };
                 }
                 else
@@ -114,7 +116,8 @@ namespace NutriDbService.Controllers
             catch (DoubleUserException e)
             {
                 await ErrorHelper.SendErrorMess($"Double for user:{req.UserTgId}");
-                return new CreateGPTResponse() { isError = true, Mess = "Double" };
+                await Task.Delay(_errorTimeout);
+                return new CreateGPTResponse() { isError = true, RequestId = 0, Mess = "Double" };
             }
             catch (Exception ex)
             {
@@ -122,7 +125,8 @@ namespace NutriDbService.Controllers
                 _logger.LogError(ex, ex.Message);
                 await ErrorHelper.SendErrorMess("CreateGPTRequset Error", ex);
                 await ErrorHelper.SendErrorMess($"Input:{Newtonsoft.Json.JsonConvert.SerializeObject(req)}");
-                return new CreateGPTResponse() { isError = true, Mess = "Other" };
+                await Task.Delay(_errorTimeout);
+                return new CreateGPTResponse() { isError = true, RequestId = 0, Mess = "Other" };
             }
         }
 
@@ -141,6 +145,7 @@ namespace NutriDbService.Controllers
                 if (res == 0)
                 {
                     await ErrorHelper.SendErrorMess($"DbEmpty for user:{rateReq.UserTgId}");
+                    await Task.Delay(_errorTimeout);
                     return new CreateGPTResponse { isError = true, RequestId = 0, Mess = "DbEmpty" };
                 }
                 return new CreateGPTResponse(res);
@@ -150,19 +155,21 @@ namespace NutriDbService.Controllers
                 FinishMethod(rateReq.UserTgId);
                 _logger.LogError("Попытка анализа пустой недели ");
                 await ErrorHelper.SendErrorMess($"Попытка анализа пустой недели :{Newtonsoft.Json.JsonConvert.SerializeObject(rateReq)}");
-                return new CreateGPTResponse() { isError = true, Mess = "MealEmpty" };
+                return new CreateGPTResponse() { isError = true, RequestId = 0, Mess = "MealEmpty" };
             }
             catch (ExtraEmptyException ex)
             {
                 FinishMethod(rateReq.UserTgId);
                 _logger.LogError("Попытка анализа с пустой анкетой");
                 await ErrorHelper.SendErrorMess($"Попытка анализа с пустой анкетой :{Newtonsoft.Json.JsonConvert.SerializeObject(rateReq)}");
-                return new CreateGPTResponse() { isError = true, Mess = "ExtraEmpty" };
+                await Task.Delay(_errorTimeout);
+                return new CreateGPTResponse() { isError = true, RequestId = 0, Mess = "ExtraEmpty" };
             }
             catch (DoubleUserException e)
             {
                 await ErrorHelper.SendErrorMess($"Double for user:{rateReq.UserTgId}");
-                return new CreateGPTResponse() { isError = true, Mess = "Double" };
+                await Task.Delay(_errorTimeout);
+                return new CreateGPTResponse() { isError = true, RequestId = 0, Mess = "Double" };
             }
             catch (Exception ex)
             {
@@ -170,7 +177,8 @@ namespace NutriDbService.Controllers
                 _logger.LogError(ex, ex.Message);
                 await ErrorHelper.SendErrorMess("CreateGPTLongRateRequset Error", ex);
                 await ErrorHelper.SendErrorMess($"Input:{rateReq}");
-                return new CreateGPTResponse() { isError = true, Mess = "Other" };
+                await Task.Delay(_errorTimeout);
+                return new CreateGPTResponse() { isError = true, RequestId = 0, Mess = "Other" };
             }
         }
 
