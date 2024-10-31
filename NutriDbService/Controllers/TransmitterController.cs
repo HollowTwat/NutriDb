@@ -51,7 +51,7 @@ namespace NutriDbService.Controllers
         {
             lock (locker)
             {
-                System.Threading.Thread.Sleep(300);
+                System.Threading.Thread.Sleep(250);
                 if (!_userStatus.ContainsKey(userId))
                     _userStatus[userId] = false;
 
@@ -134,7 +134,6 @@ namespace NutriDbService.Controllers
                 _logger.LogWarning($"На вход пришло {Newtonsoft.Json.JsonConvert.SerializeObject(rateReq)}");
                 if (!StartMethod(rateReq.UserTgId))
                     throw new DoubleUserException();
-                System.Threading.Thread.Sleep(500);
                 var req = await _transmitterHelper.CreateRateRequest(rateReq, _mealHelper);
                 var res = await _transmitterHelper.CreateGPTRequest(req);
                 System.Threading.Thread.Sleep(100);
