@@ -25,7 +25,7 @@ namespace NutriDbService.Controllers
         private static ConcurrentDictionary<long, bool> _userStatus = new ConcurrentDictionary<long, bool>();
         private static readonly object locker = new object();
         //private static readonly SemaphoreSlim semaphoreSlim = new SemaphoreSlim(1, 1);
-        private readonly int _errorTimeout = 300;
+        private readonly int _errorTimeout = 1000;
         public TransmitterController(railwayContext context, TransmitterHelper transmitterHelper, ILogger<TransmitterController> logger, MealHelper mealHelper)
         {
             _context = context;
