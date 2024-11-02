@@ -48,7 +48,7 @@ namespace NutriDbService
             using (var scope = _serviceProvider.CreateScope())
             {
                 var _context = scope.ServiceProvider.GetRequiredService<railwayContext>();
-                //List<int> validUsers = new List<int>() { 3, 13, 17 };
+                //List<int> validUsers = new List<int>() { 17 };
                 var users = _context.Userinfos.Include(x => x.User).Where(x => x.MorningPing != null && x.EveningPing != null)
                     .Select(x => new UserPing { Id = x.UserId, UserNoId = x.User.UserNoId, MorningPing = (TimeOnly)x.MorningPing, EveningPing = (TimeOnly)x.EveningPing, Slide = x.Timeslide }).ToList();
                 //users = users.Where(x => validUsers.Contains(x.Id)).ToList();
@@ -68,8 +68,10 @@ namespace NutriDbService
             {
                 foreach (var userPing in usersPings)
                 {
-                    //if (userPing.UserNoId != 403489853)
-                    //    userPing.Ping = new TimeOnly(18, 5);
+
+                    //userPing.MorningPing = new TimeOnly(3, 06);
+                    //userPing.EveningPing = new TimeOnly(3, 04);
+
                     if (userPing.Slide != null)
                     {
                         userPing.EveningPing.AddHours((double)userPing.Slide);
@@ -83,6 +85,7 @@ namespace NutriDbService
 
         private void ScheduleTask(UserPing userPing)
         {
+            //bool isMorningNext = false;
             var morningTime = userPing.MorningPing;
             var eveningTime = userPing.EveningPing;
             var currentTime = DateTime.UtcNow.ToLocalTime().AddHours(3);
@@ -90,6 +93,9 @@ namespace NutriDbService
             var timeToNextMorningOccurrence = nextMorningOccurrence - currentTime;
             var nextEveningOccurrence = CalculateNextOccurrence(currentTime, eveningTime);
             var timeToNextEveningOccurrence = nextEveningOccurrence - currentTime;
+            //if (timeToNextMorningOccurrence < timeToNextEveningOccurrence)
+            //    isMorningNext = true;
+
             Timer morningTimer = new Timer(async x =>
             {
                 using (var scope = _serviceProvider.CreateScope())
@@ -99,9 +105,10 @@ namespace NutriDbService
                     // Используйте ассинхронную метод SendNotification
                     await localNotHelper.SendNotification(userPing.Id, true);
                     // Планируем на следующий день
-                    ScheduleTask(userPing);
+
+                    //ScheduleTask(userPing);
                 }
-            }, null, timeToNextMorningOccurrence, Timeout.InfiniteTimeSpan);
+            }, null, timeToNextMorningOccurrence, TimeSpan.FromHours(24));// Timeout.InfiniteTimeSpan);
 
             Timer eveningTimer = new Timer(async x =>
             {
@@ -112,11 +119,13 @@ namespace NutriDbService
                     // Используйте ассинхронную метод SendNotification
                     await localNotHelper.SendNotification(userPing.Id, false);
                     // Планируем на следующий день
-                    ScheduleTask(userPing);
-                }
-            }, null, timeToNextEveningOccurrence, Timeout.InfiniteTimeSpan);
 
+                    //ScheduleTask(userPing);
+                }
+            }, null, timeToNextEveningOccurrence, TimeSpan.FromHours(24));// Timeout.InfiniteTimeSpan);
+                                                                          //if (isMorningNext)
             _timers.Add(new UserTimer { Id = userPing.Id, Timer = morningTimer });
+            //else
             _timers.Add(new UserTimer { Id = userPing.Id, Timer = eveningTimer });
         }
 
