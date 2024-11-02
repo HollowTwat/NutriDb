@@ -225,11 +225,14 @@ namespace NutriDbService
             return Task.CompletedTask;
         }
 
-        public string GetTimers()
+        public List<string> GetTimers()
         {
+            var res = new List<string>();
             lock (_lock)
             {
-                return Newtonsoft.Json.JsonConvert.SerializeObject(_timers);
+                foreach (var timer in _timers)
+                    res.Add($"{timer.Id}:{Newtonsoft.Json.JsonConvert.SerializeObject(timer.Timer)}\n");
+                return res;
             }
         }
     }

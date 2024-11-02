@@ -804,7 +804,7 @@ namespace NutriDbService.Controllers
         }
 
         [HttpGet]
-        public string GetTimers()
+        public List<string> GetTimers()
         {
             return _taskSchedulerService.GetTimers();
         }
