@@ -48,7 +48,8 @@ namespace NutriDbService.Controllers
         //        ErrorHelper.SendErrorMess($"user{userId} Start").GetAwaiter().GetResult();
         //    }
         //}
-        public bool StartMethod(long userId)
+
+        private bool StartMethod(long userId)
         {
             lock (locker)
             {
@@ -67,7 +68,7 @@ namespace NutriDbService.Controllers
                 return true; // Занавес со сброс эмоции
             }
         }
-        public void FinishMethod(long userId)
+        private void FinishMethod(long userId)
         {
             lock (locker)
             {
