@@ -49,7 +49,7 @@ namespace NutriDbService
             {
                 var _context = scope.ServiceProvider.GetRequiredService<railwayContext>();
                 //List<int> validUsers = new List<int>() { 3, 13, 17 };
-                var users = _context.Userinfos.Include(x => x.User).Where(x => x.MorningPing != null && x.EveningPing != null).OrderByDescending(x => x.MorningPing)
+                var users = _context.Userinfos.Include(x => x.User).Where(x => x.MorningPing != null && x.EveningPing != null)
                     .Select(x => new UserPing { Id = x.UserId, UserNoId = x.User.UserNoId, MorningPing = (TimeOnly)x.MorningPing, EveningPing = (TimeOnly)x.EveningPing, Slide = x.Timeslide }).ToList();
                 //users = users.Where(x => validUsers.Contains(x.Id)).ToList();
                 return users;
@@ -76,6 +76,7 @@ namespace NutriDbService
                         userPing.MorningPing.AddHours((double)userPing.Slide);
                     }
                     ScheduleTask(userPing);
+                    _logger.LogWarning($"Timers:{Newtonsoft.Json.JsonConvert.SerializeObject(_timers)}");
                 }
             }
         }
@@ -96,7 +97,7 @@ namespace NutriDbService
                     var localNotHelper = scope.ServiceProvider.GetRequiredService<NotificationHelper>();
 
                     // Используйте ассинхронную метод SendNotification
-                    await localNotHelper.SendNotification(userPing.Id,true);
+                    await localNotHelper.SendNotification(userPing.Id, true);
                     // Планируем на следующий день
                     ScheduleTask(userPing);
                 }
@@ -148,6 +149,7 @@ namespace NutriDbService
 
                     // Настроить новые таймеры
                     var users = GetUserPings();
+
                     ScheduleTasks(users);
                 }
             }
