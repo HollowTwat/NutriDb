@@ -68,8 +68,8 @@ namespace NutriDbService.Helpers
                     var lastMealTime = meals?.MealTime;
                     if (lastMealTime != null && lastMealTime < DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-1))
                         isMealNotSend = true;
-                    //if (isMealNotSend && isLessonForgotSend)
-                    await SendNot(user.UserNoId, _ndiarynmealmess);
+                    if (isMealNotSend && isLessonForgotSend)
+                        await SendNot(user.UserNoId, _ndiarynmealmess);
                 }
             }
             catch (Exception ex)
