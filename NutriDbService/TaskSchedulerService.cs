@@ -224,5 +224,10 @@ namespace NutriDbService
             }
             return Task.CompletedTask;
         }
+
+        public List<UserTimer> GetTimers()
+        {
+            return _timers;
+        }
     }
 }

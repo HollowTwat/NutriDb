@@ -803,6 +803,11 @@ namespace NutriDbService.Controllers
             }
         }
 
+        [HttpGet]
+        public List<UserTimer> GetTimers()
+        {
+            return _taskSchedulerService.GetTimers();
+        }
         #endregion
     }
 }
