@@ -20,7 +20,7 @@ namespace NutriDbService.Helpers
         public MealHelper(railwayContext railwayContext, IServiceProvider serviceProvider)
         {
             _nutriDbContext = railwayContext;
-            _logger = serviceProvider.GetRequiredService<ILogger<TransmitterHelper>>();
+            _logger = serviceProvider.GetRequiredService<ILogger<MealHelper>>();
         }
 
         public async Task<int> CreateMeal(EditMealRequest createMealRequest)

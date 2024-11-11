@@ -22,7 +22,7 @@ namespace NutriDbService.Helpers
         private readonly ILogger _logger;
         public PlotHelper(IServiceProvider serviceProvider)
         {
-            _logger = serviceProvider.GetRequiredService<ILogger<TransmitterHelper>>(); ;
+            _logger = serviceProvider.GetRequiredService<ILogger<PlotHelper>>(); ;
         }
         public PlotHelper()
         {
