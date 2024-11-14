@@ -21,15 +21,17 @@ namespace NutriDbService.Controllers
         private readonly ILogger<TransmitterController> _logger;
         private railwayContext _context;
         private TransmitterHelper _transmitterHelper;
+        private SubscriptionHelper _subscriptionHelper;
         private MealHelper _mealHelper;
         private static ConcurrentDictionary<long, bool> _userStatus = new ConcurrentDictionary<long, bool>();
         private static readonly object locker = new object();
         //private static readonly SemaphoreSlim semaphoreSlim = new SemaphoreSlim(1, 1);
         private readonly int _errorTimeout = 1000;
-        public TransmitterController(railwayContext context, TransmitterHelper transmitterHelper, ILogger<TransmitterController> logger, MealHelper mealHelper)
+        public TransmitterController(railwayContext context, TransmitterHelper transmitterHelper, SubscriptionHelper subscriptionHelper, ILogger<TransmitterController> logger, MealHelper mealHelper)
         {
             _context = context;
             _transmitterHelper = transmitterHelper;
+            _subscriptionHelper = subscriptionHelper;
             _logger = logger;
             _mealHelper = mealHelper;
         }
@@ -99,9 +101,11 @@ namespace NutriDbService.Controllers
             try
             {
                 _logger.LogWarning($"На вход пришло {Newtonsoft.Json.JsonConvert.SerializeObject(req)}");
+                bool sub = await _subscriptionHelper.CheckSub(req.UserTgId);
+                if (!sub)
+                    throw new SubscriptionException();
                 if (!StartMethod(req.UserTgId))
                     throw new DoubleUserException();
-
                 var res = await _transmitterHelper.CreateGPTRequest(req);
                 System.Threading.Thread.Sleep(100);
                 FinishMethod(req.UserTgId);
@@ -120,6 +124,12 @@ namespace NutriDbService.Controllers
                 await Task.Delay(_errorTimeout);
                 return new CreateGPTResponse() { isError = true, RequestId = 0, Mess = "Double" };
             }
+            catch (SubscriptionException e)
+            {
+                await ErrorHelper.SendErrorMess($"Нет подписки у пользователя:{req.UserTgId}");
+                await Task.Delay(_errorTimeout);
+                return new CreateGPTResponse() { isError = true, RequestId = 0, Mess = "SubsFail" };
+            }
             catch (Exception ex)
             {
                 FinishMethod(req.UserTgId);
@@ -137,6 +147,9 @@ namespace NutriDbService.Controllers
             try
             {
                 _logger.LogWarning($"На вход пришло {Newtonsoft.Json.JsonConvert.SerializeObject(rateReq)}");
+                bool sub = await _subscriptionHelper.CheckSub(rateReq.UserTgId);
+                if (!sub)
+                    throw new SubscriptionException();
                 if (!StartMethod(rateReq.UserTgId))
                     throw new DoubleUserException();
                 var req = await _transmitterHelper.CreateRateRequest(rateReq, _mealHelper);
@@ -165,6 +178,12 @@ namespace NutriDbService.Controllers
                 await ErrorHelper.SendErrorMess($"Попытка анализа с пустой анкетой :{Newtonsoft.Json.JsonConvert.SerializeObject(rateReq)}");
                 await Task.Delay(_errorTimeout);
                 return new CreateGPTResponse() { isError = true, RequestId = 0, Mess = "ExtraEmpty" };
+            }
+            catch (SubscriptionException e)
+            {
+                await ErrorHelper.SendErrorMess($"Нет подписки у пользователя:{rateReq.UserTgId}");
+                await Task.Delay(_errorTimeout);
+                return new CreateGPTResponse() { isError = true, RequestId = 0, Mess = "SubsFail" };
             }
             catch (DoubleUserException e)
             {
