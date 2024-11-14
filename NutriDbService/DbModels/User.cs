@@ -23,6 +23,7 @@ namespace NutriDbService.DbModels
         public bool IsActive { get; set; }
         public long TgId { get; set; }
         public long UserNoId { get; set; }
+        public bool? NotifyStatus { get; set; }
 
         public virtual ICollection<Loyalty> Loyalties { get; set; }
         public virtual ICollection<Meal> Meals { get; set; }

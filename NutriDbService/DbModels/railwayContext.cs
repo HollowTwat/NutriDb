@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace NutriDbService.DbModels
 {
@@ -252,6 +249,11 @@ namespace NutriDbService.DbModels
                     .HasDefaultValueSql("nextval('user_id_auto_inc'::regclass)");
 
                 entity.Property(e => e.LessonId).HasColumnName("lessonId");
+
+                entity.Property(e => e.NotifyStatus)
+                    .IsRequired()
+                    .HasColumnName("notifyStatus")
+                    .HasDefaultValueSql("true");
 
                 entity.Property(e => e.RegistrationTime).HasColumnName("registrationTime");
 

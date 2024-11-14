@@ -8,11 +8,9 @@ using NutriDbService.PythModels.Request;
 using NutriDbService.PythModels.Response;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Telegram.Bot.Requests.Abstractions;
 
 namespace NutriDbService.Controllers
 {
@@ -784,6 +782,23 @@ namespace NutriDbService.Controllers
                 _logger.LogError(ex, ex.Message);
                 return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
+        }
+
+        [HttpPost]
+        public async Task<bool> CheckSubscription(long UserTgId)
+        {
+            return true;
+        }
+
+        [HttpPost]
+        public async Task<bool> SetNotifyStatus(long UserTgId, bool status)
+        {
+            var user = await _context.Users.SingleOrDefaultAsync(x => x.TgId == UserTgId);
+            user.NotifyStatus = status;
+            _context.Update(user);
+            await _context.SaveChangesAsync();
+            await _taskSchedulerService.TimerRestart();
+            return true;
         }
         #endregion
 
