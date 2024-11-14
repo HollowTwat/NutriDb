@@ -626,8 +626,10 @@ namespace NutriDbService.Controllers
                     if (usi.Donelessonlist == null)
                         usi.Donelessonlist = $"{lesson}";
                     else
+                    if (lesson == 99 && usi.Donelessonlist.Contains($"{lesson}"))
+                        return Ok(true);
                     if (!usi.Donelessonlist.Contains($",{lesson},")
-                        && usi.Donelessonlist.TakeLast(count: lesson.ToString().Length) != lesson.ToString())
+                            && usi.Donelessonlist.TakeLast(count: lesson.ToString().Length) != lesson.ToString())
                     {
                         usi.Donelessonlist += $",{lesson}";
                         _context.Update(usi);
