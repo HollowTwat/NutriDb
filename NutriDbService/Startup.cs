@@ -36,6 +36,7 @@ namespace NutriDbService
             services.AddTransient<TransmitterHelper>();
             services.AddTransient<PlotHelper>();
             services.AddTransient<NotificationHelper>();
+            services.AddTransient<SubscriptionHelper>();
             //services.AddHostedService<TaskSchedulerService>();
             services.AddSingleton<TaskSchedulerService>();
             services.AddHostedService(provider => provider.GetService<TaskSchedulerService>());
