@@ -829,9 +829,16 @@ namespace NutriDbService.Controllers
         #endregion
 
         [HttpPost]
-        public async Task<PayResponse> SucceccPay(string input)
+        public async Task<PayResponse> SucceccPay(TestPayRequest input)
         {
-            await ErrorHelper.SendSystemMess(input);
+            await ErrorHelper.SendSystemMess(Newtonsoft.Json.JsonConvert.SerializeObject(input));
+            return new PayResponse { code = 0 };
+        }
+
+        [HttpPost]
+        public async Task<PayResponse> SucceccPay2(PayRequest input)
+        {
+            await ErrorHelper.SendSystemMess(Newtonsoft.Json.JsonConvert.SerializeObject(input));
             return new PayResponse { code = 0 };
         }
     }
