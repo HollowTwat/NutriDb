@@ -864,6 +864,15 @@ namespace NutriDbService.Controllers
             await ErrorHelper.SendSystemMess(ress);
             return new PayResponse { code = 0 };
         }
+
+        [HttpPost]
+        public async Task<PayResponse> SuccessPay3(string input)
+        {
+
+            _logger.LogWarning(input);
+            await ErrorHelper.SendSystemMess(input);
+            return new PayResponse { code = 0 };
+        }
         [HttpPost]
         public async Task<PayResponse> RecurrentPay(RecurrentRequest input)
         {
