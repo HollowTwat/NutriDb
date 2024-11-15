@@ -850,9 +850,9 @@ namespace NutriDbService.Controllers
 
                 // Логика по обработке данных...
             }
-            var ress = Newtonsoft.Json.JsonConvert.SerializeObject(input);
-            _logger.LogWarning(ress);
-            await ErrorHelper.SendSystemMess(ress);
+            //var ress = Newtonsoft.Json.JsonConvert.SerializeObject(input);
+            //_logger.LogWarning(ress);
+            //await ErrorHelper.SendSystemMess(ress);
             return new PayResponse { code = 0 };
         }
 
