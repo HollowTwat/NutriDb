@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using NutriDbService.DbModels;
 using NutriDbService.Helpers;
+using NutriDbService.PayModel;
 using NutriDbService.PythModels;
 using NutriDbService.PythModels.Request;
 using NutriDbService.PythModels.Response;
@@ -826,5 +827,12 @@ namespace NutriDbService.Controllers
             return _taskSchedulerService.GetTimers();
         }
         #endregion
+
+        [HttpPost]
+        public async Task<PayResponse> SucceccPay(string input)
+        {
+            await ErrorHelper.SendSystemMess(input);
+            return new PayResponse { code = 0 };
+        }
     }
 }
