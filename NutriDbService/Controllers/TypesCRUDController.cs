@@ -859,6 +859,34 @@ namespace NutriDbService.Controllers
         }
 
         [HttpPost]
+        public async Task<PayResponse> FailPay()
+        {
+            using (var reader = new StreamReader(Request.Body))
+            {
+                string bodyContent = await reader.ReadToEndAsync();
+                var ress2 = HttpUtility.UrlDecode(bodyContent);
+                _logger.LogWarning(ress2);
+                await ErrorHelper.SendSystemMess($"Fail: {ress2}");
+               
+            }
+      
+            return new PayResponse { code = 0 };
+        }
+        [HttpPost]
+        public async Task<PayResponse> CancelPay()
+        {
+            using (var reader = new StreamReader(Request.Body))
+            {
+                string bodyContent = await reader.ReadToEndAsync();
+                var ress2 = HttpUtility.UrlDecode(bodyContent);
+                _logger.LogWarning(ress2);
+                await ErrorHelper.SendSystemMess($"Cancel: {ress2}");
+
+            }
+
+            return new PayResponse { code = 0 };
+        }
+        [HttpPost]
         public async Task<PayResponse> SuccessPay2(PayRequest input)
         {
             var ress = Newtonsoft.Json.JsonConvert.SerializeObject(input);
