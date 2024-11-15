@@ -9,9 +9,11 @@ using NutriDbService.PythModels.Request;
 using NutriDbService.PythModels.Response;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace NutriDbService.Controllers
 {
@@ -829,8 +831,25 @@ namespace NutriDbService.Controllers
         #endregion
 
         [HttpPost]
-        public async Task<PayResponse> SucceccPay([FromBody] TestPayRequest input)
+        public async Task<PayResponse> SuccessPay()
         {
+            using (var reader = new StreamReader(Request.Body))
+            {
+                string bodyContent = await reader.ReadToEndAsync();
+                var ress2 = bodyContent;
+                _logger.LogWarning(ress2);
+                await ErrorHelper.SendSystemMess(ress2);
+                // Здесь вы можете проанализировать и обработать содержимое bodyContent, как вам необходимо
+                // Если это закодированная в URL строка, используйте HttpUtility.ParseQueryString для превращения строкового запроса в коллекцию ключ-значение
+
+                var parsedData = HttpUtility.ParseQueryString(bodyContent);
+
+                // Никогда не забывайте проверять данные, чтобы предотвратить непредусмотренные ситуации
+                // Например, с возможностью обрабатывать специфичные данные, как оказалось в вашем запросе
+
+
+                // Логика по обработке данных...
+            }
             var ress = Newtonsoft.Json.JsonConvert.SerializeObject(input);
             _logger.LogWarning(ress);
             await ErrorHelper.SendSystemMess(ress);
@@ -838,7 +857,7 @@ namespace NutriDbService.Controllers
         }
 
         [HttpPost]
-        public async Task<PayResponse> SucceccPay2(PayRequest input)
+        public async Task<PayResponse> SuccessPay2(PayRequest input)
         {
             var ress = Newtonsoft.Json.JsonConvert.SerializeObject(input);
             _logger.LogWarning(ress);
