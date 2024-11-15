@@ -829,16 +829,36 @@ namespace NutriDbService.Controllers
         #endregion
 
         [HttpPost]
-        public async Task<PayResponse> SucceccPay(TestPayRequest input)
+        public async Task<PayResponse> SucceccPay([FromBody] TestPayRequest input)
         {
-            await ErrorHelper.SendSystemMess(Newtonsoft.Json.JsonConvert.SerializeObject(input));
+            var ress = Newtonsoft.Json.JsonConvert.SerializeObject(input);
+            _logger.LogWarning(ress);
+            await ErrorHelper.SendSystemMess(ress);
             return new PayResponse { code = 0 };
         }
 
         [HttpPost]
         public async Task<PayResponse> SucceccPay2(PayRequest input)
         {
-            await ErrorHelper.SendSystemMess(Newtonsoft.Json.JsonConvert.SerializeObject(input));
+            var ress = Newtonsoft.Json.JsonConvert.SerializeObject(input);
+            _logger.LogWarning(ress);
+            await ErrorHelper.SendSystemMess(ress);
+            return new PayResponse { code = 0 };
+        }
+        [HttpPost]
+        public async Task<PayResponse> RecurrentPay(RecurrentRequest input)
+        {
+            var ress = Newtonsoft.Json.JsonConvert.SerializeObject(input);
+            _logger.LogWarning(ress);
+            await ErrorHelper.SendSystemMess(ress);
+            return new PayResponse { code = 0 };
+        }
+        [HttpPost]
+        public async Task<PayResponse> ConfirmPay(ConfirmRequest input)
+        {
+            var ress = Newtonsoft.Json.JsonConvert.SerializeObject(input);
+            _logger.LogWarning(ress);
+            await ErrorHelper.SendSystemMess(ress);
             return new PayResponse { code = 0 };
         }
     }
