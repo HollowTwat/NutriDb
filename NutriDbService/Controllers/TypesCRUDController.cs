@@ -843,9 +843,9 @@ namespace NutriDbService.Controllers
             {
                 string bodyContent = await reader.ReadToEndAsync();
                 var ress2 = HttpUtility.UrlDecode(bodyContent);
-                var r3 = Newtonsoft.Json.JsonConvert.DeserializeObject<PayResponse>(ress2);
                 _logger.LogWarning(ress2);
                 await ErrorHelper.SendSystemMess($"Success {ress2}");
+                var r3 = Newtonsoft.Json.JsonConvert.DeserializeObject<PayResponse>(ress2);
                 await ErrorHelper.SendSystemMess(Newtonsoft.Json.JsonConvert.SerializeObject(r3));
                 // Здесь вы можете проанализировать и обработать содержимое bodyContent, как вам необходимо
                 // Если это закодированная в URL строка, используйте HttpUtility.ParseQueryString для превращения строкового запроса в коллекцию ключ-значение
