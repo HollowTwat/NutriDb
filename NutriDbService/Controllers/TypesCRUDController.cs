@@ -830,6 +830,12 @@ namespace NutriDbService.Controllers
         }
         #endregion
 
+
+
+
+
+
+
         [HttpPost]
         public async Task<PayResponse> SuccessPay()
         {
@@ -872,6 +878,7 @@ namespace NutriDbService.Controllers
       
             return new PayResponse { code = 0 };
         }
+
         [HttpPost]
         public async Task<PayResponse> CancelPay()
         {
@@ -886,6 +893,7 @@ namespace NutriDbService.Controllers
 
             return new PayResponse { code = 0 };
         }
+
         [HttpPost]
         public async Task<PayResponse> SuccessPay2(PayRequest input)
         {
@@ -911,24 +919,10 @@ namespace NutriDbService.Controllers
             {
                 string bodyContent = await reader.ReadToEndAsync();
                 var ress2 = HttpUtility.UrlDecode(bodyContent);
-                //var r3 = Newtonsoft.Json.JsonConvert.DeserializeObject<PayResponse>(ress2);
                 _logger.LogWarning(ress2);
                 await ErrorHelper.SendSystemMess($"Recurent: {ress2}");
-                //await ErrorHelper.SendSystemMess(Newtonsoft.Json.JsonConvert.SerializeObject(r3));
-                // Здесь вы можете проанализировать и обработать содержимое bodyContent, как вам необходимо
-                // Если это закодированная в URL строка, используйте HttpUtility.ParseQueryString для превращения строкового запроса в коллекцию ключ-значение
-
-                //var parsedData = HttpUtility.ParseQueryString(bodyContent);
-
-                // Никогда не забывайте проверять данные, чтобы предотвратить непредусмотренные ситуации
-                // Например, с возможностью обрабатывать специфичные данные, как оказалось в вашем запросе
-
-
-                // Логика по обработке данных...
+                
             }
-            //var ress = Newtonsoft.Json.JsonConvert.SerializeObject(input);
-            //_logger.LogWarning(ress);
-            //await ErrorHelper.SendSystemMess(ress);
             return new PayResponse { code = 0 };
         }
 
@@ -939,21 +933,25 @@ namespace NutriDbService.Controllers
             {
                 string bodyContent = await reader.ReadToEndAsync();
                 var ress2 = HttpUtility.UrlDecode(bodyContent);
-                //var r3 = Newtonsoft.Json.JsonConvert.DeserializeObject<PayResponse>(ress2);
                 _logger.LogWarning(ress2);
                 await ErrorHelper.SendSystemMess($"Confirm: {ress2}");
-                //await ErrorHelper.SendSystemMess(Newtonsoft.Json.JsonConvert.SerializeObject(r3));
-                // Здесь вы можете проанализировать и обработать содержимое bodyContent, как вам необходимо
-                // Если это закодированная в URL строка, используйте HttpUtility.ParseQueryString для превращения строкового запроса в коллекцию ключ-значение
-
-                //var parsedData = HttpUtility.ParseQueryString(bodyContent);
-
-                // Никогда не забывайте проверять данные, чтобы предотвратить непредусмотренные ситуации
-                // Например, с возможностью обрабатывать специфичные данные, как оказалось в вашем запросе
-
-
-                // Логика по обработке данных...
+ 
             }
+            return new PayResponse { code = 0 };
+        }
+
+        [HttpPost]
+        public async Task<PayResponse> RefundPay()
+        {
+            using (var reader = new StreamReader(Request.Body))
+            {
+                string bodyContent = await reader.ReadToEndAsync();
+                var ress2 = HttpUtility.UrlDecode(bodyContent);
+                _logger.LogWarning(ress2);
+                await ErrorHelper.SendSystemMess($"Refund: {ress2}");
+
+            }
+
             return new PayResponse { code = 0 };
         }
     }
