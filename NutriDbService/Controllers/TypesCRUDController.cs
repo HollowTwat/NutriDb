@@ -836,7 +836,7 @@ namespace NutriDbService.Controllers
             using (var reader = new StreamReader(Request.Body))
             {
                 string bodyContent = await reader.ReadToEndAsync();
-                var ress2 = bodyContent;
+                var ress2 = HttpUtility.UrlDecode(bodyContent);
                 _logger.LogWarning(ress2);
                 await ErrorHelper.SendSystemMess(ress2);
                 // Здесь вы можете проанализировать и обработать содержимое bodyContent, как вам необходимо
