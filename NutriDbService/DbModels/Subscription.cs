@@ -19,6 +19,8 @@ namespace NutriDbService.DbModels
         public string Rrn { get; set; }
         public string Extra { get; set; }
         public bool IsActive { get; set; }
+        public DateTime DateCreate { get; set; }
+        public DateTime DateUpdate { get; set; }
 
         public virtual Promo Promo { get; set; }
         public virtual User User { get; set; }

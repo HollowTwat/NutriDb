@@ -223,7 +223,11 @@ namespace NutriDbService.DbModels
 
                 entity.Property(e => e.Amount).HasPrecision(10, 2);
 
+                entity.Property(e => e.DateCreate).HasColumnType("timestamp without time zone");
+
                 entity.Property(e => e.DateTime).HasColumnType("timestamp without time zone");
+
+                entity.Property(e => e.DateUpdate).HasColumnType("timestamp without time zone");
 
                 entity.Property(e => e.Email).HasMaxLength(255);
 

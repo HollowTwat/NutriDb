@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using NutriDbService.DbModels;
 using NutriDbService.Helpers;
@@ -6,6 +7,7 @@ using NutriDbService.PayModel;
 using SixLabors.ImageSharp.Drawing;
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 
@@ -57,8 +59,11 @@ namespace NutriDbService.Controllers
                         Rrn = cl.Rrn,
                         UserId = userId,
                         IsActive = true,
+                        DateCreate = DateTime.UtcNow.ToLocalTime().AddHours(3),
+                        DateUpdate = DateTime.UtcNow.ToLocalTime().AddHours(3),
                         Extra = Newtonsoft.Json.JsonConvert.SerializeObject(cl)
                     });
+                    await _context.SaveChangesAsync();
                 }
 
                 return new SubResponse { code = 0 };
@@ -76,27 +81,7 @@ namespace NutriDbService.Controllers
                 _logger.LogWarning(ress2);
                 FailPayRequest cl = _subscriptionHelper.ConvertToFailRequestJSON(ress2);
                 await ErrorHelper.SendSystemMess($"Fail:{Newtonsoft.Json.JsonConvert.SerializeObject(cl)}");
-                await ErrorHelper.SendSystemMess(Newtonsoft.Json.JsonConvert.SerializeObject(cl));
-                int userId = -1;
-                if (cl.Data["id"] != null)
-                {
-                    var userIdStr = cl.Data["id"].ToString();
-                    int.TryParse(userIdStr, out userId);
-                }
-                _context.Subscriptions.Add(new Subscription
-                {
-                    TransactionId = cl.TransactionId,
-                    Amount = cl.Amount,
-                    DateTime = cl.DateTime,
-                    InvoiceId = cl.InvoiceId,
-                    AccountId = cl.AccountId,
-                    SubscriptionId = cl.SubscriptionId,
-                    Email = cl.Email,
-                    Rrn = cl.Rrn,
-                    UserId = userId,
-                    IsActive = true,
-                    Extra = Newtonsoft.Json.JsonConvert.SerializeObject(cl)
-                });
+
             }
 
             return new SubResponse { code = 0 };
@@ -126,7 +111,22 @@ namespace NutriDbService.Controllers
                 var ress2 = HttpUtility.UrlDecode(bodyContent);
                 _logger.LogWarning(ress2);
                 await ErrorHelper.SendSystemMess($"Recurent: {ress2}");
-
+                //await ErrorHelper.SendSystemMess(Newtonsoft.Json.JsonConvert.SerializeObject(cl));
+                //int userId = -1;
+                //if (cl.Data["id"] != null)
+                //{
+                //    var userIdStr = cl.Data["id"].ToString();
+                //    int.TryParse(userIdStr, out userId);
+                //}
+                //var sub = await _context.Subscriptions.SingleOrDefaultAsync(x => x.SubscriptionId == cl.SubscriptionId);
+                //if (sub != null)
+                //{
+                //    sub.IsActive = false;
+                //    _context.Subscriptions.Update(sub);
+                //    await _context.SaveChangesAsync();
+                //}
+                //else
+                //    ErrorHelper.SendErrorMess("Ошибка падения оплаты");
             }
             return new SubResponse { code = 0 };
         }
