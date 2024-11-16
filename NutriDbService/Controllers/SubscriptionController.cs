@@ -41,9 +41,9 @@ namespace NutriDbService.Controllers
                     SuccessPayRequest cl = _subscriptionHelper.ConvertToPayRequestJSON(ress2);
                     await ErrorHelper.SendSystemMess($"Success:{Newtonsoft.Json.JsonConvert.SerializeObject(cl)}");
                     int userId = -1;
-                    if (cl.Data["id"] != null)
+                    if (cl.Data["Id"] != null)
                     {
-                        var userIdStr = cl.Data["id"].ToString();
+                        var userIdStr = cl.Data["Id"].ToString();
                         int.TryParse(userIdStr, out userId);
                     }
                     _context.Subscriptions.Add(new Subscription
