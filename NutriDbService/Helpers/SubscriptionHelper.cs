@@ -28,31 +28,32 @@ namespace NutriDbService.Helpers
         }
         private string ConvertRequestToJSON(string input)
         {
-            var entries = input.Split('&');
-            var transactionDict = new Dictionary<string, object>();
+                var entries = input.Split('&');
+                var transactionDict = new Dictionary<string, object>();
 
-            foreach (var entry in entries)
-            {
-                var keyValue = entry.Split('=');
-                if (keyValue.Length == 2)
+                foreach (var entry in entries)
                 {
-                    string key = keyValue[0];
-                    string value = Uri.UnescapeDataString(keyValue[1]);
+                    var keyValue = entry.Split('=');
+                    if (keyValue.Length == 2)
+                    {
+                        string key = keyValue[0];
+                        string value = Uri.UnescapeDataString(keyValue[1]);
 
-                    // handling special cases such as nested JSON objects or arrays
-                    if (key == "Data" || key == "CustomFields")
-                    {
-                        transactionDict.Add(key, JsonConvert.DeserializeObject(value));
-                    }
-                    else
-                    {
-                        transactionDict.Add(key, value);
+                        // handling special cases such as nested JSON objects or arrays
+                        if (key == "Data" || key == "CustomFields")
+                        {
+                            transactionDict.Add(key, JsonConvert.DeserializeObject(value));
+                        }
+                        else
+                        {
+                            transactionDict.Add(key, value);
+                        }
                     }
                 }
-            }
 
-            // Serialize dictionary to JSON format
-            return JsonConvert.SerializeObject(transactionDict, Formatting.Indented);
+                // Serialize dictionary to JSON format
+                return JsonConvert.SerializeObject(transactionDict, Formatting.Indented);
+          
         }
         public SuccessPayRequest ConvertToPayRequestJSON(string input)
         {

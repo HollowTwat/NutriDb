@@ -29,37 +29,41 @@ namespace NutriDbService.Controllers
         [HttpPost]
         public async Task<SubResponse> SuccessPay()
         {
-            using (var reader = new StreamReader(Request.Body))
+            try
             {
-                string bodyContent = await reader.ReadToEndAsync();
-                var ress2 = HttpUtility.UrlDecode(bodyContent);
-                _logger.LogWarning(ress2);
-                SuccessPayRequest cl = _subscriptionHelper.ConvertToPayRequestJSON(ress2);
-                await ErrorHelper.SendSystemMess($"Success:{Newtonsoft.Json.JsonConvert.SerializeObject(cl)}");
-                int userId = -1;
-                if (cl.Data["id"] != null)
+                using (var reader = new StreamReader(Request.Body))
                 {
-                    var userIdStr = cl.Data["id"].ToString();
-                    int.TryParse(userIdStr, out userId);
+                    string bodyContent = await reader.ReadToEndAsync();
+                    var ress2 = HttpUtility.UrlDecode(bodyContent);
+                    _logger.LogWarning(ress2);
+                    SuccessPayRequest cl = _subscriptionHelper.ConvertToPayRequestJSON(ress2);
+                    await ErrorHelper.SendSystemMess($"Success:{Newtonsoft.Json.JsonConvert.SerializeObject(cl)}");
+                    int userId = -1;
+                    if (cl.Data["id"] != null)
+                    {
+                        var userIdStr = cl.Data["id"].ToString();
+                        int.TryParse(userIdStr, out userId);
+                    }
+                    _context.Subscriptions.Add(new Subscription
+                    {
+                        TransactionId = cl.TransactionId,
+                        Amount = cl.Amount,
+                        DateTime = cl.DateTime,
+                        Status = cl.Status,
+                        InvoiceId = cl.InvoiceId,
+                        AccountId = cl.AccountId,
+                        SubscriptionId = cl.SubscriptionId,
+                        Email = cl.Email,
+                        Rrn = cl.Rrn,
+                        UserId = userId,
+                        IsActive = true,
+                        Extra = Newtonsoft.Json.JsonConvert.SerializeObject(cl)
+                    });
                 }
-                _context.Subscriptions.Add(new Subscription
-                {
-                    TransactionId = cl.TransactionId,
-                    Amount = cl.Amount,
-                    DateTime = cl.DateTime,
-                    Status = cl.Status,
-                    InvoiceId = cl.InvoiceId,
-                    AccountId = cl.AccountId,
-                    SubscriptionId = cl.SubscriptionId,
-                    Email = cl.Email,
-                    Rrn = cl.Rrn,
-                    UserId = userId,
-                    IsActive = true,
-                    Extra = Newtonsoft.Json.JsonConvert.SerializeObject(cl)
-                });
-            }
 
-            return new SubResponse { code = 0 };
+                return new SubResponse { code = 0 };
+            }
+            catch (Exception ex) { ErrorHelper.SendErrorMess("Упали при оформлении подписки", ex); return new SubResponse { code = 0 }; }
         }
 
         [HttpPost]

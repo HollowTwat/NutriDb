@@ -16,7 +16,7 @@ namespace NutriDbService.PayModel
         public string CardLastFour { get; set; }
         public string CardType { get; set; }
         public string CardExpDate { get; set; }
-        public bool TestMode { get; set; }
+        //public int TestMode { get; set; }
         public string Status { get; set; }
         public string OperationType { get; set; }
         public string GatewayName { get; set; }
