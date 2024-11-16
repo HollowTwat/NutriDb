@@ -57,7 +57,7 @@ namespace NutriDbService.Controllers
                         SubscriptionId = cl.SubscriptionId,
                         Email = cl.Email,
                         Rrn = cl.Rrn,
-                        UserId = userId,
+                        UserId = cl.CustomFields.First().Id,
                         IsActive = true,
                         DateCreate = DateTime.UtcNow.ToLocalTime().AddHours(3),
                         DateUpdate = DateTime.UtcNow.ToLocalTime().AddHours(3),
@@ -112,12 +112,6 @@ namespace NutriDbService.Controllers
                 _logger.LogWarning(ress2);
                 await ErrorHelper.SendSystemMess($"Recurent: {ress2}");
                 //await ErrorHelper.SendSystemMess(Newtonsoft.Json.JsonConvert.SerializeObject(cl));
-                //int userId = -1;
-                //if (cl.Data["id"] != null)
-                //{
-                //    var userIdStr = cl.Data["id"].ToString();
-                //    int.TryParse(userIdStr, out userId);
-                //}
                 //var sub = await _context.Subscriptions.SingleOrDefaultAsync(x => x.SubscriptionId == cl.SubscriptionId);
                 //if (sub != null)
                 //{
