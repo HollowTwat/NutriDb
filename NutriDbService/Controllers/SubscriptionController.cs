@@ -1,17 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using NutriDbService.DbModels;
 using NutriDbService.Helpers;
 using NutriDbService.PayModel;
-using NutriDbService.PythModels;
-using NutriDbService.PythModels.Request;
-using NutriDbService.PythModels.Response;
+using SixLabors.ImageSharp.Drawing;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
 
@@ -40,10 +34,29 @@ namespace NutriDbService.Controllers
                 string bodyContent = await reader.ReadToEndAsync();
                 var ress2 = HttpUtility.UrlDecode(bodyContent);
                 _logger.LogWarning(ress2);
-                await ErrorHelper.SendSystemMess($"Success {ress2}");
-                var cl = _subscriptionHelper.ConvertToPayRequestJSON(ress2);
-                await ErrorHelper.SendSystemMess(Newtonsoft.Json.JsonConvert.SerializeObject(cl));
-
+                SuccessPayRequest cl = _subscriptionHelper.ConvertToPayRequestJSON(ress2);
+                await ErrorHelper.SendSystemMess($"Success:{Newtonsoft.Json.JsonConvert.SerializeObject(cl)}");
+                int userId = -1;
+                if (cl.Data["id"] != null)
+                {
+                    var userIdStr = cl.Data["id"].ToString();
+                    int.TryParse(userIdStr, out userId);
+                }
+                _context.Subscriptions.Add(new Subscription
+                {
+                    TransactionId = cl.TransactionId,
+                    Amount = cl.Amount,
+                    DateTime = cl.DateTime,
+                    Status = cl.Status,
+                    InvoiceId = cl.InvoiceId,
+                    AccountId = cl.AccountId,
+                    SubscriptionId = cl.SubscriptionId,
+                    Email = cl.Email,
+                    Rrn = cl.Rrn,
+                    UserId = userId,
+                    IsActive = true,
+                    Extra = Newtonsoft.Json.JsonConvert.SerializeObject(cl)
+                });
             }
 
             return new SubResponse { code = 0 };
@@ -57,8 +70,29 @@ namespace NutriDbService.Controllers
                 string bodyContent = await reader.ReadToEndAsync();
                 var ress2 = HttpUtility.UrlDecode(bodyContent);
                 _logger.LogWarning(ress2);
-                await ErrorHelper.SendSystemMess($"Fail: {ress2}");
-
+                FailPayRequest cl = _subscriptionHelper.ConvertToFailRequestJSON(ress2);
+                await ErrorHelper.SendSystemMess($"Fail:{Newtonsoft.Json.JsonConvert.SerializeObject(cl)}");
+                await ErrorHelper.SendSystemMess(Newtonsoft.Json.JsonConvert.SerializeObject(cl));
+                int userId = -1;
+                if (cl.Data["id"] != null)
+                {
+                    var userIdStr = cl.Data["id"].ToString();
+                    int.TryParse(userIdStr, out userId);
+                }
+                _context.Subscriptions.Add(new Subscription
+                {
+                    TransactionId = cl.TransactionId,
+                    Amount = cl.Amount,
+                    DateTime = cl.DateTime,
+                    InvoiceId = cl.InvoiceId,
+                    AccountId = cl.AccountId,
+                    SubscriptionId = cl.SubscriptionId,
+                    Email = cl.Email,
+                    Rrn = cl.Rrn,
+                    UserId = userId,
+                    IsActive = true,
+                    Extra = Newtonsoft.Json.JsonConvert.SerializeObject(cl)
+                });
             }
 
             return new SubResponse { code = 0 };
@@ -76,24 +110,6 @@ namespace NutriDbService.Controllers
 
             }
 
-            return new SubResponse { code = 0 };
-        }
-
-        [HttpPost]
-        public async Task<SubResponse> SuccessPay2(SuccessPayRequest input)
-        {
-            var ress = Newtonsoft.Json.JsonConvert.SerializeObject(input);
-            _logger.LogWarning(ress);
-            await ErrorHelper.SendSystemMess(ress);
-            return new SubResponse { code = 0 };
-        }
-
-        [HttpPost]
-        public async Task<SubResponse> SuccessPay3(string input)
-        {
-
-            _logger.LogWarning(input);
-            await ErrorHelper.SendSystemMess(input);
             return new SubResponse { code = 0 };
         }
 

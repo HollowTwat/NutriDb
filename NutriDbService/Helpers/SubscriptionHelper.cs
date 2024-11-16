@@ -26,7 +26,7 @@ namespace NutriDbService.Helpers
         {
             return true;
         }
-        public SuccessPayRequest ConvertToPayRequestJSON(string input)
+        private string ConvertRequestToJSON(string input)
         {
             var entries = input.Split('&');
             var transactionDict = new Dictionary<string, object>();
@@ -52,8 +52,17 @@ namespace NutriDbService.Helpers
             }
 
             // Serialize dictionary to JSON format
-            var json = JsonConvert.SerializeObject(transactionDict, Formatting.Indented);
+            return JsonConvert.SerializeObject(transactionDict, Formatting.Indented);
+        }
+        public SuccessPayRequest ConvertToPayRequestJSON(string input)
+        {
+            var json = ConvertRequestToJSON(input);
             return Newtonsoft.Json.JsonConvert.DeserializeObject<SuccessPayRequest>(json);
+        }
+        public FailPayRequest ConvertToFailRequestJSON(string input)
+        {
+            var json = ConvertRequestToJSON(input);
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<FailPayRequest>(json);
         }
     }
 }

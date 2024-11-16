@@ -1,4 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace NutriDbService.DbModels
 {
@@ -216,15 +219,25 @@ namespace NutriDbService.DbModels
                     .HasColumnName("id")
                     .HasDefaultValueSql("nextval('sub_id_auto_inc'::regclass)");
 
-                entity.Property(e => e.PaymentMethod)
-                    .HasMaxLength(255)
-                    .HasColumnName("paymentMethod");
+                entity.Property(e => e.AccountId).HasMaxLength(255);
+
+                entity.Property(e => e.Amount).HasPrecision(10, 2);
+
+                entity.Property(e => e.DateTime).HasColumnType("timestamp without time zone");
+
+                entity.Property(e => e.Email).HasMaxLength(255);
+
+                entity.Property(e => e.Extra).IsRequired();
+
+                entity.Property(e => e.InvoiceId).HasMaxLength(255);
 
                 entity.Property(e => e.PromoId).HasColumnName("promoId");
 
-                entity.Property(e => e.SubscriptionEndDate).HasColumnName("subscriptionEndDate");
+                entity.Property(e => e.Rrn).HasMaxLength(255);
 
-                entity.Property(e => e.SubscriptionStartDate).HasColumnName("subscriptionStartDate");
+                entity.Property(e => e.Status).HasMaxLength(255);
+
+                entity.Property(e => e.SubscriptionId).HasMaxLength(255);
 
                 entity.Property(e => e.UserId).HasColumnName("userId");
 
