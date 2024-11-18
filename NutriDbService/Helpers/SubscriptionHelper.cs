@@ -67,5 +67,10 @@ namespace NutriDbService.Helpers
             var json = ConvertRequestToJSON(input);
             return Newtonsoft.Json.JsonConvert.DeserializeObject<FailPayRequest>(json);
         }
+        public RecurrentRequest ConvertToReqRequestJSON(string input)
+        {
+            var json = ConvertRequestToJSON(input);
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<RecurrentRequest>(json);
+        }
     }
 }

@@ -115,17 +115,16 @@ namespace NutriDbService.Controllers
                 string bodyContent = await reader.ReadToEndAsync();
                 var ress2 = HttpUtility.UrlDecode(bodyContent);
                 _logger.LogWarning(ress2);
-                await ErrorHelper.SendSystemMess($"Recurent: {ress2}");
-                //await ErrorHelper.SendSystemMess(Newtonsoft.Json.JsonConvert.SerializeObject(cl));
-                //var sub = await _context.Subscriptions.SingleOrDefaultAsync(x => x.SubscriptionId == cl.SubscriptionId);
-                //if (sub != null)
-                //{
-                //    sub.IsActive = false;
-                //    _context.Subscriptions.Update(sub);
-                //    await _context.SaveChangesAsync();
-                //}
-                //else
-                //    ErrorHelper.SendErrorMess("Ошибка падения оплаты");
+                RecurrentRequest cl = _subscriptionHelper.ConvertToReqRequestJSON(ress2);
+                await ErrorHelper.SendSystemMess($"Recurent:{Newtonsoft.Json.JsonConvert.SerializeObject(cl)}");
+                var sub = _context.Subscriptions.Where(x => x.SubscriptionId == cl.Id);
+                if (sub?.Count() == 1)
+                    await ErrorHelper.SendSystemMess($"Отменить подписку пользователя:{sub.First().UserId}");
+                if (sub?.Count() > 1)
+                    await ErrorHelper.SendSystemMess($"Больше 1 подписки пользователя:{sub.First().UserId}");
+                if (sub?.Count() == 0)
+                    await ErrorHelper.SendSystemMess($"Отмена несуществующей подписки пользователя:{sub.First().UserId}");
+
             }
             return new SubResponse { code = 0 };
         }

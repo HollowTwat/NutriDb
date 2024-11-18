@@ -843,12 +843,13 @@ namespace NutriDbService.Controllers
                 var meals = _context.Meals.Where(x => x.UserId == user.Id).ToList();
                 var mealIds = meals.Select(x => x.Id);
                 var dishes = _context.Dishes.Where(x => mealIds.Contains(x.MealId));
-
+                var subs = _context.Subscriptions.Where(x => x.UserId == user.Id);
                 _context.Dishes.RemoveRange(dishes);
                 _context.Meals.RemoveRange(meals);
                 _context.Userinfos.RemoveRange(userinfo);
                 _context.Users.Remove(user);
                 _context.Gptrequests.RemoveRange(gpts);
+                _context.Subscriptions.RemoveRange(subs);
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
                 await ErrorHelper.SendSystemMess($"Удалили пользователя {userTgId}");
