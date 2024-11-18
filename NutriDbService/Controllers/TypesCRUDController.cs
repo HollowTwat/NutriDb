@@ -830,5 +830,35 @@ namespace NutriDbService.Controllers
         }
         #endregion
 
+
+        [HttpPost]
+        public async Task<bool> DeleteUser(long userTgId)
+        {
+            try
+            {
+                using var transaction = await _context.Database.BeginTransactionAsync();
+                var user = await _context.Users.SingleAsync(x => x.TgId == userTgId);
+                var gpts = _context.Gptrequests.Where(x => x.UserTgid == userTgId).ToList();
+                var userinfo = await _context.Userinfos.SingleAsync(x => x.UserId == user.Id);
+                var meals = _context.Meals.Where(x => x.UserId == user.Id).ToList();
+                var mealIds = meals.Select(x => x.Id);
+                var dishes = _context.Dishes.Where(x => mealIds.Contains(x.MealId));
+
+                _context.Dishes.RemoveRange(dishes);
+                _context.Meals.RemoveRange(meals);
+                _context.Userinfos.RemoveRange(userinfo);
+                _context.Users.Remove(user);
+                _context.Gptrequests.RemoveRange(gpts);
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                await ErrorHelper.SendSystemMess($"Удалили пользователя {userTgId}");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                await ErrorHelper.SendSystemMess($"Ошибка удаления пользователя {userTgId}");
+                return false;
+            }
+        }
     }
 }
