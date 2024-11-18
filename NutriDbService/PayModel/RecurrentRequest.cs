@@ -8,7 +8,7 @@
         public string Email { get; set; }
         public decimal Amount { get; set; }
         public string Currency { get; set; }
-        public bool RequireConfirmation { get; set; }
+        public string RequireConfirmation { get; set; }
         public string StartDate { get; set; }
         public string Interval { get; set; }
         public int Period { get; set; }
