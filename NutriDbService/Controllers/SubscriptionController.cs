@@ -41,7 +41,7 @@ namespace NutriDbService.Controllers
                     SuccessPayRequest cl = _subscriptionHelper.ConvertToPayRequestJSON(ress2);
                     await ErrorHelper.SendSystemMess($"Success:{Newtonsoft.Json.JsonConvert.SerializeObject(cl)}");
 
-                    _context.Subscriptions.Add(new Subscription
+                    await _context.Subscriptions.AddAsync(new Subscription
                     {
                         TransactionId = cl.TransactionId,
                         Amount = cl.Amount,
@@ -58,6 +58,16 @@ namespace NutriDbService.Controllers
                         DateUpdate = DateTime.UtcNow.ToLocalTime().AddHours(3),
                         Extra = Newtonsoft.Json.JsonConvert.SerializeObject(cl)
                     });
+                    var user = await _context.Users.SingleOrDefaultAsync(x => x.Id == cl.CustomFields.First().Id);
+                    if (user != null)
+                    {
+                        user.IsActive = true;
+                        _context.Users.Update(user);
+                    }
+                    else
+                    {
+                        await ErrorHelper.SendSystemMess($"Пришел платеж без пользователя {Newtonsoft.Json.JsonConvert.SerializeObject(cl)}");
+                    }
                     await _context.SaveChangesAsync();
                 }
 

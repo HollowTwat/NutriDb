@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System;
 using System.Threading.Tasks;
 using NutriDbService.PayModel;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
 namespace NutriDbService.Helpers
 {
@@ -24,36 +26,36 @@ namespace NutriDbService.Helpers
 
         public async Task<bool> CheckSub(long TgId)
         {
-            return true;
+            var user = await _nutriDbContext.Users.SingleOrDefaultAsync(x => x.TgId == TgId);
+            return user?.IsActive == true;
         }
         private string ConvertRequestToJSON(string input)
         {
-                var entries = input.Split('&');
-                var transactionDict = new Dictionary<string, object>();
+            var entries = input.Split('&');
+            var transactionDict = new Dictionary<string, object>();
 
-                foreach (var entry in entries)
+            foreach (var entry in entries)
+            {
+                var keyValue = entry.Split('=');
+                if (keyValue.Length == 2)
                 {
-                    var keyValue = entry.Split('=');
-                    if (keyValue.Length == 2)
-                    {
-                        string key = keyValue[0];
-                        string value = Uri.UnescapeDataString(keyValue[1]);
+                    string key = keyValue[0];
+                    string value = Uri.UnescapeDataString(keyValue[1]);
 
-                        // handling special cases such as nested JSON objects or arrays
-                        if (key == "Data" || key == "CustomFields")
-                        {
-                            transactionDict.Add(key, JsonConvert.DeserializeObject(value));
-                        }
-                        else
-                        {
-                            transactionDict.Add(key, value);
-                        }
+                    if (key == "Data" || key == "CustomFields")
+                    {
+                        transactionDict.Add(key, JsonConvert.DeserializeObject(value));
+                    }
+                    else
+                    {
+                        transactionDict.Add(key, value);
                     }
                 }
+            }
 
-                // Serialize dictionary to JSON format
-                return JsonConvert.SerializeObject(transactionDict, Formatting.Indented);
-          
+            // Serialize dictionary to JSON format
+            return JsonConvert.SerializeObject(transactionDict, Formatting.Indented);
+
         }
         public SuccessPayRequest ConvertToPayRequestJSON(string input)
         {

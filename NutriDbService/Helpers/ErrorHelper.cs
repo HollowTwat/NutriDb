@@ -9,7 +9,7 @@ namespace NutriDbService.Helpers
     {
 
         private const long _errorChanelId = -1002345895875;
-        private static string _token = "6719978038:AAFFTz8Tat9ieYUyCp-tI2RAbcpddqTcZNY";
+        private static string _token = "7220622235:AAEJAQUjZZagg6ZXkGuykfQySAtJzwAwqRI";
         private static TelegramBotClient client { get; set; }
         public static TelegramBotClient GetTelegramBot()
         {

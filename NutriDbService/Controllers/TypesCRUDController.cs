@@ -390,7 +390,7 @@ namespace NutriDbService.Controllers
                     StageId = 0,
                     LessonId = 0,
                     RegistrationTime = DateOnly.FromDateTime(DateTime.UtcNow.ToLocalTime().AddHours(3)),
-                    IsActive = true,
+                    IsActive = false,
                     Username = string.IsNullOrEmpty(userName) ? null : userName,
                 });
                 await _context.SaveChangesAsync();
