@@ -843,7 +843,7 @@ namespace NutriDbService.Controllers
                 using var transaction = await _context.Database.BeginTransactionAsync();
                 var user = await _context.Users.SingleAsync(x => x.TgId == userTgId);
                 var gpts = _context.Gptrequests.Where(x => x.UserTgid == userTgId).ToList();
-                var userinfo = await _context.Userinfos.SingleAsync(x => x.UserId == user.Id);
+                var userinfo = await _context.Userinfos.SingleOrDefaultAsync(x => x.UserId == user.Id);
                 var meals = _context.Meals.Where(x => x.UserId == user.Id).ToList();
                 var mealIds = meals.Select(x => x.Id);
                 var dishes = _context.Dishes.Where(x => mealIds.Contains(x.MealId));
