@@ -382,6 +382,10 @@ namespace NutriDbService.Controllers
                 var user = await _context.Users.SingleOrDefaultAsync(x => x.TgId == userTgId);
                 if (user != null)
                     return Ok(true);
+                bool isActive = false;
+                var subscription = _context.Subscriptions.Where(x => x.UserTgId == userTgId);
+                if (subscription != null)
+                    isActive = subscription.Any(x => x.IsActive == true);
                 _context.Users.Add(new DbModels.User
                 {
                     TgId = userTgId,
@@ -390,7 +394,7 @@ namespace NutriDbService.Controllers
                     StageId = 0,
                     LessonId = 0,
                     RegistrationTime = DateOnly.FromDateTime(DateTime.UtcNow.ToLocalTime().AddHours(3)),
-                    IsActive = false,
+                    IsActive = isActive,
                     Username = string.IsNullOrEmpty(userName) ? null : userName,
                 });
                 await _context.SaveChangesAsync();
@@ -843,13 +847,13 @@ namespace NutriDbService.Controllers
                 var meals = _context.Meals.Where(x => x.UserId == user.Id).ToList();
                 var mealIds = meals.Select(x => x.Id);
                 var dishes = _context.Dishes.Where(x => mealIds.Contains(x.MealId));
-                var subs = _context.Subscriptions.Where(x => x.UserId == user.Id);
+                //var subs = _context.Subscriptions.Where(x => x.UserId == user.Id);
                 _context.Dishes.RemoveRange(dishes);
                 _context.Meals.RemoveRange(meals);
                 _context.Userinfos.RemoveRange(userinfo);
                 _context.Users.Remove(user);
                 _context.Gptrequests.RemoveRange(gpts);
-                _context.Subscriptions.RemoveRange(subs);
+                //_context.Subscriptions.RemoveRange(subs);
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
                 await ErrorHelper.SendSystemMess($"Удалили пользователя {userTgId}");

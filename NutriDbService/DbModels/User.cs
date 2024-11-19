@@ -10,7 +10,6 @@ namespace NutriDbService.DbModels
             Loyalties = new HashSet<Loyalty>();
             Meals = new HashSet<Meal>();
             Messagelogs = new HashSet<Messagelog>();
-            Subscriptions = new HashSet<Subscription>();
             Userinfos = new HashSet<Userinfo>();
         }
 
@@ -28,7 +27,6 @@ namespace NutriDbService.DbModels
         public virtual ICollection<Loyalty> Loyalties { get; set; }
         public virtual ICollection<Meal> Meals { get; set; }
         public virtual ICollection<Messagelog> Messagelogs { get; set; }
-        public virtual ICollection<Subscription> Subscriptions { get; set; }
         public virtual ICollection<Userinfo> Userinfos { get; set; }
     }
 }

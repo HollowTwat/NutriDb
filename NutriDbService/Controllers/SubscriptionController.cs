@@ -52,13 +52,13 @@ namespace NutriDbService.Controllers
                         SubscriptionId = cl.SubscriptionId,
                         Email = cl.Email,
                         Rrn = cl.Rrn,
-                        UserId = cl.CustomFields.First().Id,
+                        UserTgId = cl.CustomFields.First().ID,
                         IsActive = true,
                         DateCreate = DateTime.UtcNow.ToLocalTime().AddHours(3),
                         DateUpdate = DateTime.UtcNow.ToLocalTime().AddHours(3),
                         Extra = Newtonsoft.Json.JsonConvert.SerializeObject(cl)
                     });
-                    var user = await _context.Users.SingleOrDefaultAsync(x => x.Id == cl.CustomFields.First().Id);
+                    var user = await _context.Users.SingleOrDefaultAsync(x => x.TgId == cl.CustomFields.First().ID);
                     if (user != null)
                     {
                         user.IsActive = true;
@@ -119,11 +119,11 @@ namespace NutriDbService.Controllers
                 await ErrorHelper.SendSystemMess($"Recurent:{Newtonsoft.Json.JsonConvert.SerializeObject(cl)}");
                 var sub = _context.Subscriptions.Where(x => x.SubscriptionId == cl.Id);
                 if (sub?.Count() == 1)
-                    await ErrorHelper.SendSystemMess($"Отменить подписку пользователя:{sub.First().UserId}");
+                    await ErrorHelper.SendSystemMess($"Отменить подписку пользователя:{sub.First().UserTgId}");
                 if (sub?.Count() > 1)
-                    await ErrorHelper.SendSystemMess($"Больше 1 подписки пользователя:{sub.First().UserId}");
+                    await ErrorHelper.SendSystemMess($"Больше 1 подписки пользователя:{sub.First().UserTgId}");
                 if (sub?.Count() == 0)
-                    await ErrorHelper.SendSystemMess($"Отмена несуществующей подписки пользователя:{sub.First().UserId}");
+                    await ErrorHelper.SendSystemMess($"Отмена несуществующей подписки пользователя:{sub.First().UserTgId}");
 
             }
             return new SubResponse { code = 0 };

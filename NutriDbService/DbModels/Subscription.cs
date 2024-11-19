@@ -6,7 +6,7 @@ namespace NutriDbService.DbModels
     public partial class Subscription
     {
         public int Id { get; set; }
-        public int UserId { get; set; }
+        public long UserTgId { get; set; }
         public int? PromoId { get; set; }
         public long? TransactionId { get; set; }
         public decimal? Amount { get; set; }
@@ -23,6 +23,5 @@ namespace NutriDbService.DbModels
         public DateTime DateUpdate { get; set; }
 
         public virtual Promo Promo { get; set; }
-        public virtual User User { get; set; }
     }
 }

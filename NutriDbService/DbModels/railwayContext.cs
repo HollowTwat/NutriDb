@@ -243,18 +243,12 @@ namespace NutriDbService.DbModels
 
                 entity.Property(e => e.SubscriptionId).HasMaxLength(255);
 
-                entity.Property(e => e.UserId).HasColumnName("userId");
+                entity.Property(e => e.UserTgId).HasColumnName("userTgId");
 
                 entity.HasOne(d => d.Promo)
                     .WithMany(p => p.Subscriptions)
                     .HasForeignKey(d => d.PromoId)
                     .HasConstraintName("subscription_to_promo");
-
-                entity.HasOne(d => d.User)
-                    .WithMany(p => p.Subscriptions)
-                    .HasForeignKey(d => d.UserId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("subscription_to_user");
             });
 
             modelBuilder.Entity<User>(entity =>
