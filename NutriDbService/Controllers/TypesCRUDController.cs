@@ -850,7 +850,8 @@ namespace NutriDbService.Controllers
                 //var subs = _context.Subscriptions.Where(x => x.UserId == user.Id);
                 _context.Dishes.RemoveRange(dishes);
                 _context.Meals.RemoveRange(meals);
-                _context.Userinfos.RemoveRange(userinfo);
+                if (userinfo != null)
+                    _context.Userinfos.RemoveRange(userinfo);
                 _context.Users.Remove(user);
                 _context.Gptrequests.RemoveRange(gpts);
                 //_context.Subscriptions.RemoveRange(subs);
