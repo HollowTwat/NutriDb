@@ -42,11 +42,11 @@ namespace NutriDbService.PayModel
         public string CardProduct { get; set; }
         public string PaymentMethod { get; set; }
         public string FallBackScenarioDeclinedTransactionId { get; set; }
-        public string Rrn {  get; set; }
+        public string Rrn { get; set; }
         public List<CustomField> CustomFields { get; set; }
     }
     public class CustomField
     {
-        public int ID { get; set; }
+        public long ID { get; set; }
     }
 }
