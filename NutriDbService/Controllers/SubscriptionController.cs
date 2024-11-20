@@ -73,7 +73,7 @@ namespace NutriDbService.Controllers
 
                 return new SubResponse { code = 0 };
             }
-            catch (Exception ex) { ErrorHelper.SendErrorMess("Упали при оформлении подписки", ex); return new SubResponse { code = 500 }; }
+            catch (Exception ex) {await ErrorHelper.SendErrorMess("Упали при оформлении подписки", ex); return new SubResponse { code = 500 }; }
         }
 
         [HttpPost]
