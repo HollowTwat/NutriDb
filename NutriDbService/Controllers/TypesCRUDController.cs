@@ -802,12 +802,20 @@ namespace NutriDbService.Controllers
         [HttpPost]
         public async Task<bool> SetNotifyStatus(long UserTgId, bool status)
         {
-            var user = await _context.Users.SingleOrDefaultAsync(x => x.TgId == UserTgId);
-            user.NotifyStatus = status;
-            _context.Update(user);
-            await _context.SaveChangesAsync();
-            await _taskSchedulerService.TimerRestart();
-            return true;
+            try
+            {
+                var user = await _context.Users.SingleOrDefaultAsync(x => x.TgId == UserTgId);
+                user.NotifyStatus = status;
+                _context.Update(user);
+                await _context.SaveChangesAsync();
+                await _taskSchedulerService.TimerRestart();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                ErrorHelper.SendErrorMess("Упали на изменении подписки на уведомления", ex);
+                return false;
+            }
         }
         #endregion
 
