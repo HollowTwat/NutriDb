@@ -40,7 +40,7 @@ namespace NutriDbService.Controllers
                     _logger.LogWarning(ress2);
                     SuccessPayRequest cl = _subscriptionHelper.ConvertToPayRequestJSON(ress2);
                     await ErrorHelper.SendSystemMess($"Success:{Newtonsoft.Json.JsonConvert.SerializeObject(cl)}");
-
+                    var inputUserId = cl.CustomFields.First().ID;
                     await _context.Subscriptions.AddAsync(new Subscription
                     {
                         TransactionId = cl.TransactionId,
@@ -52,13 +52,13 @@ namespace NutriDbService.Controllers
                         SubscriptionId = cl.SubscriptionId,
                         Email = cl.Email,
                         Rrn = cl.Rrn,
-                        UserTgId = cl.CustomFields.First().ID,
+                        UserTgId = inputUserId,
                         IsActive = true,
                         DateCreate = DateTime.UtcNow.ToLocalTime().AddHours(3),
                         DateUpdate = DateTime.UtcNow.ToLocalTime().AddHours(3),
                         Extra = Newtonsoft.Json.JsonConvert.SerializeObject(cl)
                     });
-                    var user = await _context.Users.SingleOrDefaultAsync(x => x.TgId == cl.CustomFields.First().ID);
+                    var user = await _context.Users.SingleOrDefaultAsync(x => x.TgId == inputUserId);
                     if (user != null)
                     {
                         user.IsActive = true;
@@ -69,9 +69,9 @@ namespace NutriDbService.Controllers
                         await ErrorHelper.SendSystemMess($"Пришел платеж без пользователя {Newtonsoft.Json.JsonConvert.SerializeObject(cl)}");
                     }
                     await _context.SaveChangesAsync();
-                    var noti = await _subscriptionHelper.SendPayNoti(user.TgId);
+                    var noti = await _subscriptionHelper.SendPayNoti(inputUserId);
                     if (!noti)
-                        await ErrorHelper.SendSystemMess($"Не смогли отправить пользователю {user.TgId} ссылку на бота после оплаты");
+                        await ErrorHelper.SendSystemMess($"Не смогли отправить пользователю {inputUserId} ссылку на бота после оплаты");
                 }
 
                 return new SubResponse { code = 0 };
