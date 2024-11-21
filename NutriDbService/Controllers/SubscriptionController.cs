@@ -69,11 +69,14 @@ namespace NutriDbService.Controllers
                         await ErrorHelper.SendSystemMess($"Пришел платеж без пользователя {Newtonsoft.Json.JsonConvert.SerializeObject(cl)}");
                     }
                     await _context.SaveChangesAsync();
+                    var noti = await _subscriptionHelper.SendPayNoti(user.TgId);
+                    if (!noti)
+                        await ErrorHelper.SendSystemMess($"Не смогли отправить пользователю {user.TgId} ссылку на бота после оплаты");
                 }
 
                 return new SubResponse { code = 0 };
             }
-            catch (Exception ex) {await ErrorHelper.SendErrorMess("Упали при оформлении подписки", ex); return new SubResponse { code = 500 }; }
+            catch (Exception ex) { await ErrorHelper.SendErrorMess("Упали при оформлении подписки", ex); return new SubResponse { code = 500 }; }
         }
 
         [HttpPost]

@@ -69,5 +69,13 @@ namespace NutriDbTest
 
             Xunit.Assert.True(true);
         }
+        [Fact]
+        public async Task NocodeSuccPayTest()
+        {
+            Setup();
+            SubscriptionHelper subscriptionHelper = new SubscriptionHelper(_mockContext.Object, _mockServiceScopeFactory.Object);
+            await subscriptionHelper.SendPayNoti(389054202);
+            Xunit.Assert.True(true);
+        }
     }
 }
