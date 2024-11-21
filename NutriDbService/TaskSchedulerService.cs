@@ -59,6 +59,7 @@ namespace NutriDbService
         {
             var users = GetUserPings();
             ScheduleTasks(users);
+            _logger.LogWarning($"Timers:{Newtonsoft.Json.JsonConvert.SerializeObject(_timers)}");
             return Task.CompletedTask;
         }
 
@@ -78,7 +79,6 @@ namespace NutriDbService
                         userPing.MorningPing.AddHours((double)userPing.Slide);
                     }
                     ScheduleTask(userPing);
-                    _logger.LogWarning($"Timers:{Newtonsoft.Json.JsonConvert.SerializeObject(_timers)}");
                 }
             }
         }

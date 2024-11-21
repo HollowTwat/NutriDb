@@ -127,7 +127,7 @@ namespace NutriDbService.Controllers
                 if (sub?.Count() > 1)
                     await ErrorHelper.SendSystemMess($"Больше 1 подписки пользователя:{sub.First().UserTgId}");
                 if (sub?.Count() == 0)
-                    await ErrorHelper.SendSystemMess($"Отмена несуществующей подписки :{cl.Id}");
+                    await ErrorHelper.SendSystemMess($"Отмена несуществующей подписки : {cl.Id}");
 
             }
             return new SubResponse { code = 0 };
