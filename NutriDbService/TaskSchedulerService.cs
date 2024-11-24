@@ -75,8 +75,8 @@ namespace NutriDbService
 
                     if (userPing.Slide != null)
                     {
-                        userPing.EveningPing = userPing.EveningPing.AddHours((double)userPing.Slide);
-                        userPing.MorningPing = userPing.MorningPing.AddHours((double)userPing.Slide);
+                        userPing.EveningPing = userPing.EveningPing.AddHours(-(double)userPing.Slide);
+                        userPing.MorningPing = userPing.MorningPing.AddHours(-(double)userPing.Slide);
                     }
                     ScheduleTask(userPing);
                 }
