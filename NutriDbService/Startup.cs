@@ -20,7 +20,7 @@ namespace NutriDbService
         {
             _configuration = configuration;
         }
-       
+
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddCors();
@@ -39,7 +39,9 @@ namespace NutriDbService
             services.AddTransient<SubscriptionHelper>();
             //services.AddHostedService<TaskSchedulerService>();
             services.AddSingleton<TaskSchedulerService>();
+#if !DEBUG
             services.AddHostedService(provider => provider.GetService<TaskSchedulerService>());
+#endif
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

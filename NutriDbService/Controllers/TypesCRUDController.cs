@@ -478,8 +478,8 @@ namespace NutriDbService.Controllers
                 string gender = string.IsNullOrEmpty(req.Info["user_info_gender"]) ? null : req.Info["user_info_gender"];
                 decimal? goalkk = string.IsNullOrEmpty(req.Info["target_calories"]) ? null : decimal.Parse(req.Info["target_calories"]);
 
-                bool IsmorningPing = string.IsNullOrEmpty(req.Info["user_info_morning_ping"]) ? false : TimeOnly.TryParseExact(req.Info["user_info_morning_ping"], "HH:mm", out var m);
-                bool IseveningPing = string.IsNullOrEmpty(req.Info["user_info_evening_ping"]) ? false : TimeOnly.TryParseExact(req.Info["user_info_evening_ping"], "HH:mm", out var e);
+                bool IsmorningPing = string.IsNullOrEmpty(req.Info["user_info_morning_ping"]) ? false : TimeOnly.TryParseExact(req.Info["user_info_morning_ping"], "%H:mm", out var m);
+                bool IseveningPing = string.IsNullOrEmpty(req.Info["user_info_evening_ping"]) ? false : TimeOnly.TryParseExact(req.Info["user_info_evening_ping"], "%H:mm", out var e);
                 decimal? timeslide = string.IsNullOrEmpty(req.Info["user_info_timeslide"]) ? null : decimal.Parse(req.Info["user_info_timeslide"]);
 
                 string goal = string.IsNullOrEmpty(req.Info["user_info_goal"]) ? null : req.Info["user_info_goal"];
@@ -522,7 +522,6 @@ namespace NutriDbService.Controllers
             }
             catch (Exception ex)
             {
-
                 _logger.LogError(ex, ex.Message);
                 await ErrorHelper.SendErrorMess("AddUserExtraInfo Error", ex);
                 await ErrorHelper.SendErrorMess($"Input: {req}");
