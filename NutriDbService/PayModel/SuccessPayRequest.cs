@@ -29,10 +29,10 @@ namespace NutriDbService.PayModel
         public string IpCountry { get; set; }
         public string IpCity { get; set; }
         public string IpRegion { get; set; }
-        public string IpDistrict { get; set; }
-        public string IpLatitude { get; set; }
-        public string IpLongitude { get; set; }
-        public string Issuer { get; set; }
+        //public string IpDistrict { get; set; }
+        //public string IpLatitude { get; set; }
+        //public double? IpLongitude { get; set; }
+        //public double? Issuer { get; set; }
         public string IssuerBankCountry { get; set; }
         public string Description { get; set; }
         public string AuthCode { get; set; }
