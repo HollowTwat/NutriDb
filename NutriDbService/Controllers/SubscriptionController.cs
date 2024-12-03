@@ -90,7 +90,7 @@ namespace NutriDbService.Controllers
                     var ress2 = HttpUtility.UrlDecode(bodyContent);
                     _logger.LogWarning(ress2);
                     SuccessInfoPayRequest cl = _subscriptionHelper.ConvertToInfoPayRequestJSON(ress2);
-                    await ErrorHelper.SendSystemMess($"Success:{Newtonsoft.Json.JsonConvert.SerializeObject(cl)}");
+                    await ErrorHelper.SendSystemMess($"Success Indo:{Newtonsoft.Json.JsonConvert.SerializeObject(cl)}");
                     var inputUserId = cl.CustomFields.First().ID;
                     await _context.Subscriptions.AddAsync(new Subscription
                     {
