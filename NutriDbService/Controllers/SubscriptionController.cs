@@ -53,7 +53,8 @@ namespace NutriDbService.Controllers
                         Email = cl.Email,
                         Rrn = cl.Rrn,
                         //UserTgId = inputUserId,
-                        IsActive = false,
+                        IsActive = true,
+                        IsLinked = false,
                         DateCreate = DateTime.UtcNow.ToLocalTime().AddHours(3),
                         DateUpdate = DateTime.UtcNow.ToLocalTime().AddHours(3),
                         Extra = Newtonsoft.Json.JsonConvert.SerializeObject(cl)
@@ -66,7 +67,7 @@ namespace NutriDbService.Controllers
                     //}
                     //else
                     //{
-                        await ErrorHelper.SendSystemMess($"Пришел платеж без пользователя {Newtonsoft.Json.JsonConvert.SerializeObject(cl)}");
+                    await ErrorHelper.SendSystemMess($"Пришел платеж без пользователя {Newtonsoft.Json.JsonConvert.SerializeObject(cl)}");
                     //}
                     await _context.SaveChangesAsync();
                     //var noti = await _subscriptionHelper.SendPayNoti(inputUserId);
@@ -88,10 +89,22 @@ namespace NutriDbService.Controllers
                 {
                     string bodyContent = await reader.ReadToEndAsync();
                     var ress2 = HttpUtility.UrlDecode(bodyContent);
+                    bool linked = false;
                     _logger.LogWarning(ress2);
                     SuccessInfoPayRequest cl = _subscriptionHelper.ConvertToInfoPayRequestJSON(ress2);
                     await ErrorHelper.SendSystemMess($"Success Indo:{Newtonsoft.Json.JsonConvert.SerializeObject(cl)}");
                     var inputUserId = cl.CustomFields.First().ID;
+                    var user = await _context.Users.SingleOrDefaultAsync(x => x.TgId == inputUserId);
+                    if (user != null)
+                    {
+                        user.IsActive = true;
+                        linked = true;
+                        _context.Users.Update(user);
+                    }
+                    else
+                    {
+                        await ErrorHelper.SendSystemMess($"Пришел платеж без пользователя {Newtonsoft.Json.JsonConvert.SerializeObject(cl)}");
+                    }
                     await _context.Subscriptions.AddAsync(new Subscription
                     {
                         TransactionId = cl.TransactionId,
@@ -105,20 +118,13 @@ namespace NutriDbService.Controllers
                         Rrn = cl.Rrn,
                         UserTgId = inputUserId,
                         IsActive = true,
+                        IsLinked = linked,
                         DateCreate = DateTime.UtcNow.ToLocalTime().AddHours(3),
                         DateUpdate = DateTime.UtcNow.ToLocalTime().AddHours(3),
                         Extra = Newtonsoft.Json.JsonConvert.SerializeObject(cl)
                     });
-                    var user = await _context.Users.SingleOrDefaultAsync(x => x.TgId == inputUserId);
-                    if (user != null)
-                    {
-                        user.IsActive = true;
-                        _context.Users.Update(user);
-                    }
-                    else
-                    {
-                        await ErrorHelper.SendSystemMess($"Пришел платеж без пользователя {Newtonsoft.Json.JsonConvert.SerializeObject(cl)}");
-                    }
+
+
                     await _context.SaveChangesAsync();
                     var noti = await _subscriptionHelper.SendPayNoti(inputUserId);
                     if (!noti)
@@ -211,6 +217,33 @@ namespace NutriDbService.Controllers
             }
 
             return new SubResponse { code = 0 };
+        }
+
+        [HttpPost]
+        public async Task<bool> ActivateUser(long userTgId, string userEmail)
+        {
+            try
+            {
+                var readySub = await _context.Subscriptions.SingleOrDefaultAsync(x => x.IsLinked == false && x.IsActive == true && userEmail.Trim() == x.Email.Trim());
+                if (readySub == null) return false;
+
+                var user = await _context.Users.SingleOrDefaultAsync(x => x.TgId == userTgId);
+                if (user == null) return false;
+
+                readySub.IsLinked = true;
+                readySub.UserTgId = userTgId;
+                user.IsActive = true;
+
+                _context.Users.Update(user);
+                _context.Subscriptions.Update(readySub);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                await ErrorHelper.SendErrorMess($"Ошибка активации пользователя {userTgId} Email:{userEmail}", ex);
+                return false;
+            }
         }
     }
 }

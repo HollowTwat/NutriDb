@@ -383,10 +383,13 @@ namespace NutriDbService.Controllers
                 if (user != null)
                     return Ok(true);
                 bool isActive = false;
-                var subscription = _context.Subscriptions.Where(x => x.UserTgId == userTgId);
+                var subscription = await _context.Subscriptions.SingleOrDefaultAsync(x => x.UserTgId == userTgId && x.IsActive == true && x.IsLinked == false);
                 if (subscription != null)
-                    isActive = subscription.Any(x => x.IsActive == true);
-                _context.Users.Add(new DbModels.User
+                {
+                    isActive = true;
+                    subscription.IsLinked = true;
+                }
+                await _context.Users.AddAsync(new DbModels.User
                 {
                     TgId = userTgId,
                     UserNoId = userNoId,
@@ -397,6 +400,7 @@ namespace NutriDbService.Controllers
                     IsActive = isActive,
                     Username = string.IsNullOrEmpty(userName) ? null : userName,
                 });
+                _context.Subscriptions.Update(subscription);
                 await _context.SaveChangesAsync();
                 return Ok(true);
             }
@@ -795,7 +799,8 @@ namespace NutriDbService.Controllers
         [HttpPost]
         public async Task<bool> CheckSubscription(long UserTgId)
         {
-            return true;
+            //return  _context.Subscriptions.Any(x => x.UserTgId == UserTgId && x.IsLinked == true && x.IsActive == true);
+            return _context.Users.Any(x => x.TgId == UserTgId && x.IsActive == true);
         }
 
         [HttpPost]

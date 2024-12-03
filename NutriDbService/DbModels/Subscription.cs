@@ -21,6 +21,7 @@ namespace NutriDbService.DbModels
         public bool IsActive { get; set; }
         public DateTime DateCreate { get; set; }
         public DateTime DateUpdate { get; set; }
+        public bool IsLinked { get; set; }
 
         public virtual Promo Promo { get; set; }
     }
