@@ -40,6 +40,57 @@ namespace NutriDbService.Controllers
                     _logger.LogWarning(ress2);
                     SuccessPayRequest cl = _subscriptionHelper.ConvertToPayRequestJSON(ress2);
                     await ErrorHelper.SendSystemMess($"Success:{Newtonsoft.Json.JsonConvert.SerializeObject(cl)}");
+                    //var inputUserId = cl.CustomFields.First().ID;
+                    await _context.Subscriptions.AddAsync(new Subscription
+                    {
+                        TransactionId = cl.TransactionId,
+                        Amount = cl.Amount,
+                        DateTime = cl.DateTime,
+                        Status = cl.Status,
+                        InvoiceId = cl.InvoiceId,
+                        AccountId = cl.AccountId,
+                        SubscriptionId = cl.SubscriptionId,
+                        Email = cl.Email,
+                        Rrn = cl.Rrn,
+                        //UserTgId = inputUserId,
+                        IsActive = false,
+                        DateCreate = DateTime.UtcNow.ToLocalTime().AddHours(3),
+                        DateUpdate = DateTime.UtcNow.ToLocalTime().AddHours(3),
+                        Extra = Newtonsoft.Json.JsonConvert.SerializeObject(cl)
+                    });
+                    //var user = await _context.Users.SingleOrDefaultAsync(x => x.TgId == inputUserId);
+                    //if (user != null)
+                    //{
+                    //    user.IsActive = true;
+                    //    _context.Users.Update(user);
+                    //}
+                    //else
+                    //{
+                        await ErrorHelper.SendSystemMess($"Пришел платеж без пользователя {Newtonsoft.Json.JsonConvert.SerializeObject(cl)}");
+                    //}
+                    await _context.SaveChangesAsync();
+                    //var noti = await _subscriptionHelper.SendPayNoti(inputUserId);
+                    //if (!noti)
+                    //    await ErrorHelper.SendSystemMess($"Не смогли отправить пользователю {inputUserId} ссылку на бота после оплаты");
+                }
+
+                return new SubResponse { code = 0 };
+            }
+            catch (Exception ex) { await ErrorHelper.SendErrorMess("Упали при оформлении подписки", ex); return new SubResponse { code = 500 }; }
+        }
+
+        [HttpPost]
+        public async Task<SubResponse> SuccessInfoPay()
+        {
+            try
+            {
+                using (var reader = new StreamReader(Request.Body))
+                {
+                    string bodyContent = await reader.ReadToEndAsync();
+                    var ress2 = HttpUtility.UrlDecode(bodyContent);
+                    _logger.LogWarning(ress2);
+                    SuccessInfoPayRequest cl = _subscriptionHelper.ConvertToInfoPayRequestJSON(ress2);
+                    await ErrorHelper.SendSystemMess($"Success:{Newtonsoft.Json.JsonConvert.SerializeObject(cl)}");
                     var inputUserId = cl.CustomFields.First().ID;
                     await _context.Subscriptions.AddAsync(new Subscription
                     {

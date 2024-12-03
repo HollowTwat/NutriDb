@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace NutriDbService.PayModel
 {
-    public class SuccessPayRequest
+    public class SuccessInfoPayRequest
     {
         public long TransactionId { get; set; }
         public decimal Amount { get; set; }
@@ -43,6 +43,10 @@ namespace NutriDbService.PayModel
         public string PaymentMethod { get; set; }
         public string FallBackScenarioDeclinedTransactionId { get; set; }
         public string Rrn { get; set; }
+        public List<CustomField> CustomFields { get; set; }
     }
-  
+    public class CustomField
+    {
+        public long ID { get; set; }
+    }
 }
