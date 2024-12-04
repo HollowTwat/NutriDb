@@ -400,12 +400,16 @@ namespace NutriDbService.Controllers
                     IsActive = isActive,
                     Username = string.IsNullOrEmpty(userName) ? null : userName,
                 });
-                _context.Subscriptions.Update(subscription);
+                if (subscription != null)
+                {
+                    _context.Subscriptions.Update(subscription);
+                }
                 await _context.SaveChangesAsync();
                 return Ok(true);
             }
             catch (Exception ex)
             {
+                await ErrorHelper.SendErrorMess($"Упали при создании пользователя {userTgId}", ex);
                 _logger.LogError(ex, ex.Message);
                 return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
