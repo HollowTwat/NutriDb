@@ -26,13 +26,15 @@ namespace NutriDbService.Controllers
         private MealHelper _mealHelper;
         private PlotHelper _plotHelper;
         private readonly TaskSchedulerService _taskSchedulerService;
+        private readonly NotificationHelper _notificationHelper;
 
-        public TypesCRUDController(railwayContext context, MealHelper mealHelper, ILogger<TypesCRUDController> logger, PlotHelper plotHelper, TaskSchedulerService taskSchedulerService)
+        public TypesCRUDController(railwayContext context, MealHelper mealHelper, ILogger<TypesCRUDController> logger, PlotHelper plotHelper, NotificationHelper notificationHelper, TaskSchedulerService taskSchedulerService)
         {
             _context = context;
             _mealHelper = mealHelper;
             _logger = logger;
             _plotHelper = plotHelper;
+            _notificationHelper = notificationHelper;
             _taskSchedulerService = taskSchedulerService;
         }
 
@@ -881,6 +883,17 @@ namespace NutriDbService.Controllers
                 await ErrorHelper.SendSystemMess($"Ошибка удаления пользователя {userTgId}");
                 return false;
             }
+        }
+
+        [HttpGet]
+        public async Task<bool> SendManualNotify(int userId, bool isMorning)
+        {
+            try
+            {
+                await _notificationHelper.SendNotification(userId, isMorning);
+                return true;
+            }
+            catch (Exception ex) { return false; }
         }
     }
 }
