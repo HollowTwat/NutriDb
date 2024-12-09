@@ -225,11 +225,14 @@ namespace NutriDbService.Controllers
             try
             {
                 var user = await _context.Users.SingleOrDefaultAsync(x => x.TgId == userTgId);
-                if (user == null) return false;
+                if (user == null)
+                    return false;
+                user.Email = userEmail;
                 if (user.IsActive)
                     return true;
                 var readySub = await _context.Subscriptions.SingleOrDefaultAsync(x => x.IsLinked == false && x.IsActive == true && userEmail.ToLower().Trim() == x.Email.ToLower().Trim());
-                if (readySub == null) return false;
+                if (readySub == null)
+                    return false;
 
 
 

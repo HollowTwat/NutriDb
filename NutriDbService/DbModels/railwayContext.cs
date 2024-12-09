@@ -259,6 +259,8 @@ namespace NutriDbService.DbModels
                     .HasColumnName("id")
                     .HasDefaultValueSql("nextval('user_id_auto_inc'::regclass)");
 
+                entity.Property(e => e.Email).HasMaxLength(255);
+
                 entity.Property(e => e.LessonId).HasColumnName("lessonId");
 
                 entity.Property(e => e.NotifyStatus)
