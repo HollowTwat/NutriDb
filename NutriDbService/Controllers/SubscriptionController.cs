@@ -80,7 +80,6 @@ namespace NutriDbService.Controllers
             catch (Exception ex)
             {
                 await ErrorHelper.SendErrorMess("Упали при оформлении подписки", ex);
-                return new SubResponse { code = 0 };
                 return new SubResponse { code = 500 };
             }
         }
@@ -141,7 +140,6 @@ namespace NutriDbService.Controllers
             catch (Exception ex)
             {
                 await ErrorHelper.SendErrorMess("Упали при оформлении подписки", ex);
-                return new SubResponse { code = 0 };
                 return new SubResponse { code = 500 };
             }
         }
