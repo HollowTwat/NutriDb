@@ -77,7 +77,12 @@ namespace NutriDbService.Controllers
 
                 return new SubResponse { code = 0 };
             }
-            catch (Exception ex) { await ErrorHelper.SendErrorMess("Упали при оформлении подписки", ex); return new SubResponse { code = 500 }; }
+            catch (Exception ex)
+            {
+                await ErrorHelper.SendErrorMess("Упали при оформлении подписки", ex);
+                return new SubResponse { code = 0 };
+                return new SubResponse { code = 500 };
+            }
         }
 
         [HttpPost]
@@ -92,7 +97,7 @@ namespace NutriDbService.Controllers
                     bool linked = false;
                     _logger.LogWarning(ress2);
                     SuccessInfoPayRequest cl = _subscriptionHelper.ConvertToInfoPayRequestJSON(ress2);
-                    await ErrorHelper.SendSystemMess($"Success Indo:{Newtonsoft.Json.JsonConvert.SerializeObject(cl)}");
+                    await ErrorHelper.SendSystemMess($"Success Info:{Newtonsoft.Json.JsonConvert.SerializeObject(cl)}");
                     var inputUserId = cl.CustomFields.First().ID;
                     var user = await _context.Users.SingleOrDefaultAsync(x => x.TgId == inputUserId);
                     if (user != null)
@@ -133,7 +138,12 @@ namespace NutriDbService.Controllers
 
                 return new SubResponse { code = 0 };
             }
-            catch (Exception ex) { await ErrorHelper.SendErrorMess("Упали при оформлении подписки", ex); return new SubResponse { code = 500 }; }
+            catch (Exception ex)
+            {
+                await ErrorHelper.SendErrorMess("Упали при оформлении подписки", ex);
+                return new SubResponse { code = 0 };
+                return new SubResponse { code = 500 };
+            }
         }
 
         [HttpPost]
