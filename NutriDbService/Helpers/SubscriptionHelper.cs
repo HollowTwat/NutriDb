@@ -34,6 +34,63 @@ namespace NutriDbService.Helpers
             var user = await _nutriDbContext.Users.SingleOrDefaultAsync(x => x.TgId == TgId);
             return user?.IsActive == true;
         }
+        public SuccessPayRequest ConvertToPayRequestJSON(string input)
+        {
+            var json = ConvertRequestToJSON(input);
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<SuccessPayRequest>(json);
+        }
+        public SuccessInfoPayRequest ConvertToInfoPayRequestJSON(string input)
+        {
+            var json = ConvertRequestToJSON(input);
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<SuccessInfoPayRequest>(json);
+        }
+        public FailPayRequest ConvertToFailRequestJSON(string input)
+        {
+            var json = ConvertRequestToJSON(input);
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<FailPayRequest>(json);
+        }
+        public RecurrentRequest ConvertToReqRequestJSON(string input)
+        {
+            var json = ConvertRequestToJSON(input);
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<RecurrentRequest>(json);
+        }
+        public async Task<bool> SendPayNoti(long userTgId)
+        {
+            try
+            {
+                var noId = await GetUserNoId(userTgId);
+                await SendSuccNot(noId, _succmess);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+        public async Task<bool> SendEmailInfo(string Email)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(Email))
+                {
+                    await ErrorHelper.SendErrorMess("Упали при отправке уведомления на Email, Пустой Email");
+                    return false;
+                }
+                string url = $"https://nutri-ai.ru/?success_pay_email={Email}";
+                HttpClient httpClient = new HttpClient();
+                HttpResponseMessage response = await httpClient.GetAsync(url);
+                response.EnsureSuccessStatusCode(); // выбросит исключение, если ответ неудачен
+                await ErrorHelper.SendSystemMess($"Отправили уведомление на Email{Email}");
+                var res = response.IsSuccessStatusCode;
+                return res;
+            }
+            catch (HttpRequestException ex)
+            {
+                await ErrorHelper.SendErrorMess("Упали при отправке уведомления на Email", ex);
+                return false;
+            }
+        }
+
         private string ConvertRequestToJSON(string input)
         {
             var entries = input.Split('&');
@@ -61,40 +118,6 @@ namespace NutriDbService.Helpers
             // Serialize dictionary to JSON format
             return JsonConvert.SerializeObject(transactionDict, Formatting.Indented);
 
-        }
-        public SuccessPayRequest ConvertToPayRequestJSON(string input)
-        {
-            var json = ConvertRequestToJSON(input);
-            return Newtonsoft.Json.JsonConvert.DeserializeObject<SuccessPayRequest>(json);
-        }
-        public SuccessInfoPayRequest ConvertToInfoPayRequestJSON(string input)
-        {
-            var json = ConvertRequestToJSON(input);
-            return Newtonsoft.Json.JsonConvert.DeserializeObject<SuccessInfoPayRequest>(json);
-        }
-        public FailPayRequest ConvertToFailRequestJSON(string input)
-        {
-            var json = ConvertRequestToJSON(input);
-            return Newtonsoft.Json.JsonConvert.DeserializeObject<FailPayRequest>(json);
-        }
-        public RecurrentRequest ConvertToReqRequestJSON(string input)
-        {
-            var json = ConvertRequestToJSON(input);
-            return Newtonsoft.Json.JsonConvert.DeserializeObject<RecurrentRequest>(json);
-        }
-
-        public async Task<bool> SendPayNoti(long userTgId)
-        {
-            try
-            {
-                var noId = await GetUserNoId(userTgId);
-                await SendSuccNot(noId, _succmess);
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
         }
         private async Task SendSuccNot(long ClientNoId, string MessBoxId)
         {

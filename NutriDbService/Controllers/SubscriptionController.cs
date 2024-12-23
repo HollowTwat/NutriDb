@@ -69,6 +69,7 @@ namespace NutriDbService.Controllers
                     //{
                     await ErrorHelper.SendSystemMess($"Пришел платеж без пользователя {Newtonsoft.Json.JsonConvert.SerializeObject(cl)}");
                     //}
+                    await _subscriptionHelper.SendEmailInfo(cl.Email);
                     await _context.SaveChangesAsync();
                     //var noti = await _subscriptionHelper.SendPayNoti(inputUserId);
                     //if (!noti)
@@ -251,6 +252,7 @@ namespace NutriDbService.Controllers
                 _context.Users.Update(user);
                 _context.Subscriptions.Update(readySub);
                 await _context.SaveChangesAsync();
+                await ErrorHelper.SendSystemMess($"Активирован пользователь ID={user.TgId}, Email={user.Email}");
                 return true;
             }
             catch (Exception ex)
