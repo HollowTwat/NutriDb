@@ -80,7 +80,7 @@ namespace NutriDbService.Helpers
                 HttpClient httpClient = new HttpClient();
                 HttpResponseMessage response = await httpClient.GetAsync(url);
                 response.EnsureSuccessStatusCode(); // выбросит исключение, если ответ неудачен
-                await ErrorHelper.SendSystemMess($"Отправили уведомление на Email{Email}");
+                await ErrorHelper.SendSystemMess($"Отправили уведомление на Email: {Email}");
                 var res = response.IsSuccessStatusCode;
                 return res;
             }
