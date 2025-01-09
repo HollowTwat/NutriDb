@@ -1,10 +1,16 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
+using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using NutriDbService.DbModels;
 using NutriDbService.Helpers;
+using System;
+using System.Net.Http;
+using System.Security.Cryptography;
+using System.Text;
 using Telegram.Bot.Types;
+using static System.Net.WebRequestMethods;
 
 namespace NutriDbTest
 {
@@ -77,6 +83,56 @@ namespace NutriDbTest
             await subscriptionHelper.SendPayNoti(389054202);
             await subscriptionHelper.SendEmailInfo("vkpolkit2012@gmail.com");
             Xunit.Assert.True(true);
+        }
+
+        [Fact]
+        public async Task TestMEXC()
+        {
+            try
+            {
+                HttpClient client = new HttpClient();
+                var urltime = "https://api.mexc.com/api/v3/time";
+                HttpResponseMessage timeresponse = await client.GetAsync(urltime);
+                string responseBodytime = await timeresponse.Content.ReadAsStringAsync();
+                JObject json = JObject.Parse(responseBodytime);
+                var timest= (long)json["serverTime"];
+                //var timest = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                var baseurl = "https://api.mexc.com/api/v3/selfSymbols";
+                var signature = ComputeSHA256Hash($"timestamp={timest}", "c4c993ba6a834a5b8d9f3793ce69fc1f");
+                client.DefaultRequestHeaders.Add("apiKey", "mx0vglH34ALfZAZ0k9");
+                client.DefaultRequestHeaders.Add("Accept", "*/*");
+                client.DefaultRequestHeaders.Add("Connection", "keep-alive");
+                //client.DefaultRequestHeaders.Add("Accept-Encoding", "gzip, deflate, br");
+
+                var url = baseurl + $"?signature={signature}&timestamp={timest}";
+                HttpResponseMessage response = await client.GetAsync(url);
+                //response.EnsureSuccessStatusCode(); // выбросит исключение в случае неудачного запроса
+
+                string responseBody = await response.Content.ReadAsStringAsync();
+            }
+            catch (Exception ex)
+            {
+                var mess = ex.Message;
+            }
+
+        }
+        public static string ComputeSHA256Hash(string text, string key)
+        {
+            using (var hmacsha256 = new HMACSHA256(Encoding.UTF8.GetBytes(key)))
+            {
+                byte[] textBytes = Encoding.UTF8.GetBytes(text);
+                byte[] hashBytes = hmacsha256.ComputeHash(textBytes);
+
+
+                // Конвертация байтов хэша в строку шестнадцатиричного формата
+                StringBuilder hashString = new StringBuilder();
+                foreach (byte b in hashBytes)
+                {
+                    hashString.Append(b.ToString("x2"));
+                }
+
+                return hashString.ToString();
+            }
         }
     }
 }
