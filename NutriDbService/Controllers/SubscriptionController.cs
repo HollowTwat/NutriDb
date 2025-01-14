@@ -39,7 +39,8 @@ namespace NutriDbService.Controllers
                     var ress2 = HttpUtility.UrlDecode(bodyContent);
                     _logger.LogWarning(ress2);
                     SuccessPayRequest cl = _subscriptionHelper.ConvertToPayRequestJSON(ress2);
-                    await ErrorHelper.SendSystemMess($"Success:{Newtonsoft.Json.JsonConvert.SerializeObject(cl)}");
+                    //await ErrorHelper.SendSystemMess($"Success:{Newtonsoft.Json.JsonConvert.SerializeObject(cl)}");
+                    _logger.LogWarning(Newtonsoft.Json.JsonConvert.SerializeObject(cl));
                     //var inputUserId = cl.CustomFields.First().ID;
                     await _context.Subscriptions.AddAsync(new Subscription
                     {
@@ -69,7 +70,7 @@ namespace NutriDbService.Controllers
                     //{
                     await ErrorHelper.SendSystemMess($"Пришел платеж без пользователя {Newtonsoft.Json.JsonConvert.SerializeObject(cl)}");
                     //}
-                    await _subscriptionHelper.SendEmailInfo(cl.Email);
+                     _subscriptionHelper.SendEmailInfo(cl.Email);
                     await _context.SaveChangesAsync();
                     //var noti = await _subscriptionHelper.SendPayNoti(inputUserId);
                     //if (!noti)

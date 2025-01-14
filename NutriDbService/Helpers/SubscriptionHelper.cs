@@ -71,7 +71,7 @@ namespace NutriDbService.Helpers
         {
             try
             {
-                return true;
+                //return true;
                 if (string.IsNullOrEmpty(Email))
                 {
                     await ErrorHelper.SendErrorMess("Упали при отправке уведомления на Email, Пустой Email");
