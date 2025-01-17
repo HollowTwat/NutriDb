@@ -19,23 +19,21 @@ namespace NutriDbService
 
         public async Task InvokeAsync(HttpContext context)
         {
+            var endpoint = context.GetEndpoint();
+            string methodName = endpoint != null ? endpoint.DisplayName : "Unknown Endpoint";
+
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            context.Response.OnStarting(() =>
+            try
+            {
+                await _next(context);
+            }
+            finally
             {
                 stopwatch.Stop();
-                var endpoint = context.GetEndpoint();
-                if (endpoint != null)
-                {
-                    string methodName = endpoint.DisplayName;
-                    _logger.LogInformation("{MethodName} executed in {ElapsedMilliseconds} ms", methodName, stopwatch.ElapsedMilliseconds);
-                }
-
-                return Task.CompletedTask;
-            });
-
-            await _next(context);
+                _logger.LogInformation("{MethodName} executed in {ElapsedMilliseconds} ms", methodName, stopwatch.ElapsedMilliseconds);
+            }
         }
     }
 

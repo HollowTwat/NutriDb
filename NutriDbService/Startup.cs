@@ -57,6 +57,7 @@ namespace NutriDbService
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V-0.0.1_Release");
                 c.RoutePrefix = string.Empty;
             });
+            app.UseRequestTiming();
             app.UseRouting();
             app.UseCors(builder => builder
       //.WithOrigins("https://elaborate-seahorse-305700.netlify.app")
@@ -68,7 +69,7 @@ namespace NutriDbService
             {
                 endpoints.MapControllers();
             });
-            app.UseRequestTiming();
+
         }
         // This method gets called by the runtime. Use this method to configure endpoints
         public void Endpoints(IEndpointRouteBuilder builder)
