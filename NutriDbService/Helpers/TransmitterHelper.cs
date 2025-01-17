@@ -128,12 +128,12 @@ namespace NutriDbService.Helpers
             }
             await _nutriDbContext.Gptrequests.AddAsync(req);
             await _nutriDbContext.SaveChangesAsync();
-            _logger.LogWarning($"Сохранили респонз в базу {req.Id}");
+            _logger.LogInformation($"Сохранили респонз в базу {req.Id}");
             var url = $"{BaseUrl}/{request.Type}";
             if (send)
                 Task.Run(() => ExecuteRequest(reqparams, url, req.Id));
             else
-                _logger.LogWarning($"Взяли ответ для Req № {req.Id} из Req № {lastreqid}");
+                _logger.LogInformation($"Взяли ответ для Req № {req.Id} из Req № {lastreqid}");
             return req.Id;
         }
 
@@ -218,9 +218,9 @@ namespace NutriDbService.Helpers
             string responseString = string.Empty;
             try
             {
-                _logger.LogWarning($"GPT Req № {requstId}=\n{JsonConvert.SerializeObject(reqparams)}");
+                _logger.LogInformation($"GPT Req № {requstId}=\n{JsonConvert.SerializeObject(reqparams)}");
                 responseString = await SendRequest(reqparams, reqUrl);
-                _logger.LogWarning($"GPT Resp № {requstId}=\n {responseString}");
+                _logger.LogInformation($"GPT Resp № {requstId}=\n {responseString}");
             }
             catch (Exception ex)
             {

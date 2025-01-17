@@ -32,7 +32,7 @@ namespace NutriDbService
             finally
             {
                 stopwatch.Stop();
-                _logger.LogInformation("{MethodName} executed in {ElapsedMilliseconds} ms", methodName, stopwatch.ElapsedMilliseconds);
+                _logger.LogWarning("{MethodName} executed in {ElapsedMilliseconds} ms", methodName, stopwatch.ElapsedMilliseconds);
             }
         }
     }
