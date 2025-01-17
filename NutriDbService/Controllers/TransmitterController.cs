@@ -100,7 +100,7 @@ namespace NutriDbService.Controllers
         {
             try
             {
-                _logger.LogWarning($"На вход пришло {Newtonsoft.Json.JsonConvert.SerializeObject(req)}");
+                _logger.LogInformation($"На вход пришло {Newtonsoft.Json.JsonConvert.SerializeObject(req)}");
                 bool sub = await _subscriptionHelper.CheckSub(req.UserTgId);
                 if (!sub)
                     throw new SubscriptionException();
@@ -146,7 +146,7 @@ namespace NutriDbService.Controllers
         {
             try
             {
-                _logger.LogWarning($"На вход пришло {Newtonsoft.Json.JsonConvert.SerializeObject(rateReq)}");
+                _logger.LogInformation($"На вход пришло {Newtonsoft.Json.JsonConvert.SerializeObject(rateReq)}");
                 bool sub = await _subscriptionHelper.CheckSub(rateReq.UserTgId);
                 if (!sub)
                     throw new SubscriptionException();

@@ -64,7 +64,7 @@ namespace NutriDbService.Controllers
             try
             {
                 var mealId = await _mealHelper.CreateMeal(request);
-                _logger.LogWarning($"UserTG={request.userTgId} Meal={mealId} was added");
+                _logger.LogInformation($"UserTG={request.userTgId} Meal={mealId} was added");
                 return mealId;
             }
             catch (Exception ex)
@@ -83,7 +83,7 @@ namespace NutriDbService.Controllers
             try
             {
                 var res = await _mealHelper.EditMeal(request);
-                _logger.LogWarning($"User={request.userTgId} Meal={res} was edited");
+                _logger.LogInformation($"User={request.userTgId} Meal={res} was edited");
                 return true;
                 // return Ok(res);
             }
@@ -105,7 +105,7 @@ namespace NutriDbService.Controllers
                 var res = await _mealHelper.DeleteMeal(mealId, userTgId);
                 if (res != 0)
                 {
-                    _logger.LogWarning($"User={userTgId} Meal={res} was deleted");
+                    _logger.LogInformation($"User={userTgId} Meal={res} was deleted");
                     return true;
                 }
                 else

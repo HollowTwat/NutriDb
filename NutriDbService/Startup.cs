@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using NutriDbService.DbModels;
 using NutriDbService.Helpers;
 namespace NutriDbService
@@ -25,8 +26,10 @@ namespace NutriDbService
         {
             services.AddCors();
             services.AddMvc();
-
-            //services.AddLogging();
+            services.AddLogging(config =>
+            {
+                config.SetMinimumLevel(LogLevel.Warning);
+            });
             services.AddControllers().AddNewtonsoftJson();
 
             services.AddSwaggerGen();
@@ -57,8 +60,9 @@ namespace NutriDbService
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V-0.0.1_Release");
                 c.RoutePrefix = string.Empty;
             });
-            app.UseRequestTiming();
+         
             app.UseRouting();
+            app.UseRequestTiming();
             app.UseCors(builder => builder
       //.WithOrigins("https://elaborate-seahorse-305700.netlify.app")
       .AllowAnyHeader()
