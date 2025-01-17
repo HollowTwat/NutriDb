@@ -13,5 +13,6 @@
         public string AssistantType { get; set; }
 
         public string OutputType { get; set; }
+        public string DeleteThread { get; set; }
     }
 }

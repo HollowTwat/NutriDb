@@ -14,5 +14,6 @@
 
         public string outputtype { get; set; }
 
+        public bool delete_thread {  get; set; }
     }
 }

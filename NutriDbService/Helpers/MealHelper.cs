@@ -72,7 +72,6 @@ namespace NutriDbService.Helpers
                         _nutriDbContext.Dishes.RemoveRange(_nutriDbContext.Dishes.Where(x => x.MealId == oldmeal.Id));
                     foreach (var di in dishes)
                         di.MealId = oldmeal.Id;
-
                     await _nutriDbContext.Dishes.AddRangeAsync(dishes);
                     await _nutriDbContext.SaveChangesAsync();
                     await _nutriDbContext.Database.CommitTransactionAsync();

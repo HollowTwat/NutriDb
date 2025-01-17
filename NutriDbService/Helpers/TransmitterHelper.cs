@@ -42,11 +42,13 @@ namespace NutriDbService.Helpers
             var isEmptyExtra = await _nutriDbContext.Userinfos.AnyAsync(x => x.UserId == usrId && string.IsNullOrEmpty(x.Extra));
 
             CreateGPTPythRequest reqparams = new CreateGPTPythRequest();
+            var threadDel = request?.DeleteThread == "1" ? true : false;
             switch (request?.Type)
             {
 
                 case "txt":
                 case "txt2":
+                    reqparams.delete_thread = threadDel;
                     reqparams.txt = request.Question.ToString();
                     reqparams.id = request.UserTgId.ToString();
                     reqparams.outputtype = String.IsNullOrEmpty(request.OutputType) == true ? "0" : request.OutputType;
@@ -55,17 +57,20 @@ namespace NutriDbService.Helpers
                 case "imggg":
                 case "oga2":
                 case "imggg2":
+                    reqparams.delete_thread = threadDel;
                     reqparams.url = request.Question.ToString();
                     reqparams.id = request.UserTgId.ToString();
                     reqparams.outputtype = String.IsNullOrEmpty(request.OutputType) == true ? "0" : request.OutputType;
                     break;
                 case "etik":
+                    reqparams.delete_thread = threadDel;
                     reqparams.url = request.Question.ToString();
                     reqparams.id = request.UserTgId.ToString();
                     reqparams.extra = request.Extra.ToString();
                     break;
                 case "edit_oga":
                 case "recipe_oga":
+                    reqparams.delete_thread = threadDel;
                     reqparams.url = request.Question.ToString();
                     reqparams.id = request.UserTgId.ToString();
                     reqparams.extra = request.Extra.ToString();
@@ -73,6 +78,7 @@ namespace NutriDbService.Helpers
                     break;
                 case "edit_txt":
                 case "recipe_txt":
+                    reqparams.delete_thread = threadDel;
                     reqparams.txt = request.Question.ToString();
                     reqparams.id = request.UserTgId.ToString();
                     reqparams.extra = request.Extra.ToString();
@@ -82,18 +88,21 @@ namespace NutriDbService.Helpers
                 case "day1/yapp":
                     if (isEmptyExtra)
                         return 0;
+                    reqparams.delete_thread = threadDel;
                     reqparams.id = request.UserTgId.ToString();
                     reqparams.txt = request.Question.ToString();
                     break;
                 case "rate_day":
                     if (isEmptyExtra)
                         return 0;
+                    reqparams.delete_thread = threadDel;
                     reqparams.id = request.UserTgId.ToString();
                     reqparams.txt = request.Question.ToString();
                     break;
                 case "rate_any"://оценка
                     if (isEmptyExtra)
                         return 0;
+                    reqparams.delete_thread = threadDel;
                     reqparams.id = request.UserTgId.ToString();
                     reqparams.txt = request.Question.ToString();
                     reqparams.assistanttype = request.AssistantType;//week,smol,mid,big
@@ -107,6 +116,7 @@ namespace NutriDbService.Helpers
                         req.Iserror = false;
                     }
                     break;
+
                 default:
                     _logger.LogWarning($"Пустой type");
                     await ErrorHelper.SendErrorMess("Пустой type");
