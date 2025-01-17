@@ -68,7 +68,7 @@ namespace NutriDbService
             {
                 endpoints.MapControllers();
             });
-
+            app.UseRequestTiming();
         }
         // This method gets called by the runtime. Use this method to configure endpoints
         public void Endpoints(IEndpointRouteBuilder builder)
