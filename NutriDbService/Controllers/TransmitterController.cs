@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using NutriDbService.DbModels;
 using NutriDbService.Exceptions;
 using NutriDbService.Helpers;
@@ -7,6 +8,8 @@ using NutriDbService.PythModels.Request;
 using NutriDbService.PythModels.Response;
 using System;
 using System.Collections.Concurrent;
+using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot.Types;
@@ -219,6 +222,16 @@ namespace NutriDbService.Controllers
                 await ErrorHelper.SendErrorMess($"Input:{req}");
                 return new CheckGPTResponse() { IsError = true };
             }
+        }
+
+        [HttpGet]
+        public async Task<bool> TestIternal(string url)
+        {
+            HttpClient client = new HttpClient();
+            client.Timeout = TimeSpan.FromSeconds(100);
+            HttpResponseMessage response = await client.GetAsync(url);
+            response.EnsureSuccessStatusCode();
+            return true;
         }
     }
 }
