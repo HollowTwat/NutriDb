@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using NutriDbService.DbModels;
@@ -6,6 +7,7 @@ using NutriDbService.Helpers;
 using NutriDbService.PayModel;
 using SixLabors.ImageSharp.Drawing;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -20,6 +22,7 @@ namespace NutriDbService.Controllers
         private readonly ILogger<SubscriptionController> _logger;
         private railwayContext _context;
         private SubscriptionHelper _subscriptionHelper;
+        private static readonly Guid secr = new Guid("35e24644-2dcb-4210-96a3-475ee63936f9");
 
         public SubscriptionController(railwayContext context, ILogger<SubscriptionController> logger, SubscriptionHelper subscriptionHelper)
         {
@@ -70,7 +73,7 @@ namespace NutriDbService.Controllers
                     //{
                     await ErrorHelper.SendSystemMess($"Пришел платеж без пользователя {Newtonsoft.Json.JsonConvert.SerializeObject(cl)}");
                     //}
-                     _subscriptionHelper.SendEmailInfo(cl.Email);
+                    _subscriptionHelper.SendEmailInfo(cl.Email);
                     await _context.SaveChangesAsync();
                     //var noti = await _subscriptionHelper.SendPayNoti(inputUserId);
                     //if (!noti)
@@ -262,5 +265,68 @@ namespace NutriDbService.Controllers
                 return false;
             }
         }
+
+        [HttpGet]
+        public async Task<List<Subscription>> GetSubs(string MyDateTime)
+        {
+            try
+            {
+                CheckSecret(HttpContext.Request);
+                return await _context.Subscriptions.Where(x => x.DateCreate > DateTime.Parse(MyDateTime)).ToListAsync();
+            }
+            catch (Exception ex) { _logger.LogError(ex, "GetSubs"); throw; }
+        }
+
+        [HttpGet]
+        public async Task<bool> AddSub(string Email)
+        {
+            try
+            {
+                CheckSecret(HttpContext.Request);
+                _context.Database.ExecuteSqlRaw("CALL public.AddAccessToUserByEmail({0})", Email);
+                return true;
+            }
+            catch (Exception ex) { _logger.LogError(ex, "AddSub"); return false; }
+        }
+
+        [HttpGet]
+        public async Task<List<Subscription>> GetUserSub(long TgId)
+        {
+            try
+            {
+                CheckSecret(HttpContext.Request);
+                return await _context.Subscriptions.Where(x => x.UserTgId == TgId).ToListAsync();
+            }
+            catch (Exception ex) { _logger.LogError(ex, "GetUserSub"); throw; }
+        }
+        [HttpGet]
+        public async Task<bool> DeactivateUser(long TgId)
+        {
+            try
+            {
+                CheckSecret(HttpContext.Request);
+                var subs = await _context.Subscriptions.Where(x => x.UserTgId == TgId).ToListAsync();
+                var user = await _context.Users.SingleOrDefaultAsync(x => x.TgId == TgId);
+                subs.ForEach(sub => sub.IsActive = false);
+                user.IsActive = false;
+
+                await _context.Database.BeginTransactionAsync();
+                _context.Subscriptions.UpdateRange(subs);
+                _context.Users.Update(user);
+                await _context.Database.CommitTransactionAsync();
+                return true;
+            }
+            catch (Exception ex) { _logger.LogError(ex, "DeactivateUser"); return false; }
+        }
+        private void CheckSecret(HttpRequest req)
+        {
+            if (!req.Headers.TryGetValue("MyTok", out var secP))
+                throw new AccessViolationException();
+            if (!Guid.TryParse(secP, out Guid headerGuid))
+                throw new AccessViolationException();
+            if (headerGuid != secr)
+                throw new AccessViolationException();
+        }
     }
+
 }
