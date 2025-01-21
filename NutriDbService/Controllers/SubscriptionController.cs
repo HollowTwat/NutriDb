@@ -299,6 +299,7 @@ namespace NutriDbService.Controllers
             }
             catch (Exception ex) { _logger.LogError(ex, "GetUserSub"); throw; }
         }
+
         [HttpGet]
         public async Task<bool> DeactivateUser(long TgId)
         {
@@ -318,14 +319,17 @@ namespace NutriDbService.Controllers
             }
             catch (Exception ex) { _logger.LogError(ex, "DeactivateUser"); return false; }
         }
+
         private void CheckSecret(HttpRequest req)
         {
-            if (!req.Headers.TryGetValue("MyTok", out var secP))
-                throw new AccessViolationException();
-            if (!Guid.TryParse(secP, out Guid headerGuid))
-                throw new AccessViolationException();
-            if (headerGuid != secr)
-                throw new AccessViolationException();
+//#if !DEBUG
+//            if (!req.Headers.TryGetValue("MyTok", out var secP))
+//                throw new AccessViolationException();
+//            if (!Guid.TryParse(secP, out Guid headerGuid))
+//                throw new AccessViolationException();
+//            if (headerGuid != secr)
+//                throw new AccessViolationException();
+//#endif
         }
     }
 
