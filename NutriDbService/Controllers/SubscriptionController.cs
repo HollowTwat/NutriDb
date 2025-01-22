@@ -290,12 +290,12 @@ namespace NutriDbService.Controllers
         }
 
         [HttpGet]
-        public async Task<List<Subscription>> GetUserSub(long TgId)
+        public async Task<List<Subscription>> GetUserSub(string Email)
         {
             try
             {
                 CheckSecret(HttpContext.Request);
-                return await _context.Subscriptions.Where(x => x.UserTgId == TgId).ToListAsync();
+                return await _context.Subscriptions.Where(x => x.Email == Email).ToListAsync();
             }
             catch (Exception ex) { _logger.LogError(ex, "GetUserSub"); throw; }
         }
