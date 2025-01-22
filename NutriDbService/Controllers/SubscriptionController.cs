@@ -12,6 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
+using Telegram.Bot.Types;
 
 namespace NutriDbService.Controllers
 {
@@ -284,6 +285,7 @@ namespace NutriDbService.Controllers
             {
                 CheckSecret(HttpContext.Request);
                 _context.Database.ExecuteSqlRaw("CALL \"public\".\"AddAccessToUserByEmail\"({0})", Email);
+                await ErrorHelper.SendSystemMess($"Добавлена подписка на Email:{Email}");
                 return true;
             }
             catch (Exception ex) { _logger.LogError(ex, "AddSub"); return false; }
@@ -310,7 +312,7 @@ namespace NutriDbService.Controllers
                 var TgId = subs.Where(x => x.UserTgId != 0).FirstOrDefault()?.UserTgId;
 
                 subs.ForEach(sub => sub.IsActive = false);
-                User user = await _context.Users.SingleOrDefaultAsync(x => x.TgId == TgId);
+                DbModels.User user = await _context.Users.SingleOrDefaultAsync(x => x.TgId == TgId);
                 if (TgId != null)
                     user.IsActive = false;
 
@@ -320,6 +322,7 @@ namespace NutriDbService.Controllers
                     _context.Users.Update(user);
                 await _context.SaveChangesAsync();
                 await _context.Database.CommitTransactionAsync();
+                await ErrorHelper.SendSystemMess($"Отобрана подписка у Email:{Email}");
                 return true;
             }
             catch (Exception ex) { _logger.LogError(ex, "DeactivateUser"); return false; }
