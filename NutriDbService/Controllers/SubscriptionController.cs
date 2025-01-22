@@ -283,7 +283,7 @@ namespace NutriDbService.Controllers
             try
             {
                 CheckSecret(HttpContext.Request);
-                _context.Database.ExecuteSqlRaw("CALL public.AddAccessToUserByEmail({0})", Email);
+                _context.Database.ExecuteSqlRaw("CALL \"public\".\"AddAccessToUserByEmail\"({0})", Email);
                 return true;
             }
             catch (Exception ex) { _logger.LogError(ex, "AddSub"); return false; }
@@ -301,19 +301,24 @@ namespace NutriDbService.Controllers
         }
 
         [HttpGet]
-        public async Task<bool> DeactivateUser(long TgId)
+        public async Task<bool> DeactivateUser(string Email)
         {
             try
             {
                 CheckSecret(HttpContext.Request);
-                var subs = await _context.Subscriptions.Where(x => x.UserTgId == TgId).ToListAsync();
-                var user = await _context.Users.SingleOrDefaultAsync(x => x.TgId == TgId);
+                var subs = await _context.Subscriptions.Where(x => x.Email == Email).ToListAsync();
+                var TgId = subs.Where(x => x.UserTgId != 0).FirstOrDefault()?.UserTgId;
+
                 subs.ForEach(sub => sub.IsActive = false);
-                user.IsActive = false;
+                User user = await _context.Users.SingleOrDefaultAsync(x => x.TgId == TgId);
+                if (TgId != null)
+                    user.IsActive = false;
 
                 await _context.Database.BeginTransactionAsync();
                 _context.Subscriptions.UpdateRange(subs);
-                _context.Users.Update(user);
+                if (TgId != null)
+                    _context.Users.Update(user);
+                await _context.SaveChangesAsync();
                 await _context.Database.CommitTransactionAsync();
                 return true;
             }
@@ -322,14 +327,14 @@ namespace NutriDbService.Controllers
 
         private void CheckSecret(HttpRequest req)
         {
-//#if !DEBUG
-//            if (!req.Headers.TryGetValue("MyTok", out var secP))
-//                throw new AccessViolationException();
-//            if (!Guid.TryParse(secP, out Guid headerGuid))
-//                throw new AccessViolationException();
-//            if (headerGuid != secr)
-//                throw new AccessViolationException();
-//#endif
+            //#if !DEBUG
+            //            if (!req.Headers.TryGetValue("MyTok", out var secP))
+            //                throw new AccessViolationException();
+            //            if (!Guid.TryParse(secP, out Guid headerGuid))
+            //                throw new AccessViolationException();
+            //            if (headerGuid != secr)
+            //                throw new AccessViolationException();
+            //#endif
         }
     }
 
