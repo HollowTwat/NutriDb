@@ -207,7 +207,7 @@ namespace NutriDbService.Helpers
         public async Task<string> SendRequest(CreateGPTPythRequest reqparams, string reqUrl)
         {
             HttpClient client = new HttpClient();
-            client.Timeout = TimeSpan.FromSeconds(100);
+            client.Timeout = TimeSpan.FromSeconds(200);
             HttpContent content = new StringContent(JsonConvert.SerializeObject(reqparams), Encoding.UTF8, "application/json");
             var response = await client.PostAsync(reqUrl, content);
             return await response.Content.ReadAsStringAsync();

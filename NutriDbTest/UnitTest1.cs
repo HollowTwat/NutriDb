@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -55,14 +56,47 @@ namespace NutriDbTest
         [Fact]
         public async Task PlotTest()
         {
-            var a = DateTime.TryParseExact("18.10.2024", "dd.MM.yyyy", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var parseTime);
-            decimal[] values = new decimal[] { 2222.5m, 3132.0m, 2345.7m, 2912.1m, 3123.3m, 1123.1m, 1954.6m };
-            string[] labels = new string[] { "Cat 1", "Cat 2", "Cat 3", "Cat 4", "Cat 5", "Cat 6", "Cat 7" };
-            long tgId = 389054202;
-            PlotHelper plotHelper = new PlotHelper();
-            await plotHelper.SendPlot(values, labels, tgId, 2595.00M);
-            Xunit.Assert.True(true);
-        }
+            var userTgId = 222312868;
+            Setup();
+            try
+            {
+                var _context = new railwayContext();
+                var user = await _context.Users.SingleOrDefaultAsync(x => x.TgId == userTgId);
+                if (user == null)
+                    throw new Exception($"I Cant Find User : {userTgId}");
+                var goalkk = (await _context.Userinfos.SingleOrDefaultAsync(x => x.UserId == user.Id)).Goalkk;
+                DateTime startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-7).Date;
+                int daysinperiod = 0;
+                var now = DateTime.UtcNow.ToLocalTime().AddHours(3).Date;
+
+                daysinperiod = now.Day - startDate.Day;
+                var meals = await _context.Meals.Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).ToListAsync();
+                var dishes = await _context.Dishes.Where(x => meals.Select(x => x.Id).Contains(x.MealId)).ToListAsync();
+                //List<(string, decimal)> plotPairs = new List<(string, decimal)>();
+                decimal[] values = new decimal[7];
+                string[] labels = new string[7];
+                for (var i = 1; i <= 7; i++)
+                {
+                    var ndate = startDate.AddDays(i);
+                    var todaymeals = meals.Where(x => x.MealTime.Date == ndate.Date);
+                    decimal todaykk = 0.0m;
+
+                    if (todaymeals.Any())
+                    {
+                        var todayDishes = dishes.Where(x => todaymeals.Select(x => x.Id).Contains(x.MealId));
+
+                        foreach (var dish in todayDishes)
+                        {
+                            todaykk += dish.Kkal;
+                        }
+                    }
+                    labels[i - 1] = ndate.Date.ToString("dd.MM");
+                    values[i - 1] = todaykk;
+                }
+            }
+            catch (Exception ex) { }
+
+            }
 
         [Fact]
         public async Task SubTest()
@@ -85,54 +119,6 @@ namespace NutriDbTest
             Xunit.Assert.True(true);
         }
 
-        [Fact]
-        public async Task TestMEXC()
-        {
-            try
-            {
-                HttpClient client = new HttpClient();
-                var urltime = "https://api.mexc.com/api/v3/time";
-                HttpResponseMessage timeresponse = await client.GetAsync(urltime);
-                string responseBodytime = await timeresponse.Content.ReadAsStringAsync();
-                JObject json = JObject.Parse(responseBodytime);
-                var timest= (long)json["serverTime"];
-                //var timest = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-                var baseurl = "https://api.mexc.com/api/v3/selfSymbols";
-                var signature = ComputeSHA256Hash($"timestamp={timest}", "c4c993ba6a834a5b8d9f3793ce69fc1f");
-                client.DefaultRequestHeaders.Add("apiKey", "mx0vglH34ALfZAZ0k9");
-                client.DefaultRequestHeaders.Add("Accept", "*/*");
-                client.DefaultRequestHeaders.Add("Connection", "keep-alive");
-                //client.DefaultRequestHeaders.Add("Accept-Encoding", "gzip, deflate, br");
-
-                var url = baseurl + $"?signature={signature}&timestamp={timest}";
-                HttpResponseMessage response = await client.GetAsync(url);
-                //response.EnsureSuccessStatusCode(); // выбросит исключение в случае неудачного запроса
-
-                string responseBody = await response.Content.ReadAsStringAsync();
-            }
-            catch (Exception ex)
-            {
-                var mess = ex.Message;
-            }
-
-        }
-        public static string ComputeSHA256Hash(string text, string key)
-        {
-            using (var hmacsha256 = new HMACSHA256(Encoding.UTF8.GetBytes(key)))
-            {
-                byte[] textBytes = Encoding.UTF8.GetBytes(text);
-                byte[] hashBytes = hmacsha256.ComputeHash(textBytes);
-
-
-                // Конвертация байтов хэша в строку шестнадцатиричного формата
-                StringBuilder hashString = new StringBuilder();
-                foreach (byte b in hashBytes)
-                {
-                    hashString.Append(b.ToString("x2"));
-                }
-
-                return hashString.ToString();
-            }
-        }
+       
     }
 }
