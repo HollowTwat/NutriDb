@@ -478,6 +478,7 @@ namespace NutriDbService.Controllers
         {
             try
             {
+                await ErrorHelper.SendErrorMess($"AddUserExtraInfo: {req}");
                 var userId = (await _context.Users.SingleOrDefaultAsync(x => x.TgId == req.UserTgId)).Id;
                 var usi = await _context.Userinfos.SingleOrDefaultAsync(x => x.UserId == userId);
                 var info = Newtonsoft.Json.JsonConvert.SerializeObject(req.Info);
