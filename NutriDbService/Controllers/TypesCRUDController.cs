@@ -478,7 +478,7 @@ namespace NutriDbService.Controllers
         {
             try
             {
-               
+
                 var userId = (await _context.Users.SingleOrDefaultAsync(x => x.TgId == req.UserTgId)).Id;
                 var usi = await _context.Userinfos.SingleOrDefaultAsync(x => x.UserId == userId);
                 var info = Newtonsoft.Json.JsonConvert.SerializeObject(req.Info);
@@ -895,6 +895,22 @@ namespace NutriDbService.Controllers
                 return true;
             }
             catch (Exception ex) { return false; }
+        }
+
+        [HttpGet]
+        public async Task<bool> SaveRate(long tgId, short rating)
+        {
+            try
+            {
+                await _context.Promos.AddAsync(new Promo { PromoCode = tgId.ToString(), Discount = rating });
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+                return false;
+            }
         }
     }
 }
