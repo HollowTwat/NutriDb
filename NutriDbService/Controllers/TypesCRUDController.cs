@@ -897,7 +897,7 @@ namespace NutriDbService.Controllers
             catch (Exception ex) { return false; }
         }
 
-        [HttpGet]
+        [HttpPost]
         public async Task<bool> SaveRate(long tgId, short rating)
         {
             try
