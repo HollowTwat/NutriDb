@@ -898,11 +898,12 @@ namespace NutriDbService.Controllers
         }
 
         [HttpPost]
-        public async Task<bool> SaveRate(long tgId, short rating)
+        public async Task<bool> SaveRate(long tgid, short rating)
         {
             try
             {
-                await _context.Promos.AddAsync(new Promo { PromoCode = tgId.ToString(), Discount = rating });
+                _logger.LogError($"tg={tgid},rate={rating}");
+                await _context.Promos.AddAsync(new Promo { PromoCode = tgid.ToString(), Discount = rating });
                 await _context.SaveChangesAsync();
                 return true;
             }
