@@ -478,7 +478,8 @@ namespace NutriDbService.Controllers
         {
             try
             {
-                await ErrorHelper.SendErrorMess($"AddUserExtraInfo: {req}");
+                _logger.LogError(Newtonsoft.Json.JsonConvert.SerializeObject(req));
+                await ErrorHelper.SendErrorMess($"AddUserExtraInfo: {Newtonsoft.Json.JsonConvert.SerializeObject(req)}");
                 var userId = (await _context.Users.SingleOrDefaultAsync(x => x.TgId == req.UserTgId)).Id;
                 var usi = await _context.Userinfos.SingleOrDefaultAsync(x => x.UserId == userId);
                 var info = Newtonsoft.Json.JsonConvert.SerializeObject(req.Info);
@@ -535,7 +536,7 @@ namespace NutriDbService.Controllers
             {
                 _logger.LogError(ex, ex.Message);
                 await ErrorHelper.SendErrorMess("AddUserExtraInfo Error", ex);
-                await ErrorHelper.SendErrorMess($"Input: {req}");
+                await ErrorHelper.SendErrorMess($"Input: {Newtonsoft.Json.JsonConvert.SerializeObject(req)}");
                 return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
         }
