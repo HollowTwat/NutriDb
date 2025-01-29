@@ -55,7 +55,7 @@ namespace NutriDbService.Controllers
                         InvoiceId = cl.InvoiceId,
                         AccountId = cl.AccountId,
                         SubscriptionId = cl.SubscriptionId,
-                        Email = cl.Email,
+                        Email = cl.Email.ToLower().Trim(),
                         Rrn = cl.Rrn,
                         //UserTgId = inputUserId,
                         IsActive = true,
@@ -238,13 +238,14 @@ namespace NutriDbService.Controllers
         {
             try
             {
+                userEmail = userEmail.ToLower().Trim();
                 var user = await _context.Users.SingleOrDefaultAsync(x => x.TgId == userTgId);
                 if (user == null)
                     return false;
                 user.Email = userEmail;
                 if (user.IsActive)
                     return true;
-                var readySub = await _context.Subscriptions.SingleOrDefaultAsync(x => x.IsLinked == false && x.IsActive == true && userEmail.ToLower().Trim() == x.Email.ToLower().Trim());
+                var readySub = await _context.Subscriptions.SingleOrDefaultAsync(x => x.IsLinked == false && x.IsActive == true && userEmail == x.Email.ToLower().Trim());
                 if (readySub == null)
                     return false;
 
@@ -281,6 +282,7 @@ namespace NutriDbService.Controllers
         [HttpGet]
         public async Task<bool> AddSub(string Email)
         {
+            Email = Email.ToLower().Trim();
             try
             {
                 CheckSecret(HttpContext.Request);
@@ -294,6 +296,7 @@ namespace NutriDbService.Controllers
         [HttpGet]
         public async Task<List<Subscription>> GetUserSub(string Email)
         {
+            Email = Email.ToLower().Trim();
             try
             {
                 CheckSecret(HttpContext.Request);
@@ -307,6 +310,7 @@ namespace NutriDbService.Controllers
         {
             try
             {
+                Email = Email.ToLower().Trim();
                 CheckSecret(HttpContext.Request);
                 var subs = await _context.Subscriptions.Where(x => x.Email == Email).ToListAsync();
                 var TgId = subs.Where(x => x.UserTgId != 0).FirstOrDefault()?.UserTgId;
