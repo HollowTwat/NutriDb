@@ -312,7 +312,9 @@ namespace NutriDbService.Controllers
             {
                 Email = Email.ToLower().Trim();
                 CheckSecret(HttpContext.Request);
-                var subs = await _context.Subscriptions.Where(x => x.Email == Email).ToListAsync();
+                var subs = await _context.Subscriptions.Where(x => x.Email.ToLower().Trim() == Email).ToListAsync();
+                if (!subs.Any())
+                    return false;
                 var TgId = subs.Where(x => x.UserTgId != 0).FirstOrDefault()?.UserTgId;
 
                 subs.ForEach(sub => sub.IsActive = false);
