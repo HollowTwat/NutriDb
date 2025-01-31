@@ -287,7 +287,7 @@ namespace NutriDbService.Controllers
             {
                 CheckSecret(HttpContext.Request);
                 _context.Database.ExecuteSqlRaw("CALL \"public\".\"AddAccessToUserByEmail\"({0})", Email);
-                await ErrorHelper.SendSystemMess($"Добавлена подписка на Email:{Email}");
+                await ErrorHelper.SendSystemMess($"Добавлена подписка на Email: {Email}");
                 return true;
             }
             catch (Exception ex) { _logger.LogError(ex, "AddSub"); return false; }
@@ -328,7 +328,7 @@ namespace NutriDbService.Controllers
                     _context.Users.Update(user);
                 await _context.SaveChangesAsync();
                 await _context.Database.CommitTransactionAsync();
-                await ErrorHelper.SendSystemMess($"Отобрана подписка у Email:{Email}");
+                await ErrorHelper.SendSystemMess($"Отобрана подписка у Email: {Email}");
                 return true;
             }
             catch (Exception ex) { _logger.LogError(ex, "DeactivateUser"); return false; }
