@@ -28,7 +28,7 @@ namespace NutriDbService
             services.AddMvc();
             services.AddLogging(config =>
             {
-                config.SetMinimumLevel(LogLevel.Trace);
+                config.SetMinimumLevel(LogLevel.Information);
             });
             services.AddControllers().AddNewtonsoftJson();
 
