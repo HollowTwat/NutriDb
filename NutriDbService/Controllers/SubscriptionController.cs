@@ -149,7 +149,22 @@ namespace NutriDbService.Controllers
                 return new SubResponse { code = 500 };
             }
         }
-
+        [HttpPost]
+        public async Task<bool> SendEmailManual(long tgId)
+        {
+            try
+            {
+                var noti = await _subscriptionHelper.SendPayNoti(tgId);
+                if (!noti)
+                    await ErrorHelper.SendSystemMess($"Не смогли отправить пользователю {tgId} ссылку на бота после оплаты");
+                return noti;
+            }
+            catch (Exception ex)
+            {
+                await ErrorHelper.SendErrorMess($"Упали при отправке уведомления^ {tgId}", ex);
+                return false;
+            }
+        }
         [HttpPost]
         public async Task<SubResponse> FailPay()
         {
