@@ -21,7 +21,6 @@ namespace NutriDbService.DbModels
         public virtual DbSet<Loyalty> Loyalties { get; set; }
         public virtual DbSet<Meal> Meals { get; set; }
         public virtual DbSet<Messagelog> Messagelogs { get; set; }
-        public virtual DbSet<Promo> Promos { get; set; }
         public virtual DbSet<Subscription> Subscriptions { get; set; }
         public virtual DbSet<User> Users { get; set; }
         public virtual DbSet<Userinfo> Userinfos { get; set; }
@@ -30,11 +29,8 @@ namespace NutriDbService.DbModels
         {
             if (!optionsBuilder.IsConfigured)
             {
-#if DEBUG
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
                 optionsBuilder.UseNpgsql("Host=viaduct.proxy.rlwy.net;Port=38794;Username=postgres;Password=wTLZPRhYXHSReMKcUHSCNDEQlgQmbFDO;Database=railway");
-#else
-                        optionsBuilder.UseNpgsql("Host=postgres.railway.internal;Port=5432;Username=postgres;Password=wTLZPRhYXHSReMKcUHSCNDEQlgQmbFDO;Database=railway");
-#endif
             }
         }
 
@@ -194,23 +190,6 @@ namespace NutriDbService.DbModels
                     .HasConstraintName("log_to_user");
             });
 
-            modelBuilder.Entity<Promo>(entity =>
-            {
-                entity.ToTable("promo");
-
-                entity.Property(e => e.Id)
-                    .HasColumnName("id")
-                    .HasDefaultValueSql("nextval('promo_id_auto_inc'::regclass)");
-
-                entity.Property(e => e.Discount).HasColumnName("discount");
-
-                entity.Property(e => e.Freeperiod).HasColumnName("freeperiod");
-
-                entity.Property(e => e.PromoCode)
-                    .HasMaxLength(255)
-                    .HasColumnName("promoCode");
-            });
-
             modelBuilder.Entity<Subscription>(entity =>
             {
                 entity.ToTable("subscription");
@@ -235,20 +214,18 @@ namespace NutriDbService.DbModels
 
                 entity.Property(e => e.InvoiceId).HasMaxLength(255);
 
-                entity.Property(e => e.PromoId).HasColumnName("promoId");
-
                 entity.Property(e => e.Rrn).HasMaxLength(255);
 
                 entity.Property(e => e.Status).HasMaxLength(255);
 
                 entity.Property(e => e.SubscriptionId).HasMaxLength(255);
 
-                entity.Property(e => e.UserTgId).HasColumnName("userTgId");
+                entity.Property(e => e.Type)
+                    .IsRequired()
+                    .HasMaxLength(255)
+                    .HasDefaultValueSql("'unknown'::character varying");
 
-                entity.HasOne(d => d.Promo)
-                    .WithMany(p => p.Subscriptions)
-                    .HasForeignKey(d => d.PromoId)
-                    .HasConstraintName("subscription_to_promo");
+                entity.Property(e => e.UserTgId).HasColumnName("userTgId");
             });
 
             modelBuilder.Entity<User>(entity =>

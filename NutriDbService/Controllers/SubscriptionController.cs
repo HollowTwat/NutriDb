@@ -60,6 +60,7 @@ namespace NutriDbService.Controllers
                         //UserTgId = inputUserId,
                         IsActive = true,
                         IsLinked = false,
+
                         DateCreate = DateTime.UtcNow.ToLocalTime().AddHours(3),
                         DateUpdate = DateTime.UtcNow.ToLocalTime().AddHours(3),
                         Extra = Newtonsoft.Json.JsonConvert.SerializeObject(cl)

@@ -40,23 +40,6 @@ namespace NutriDbService.Controllers
 
         #region AllCRUDS
 
-        #region Promo
-        [HttpGet]
-        public ActionResult<IEnumerable<Promo>> GetAllPromo()
-        {
-            try
-            {
-                var res = _context.Promos.ToList();
-                return Ok(res);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ex.Message);
-                return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
-            }
-        }
-        #endregion
-
         #region Meal
         [HttpPost]
         public async Task<int> CreateMeal(EditMealRequest request)
@@ -897,21 +880,21 @@ namespace NutriDbService.Controllers
             catch (Exception ex) { return false; }
         }
 
-        [HttpPost]
-        public async Task<bool> SaveRate(long tgid, short rating)
-        {
-            try
-            {
-                _logger.LogError($"tg={tgid},rate={rating}");
-                await _context.Promos.AddAsync(new Promo { PromoCode = tgid.ToString(), Discount = rating });
-                await _context.SaveChangesAsync();
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ex.Message);
-                return false;
-            }
-        }
+        //[HttpPost]
+        //public async Task<bool> SaveRate(long tgid, short rating)
+        //{
+        //    try
+        //    {
+        //        _logger.LogError($"tg={tgid},rate={rating}");
+        //        await _context.Promos.AddAsync(new Promo { PromoCode = tgid.ToString(), Discount = rating });
+        //        await _context.SaveChangesAsync();
+        //        return true;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, ex.Message);
+        //        return false;
+        //    }
+        //}
     }
 }

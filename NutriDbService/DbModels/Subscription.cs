@@ -7,7 +7,6 @@ namespace NutriDbService.DbModels
     {
         public int Id { get; set; }
         public long UserTgId { get; set; }
-        public int? PromoId { get; set; }
         public long? TransactionId { get; set; }
         public decimal? Amount { get; set; }
         public DateTime? DateTime { get; set; }
@@ -22,7 +21,6 @@ namespace NutriDbService.DbModels
         public DateTime DateCreate { get; set; }
         public DateTime DateUpdate { get; set; }
         public bool IsLinked { get; set; }
-
-        public virtual Promo Promo { get; set; }
+        public string Type { get; set; }
     }
 }
