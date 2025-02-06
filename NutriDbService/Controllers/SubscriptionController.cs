@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 using NutriDbService.DbModels;
 using NutriDbService.Helpers;
 using NutriDbService.PayModel;
@@ -46,6 +47,11 @@ namespace NutriDbService.Controllers
                     //await ErrorHelper.SendSystemMess($"Success:{Newtonsoft.Json.JsonConvert.SerializeObject(cl)}");
                     _logger.LogWarning(Newtonsoft.Json.JsonConvert.SerializeObject(cl));
                     //var inputUserId = cl.CustomFields.First().ID;
+                    // Парсим JSON в объект JObject
+                    JObject root = JObject.Parse(Newtonsoft.Json.JsonConvert.SerializeObject(cl.Data));
+
+                    // Безопасно достаем поле "label" с помощью SelectToken
+                    string planLabel = (string)root.SelectToken("CloudPayments.recurrent.customerReceipt.items[0].label");
                     await _context.Subscriptions.AddAsync(new Subscription
                     {
                         TransactionId = cl.TransactionId,
@@ -57,6 +63,7 @@ namespace NutriDbService.Controllers
                         SubscriptionId = cl.SubscriptionId,
                         Email = cl.Email.ToLower().Trim(),
                         Rrn = cl.Rrn,
+                        Type = planLabel,
                         //UserTgId = inputUserId,
                         IsActive = true,
                         IsLinked = false,
@@ -75,7 +82,7 @@ namespace NutriDbService.Controllers
                     //{
                     await ErrorHelper.SendSystemMess($"Пришел платеж без пользователя {Newtonsoft.Json.JsonConvert.SerializeObject(cl)}");
                     //}
-                    _subscriptionHelper.SendEmailInfo(cl.Email);
+                    _subscriptionHelper.SendEmailInfo(cl.Email, planLabel);
                     await _context.SaveChangesAsync();
                     //var noti = await _subscriptionHelper.SendPayNoti(inputUserId);
                     //if (!noti)
@@ -151,11 +158,25 @@ namespace NutriDbService.Controllers
             }
         }
         [HttpPost]
-        public async Task<bool> SendEmailManual(string email)
+        public async Task<bool> SendEmailManual(string email, int labelId)
         {
             try
             {
-             var res=  await _subscriptionHelper.SendEmailInfo(email);
+                string labelString;
+                switch (labelId)
+                {
+                    case 6:
+                        labelString = "подписка на 3 месяца";
+                        break;
+                    case 12:
+                        labelString = "подписка на 1 год";
+                        break;
+                    case 0:
+                    default:
+                        labelString = "подписка навсегда";
+                        break;
+                }
+                var res = await _subscriptionHelper.SendEmailInfo(email, labelString);
                 if (!res)
                     await ErrorHelper.SendSystemMess($"Не смогли отправить пользователю {email} ссылку на бота после оплаты");
                 return res;

@@ -67,17 +67,36 @@ namespace NutriDbService.Helpers
                 return false;
             }
         }
-        public async Task<bool> SendEmailInfo(string Email)
+        public async Task<bool> SendEmailInfo(string Email, string planLabel)
         {
             try
             {
+                int labelId;
                 //return true;
                 if (string.IsNullOrEmpty(Email))
                 {
                     await ErrorHelper.SendErrorMess("Упали при отправке уведомления на Email, Пустой Email");
                     return false;
                 }
-                string url = $"https://nutri-ai.ru/?success_pay_email={Email}";
+                switch (planLabel.ToLower().Trim())
+                {
+                    case "подписка навсегда":
+                        labelId = 0;
+                        break;
+                    case "подписка на 3 месяца":
+                        labelId = 3;
+                        break;
+                    case "подписка на 1 год":
+                        labelId = 12;
+                        break;
+                    default:
+                        labelId = 99;
+                        await ErrorHelper.SendErrorMess($"Упали при отправке уведомления на Email, неизвестный planLabel {planLabel}");
+                        break;
+
+                }
+                //if(string.IsNullOrEmpty(planLabel)) 
+                string url = $"https://nutri-ai.ru/?success_pay_email={Email}&plan_id={labelId}";
                 HttpClient httpClient = new HttpClient();
                 HttpResponseMessage response = await httpClient.GetAsync(url);
                 response.EnsureSuccessStatusCode(); // выбросит исключение, если ответ неудачен
