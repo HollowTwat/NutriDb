@@ -45,13 +45,14 @@ namespace NutriDbService.Controllers
                     _logger.LogWarning(ress2);
                     SuccessPayRequest cl = _subscriptionHelper.ConvertToPayRequestJSON(ress2);
                     //await ErrorHelper.SendSystemMess($"Success:{Newtonsoft.Json.JsonConvert.SerializeObject(cl)}");
-                    _logger.LogWarning(Newtonsoft.Json.JsonConvert.SerializeObject(cl));
+                    _logger.LogWarning(Newtonsoft.Json.JsonConvert.SerializeObject($"cl.Data={cl.Data}"));
                     //var inputUserId = cl.CustomFields.First().ID;
                     // Парсим JSON в объект JObject
                     JObject root = JObject.Parse(Newtonsoft.Json.JsonConvert.SerializeObject(cl.Data));
 
                     // Безопасно достаем поле "label" с помощью SelectToken
                     string planLabel = (string)root.SelectToken("CloudPayments.recurrent.customerReceipt.items[0].label");
+                    _logger.LogWarning($"Label={planLabel}");
                     await _context.Subscriptions.AddAsync(new Subscription
                     {
                         TransactionId = cl.TransactionId,
@@ -67,7 +68,6 @@ namespace NutriDbService.Controllers
                         //UserTgId = inputUserId,
                         IsActive = true,
                         IsLinked = false,
-
                         DateCreate = DateTime.UtcNow.ToLocalTime().AddHours(3),
                         DateUpdate = DateTime.UtcNow.ToLocalTime().AddHours(3),
                         Extra = Newtonsoft.Json.JsonConvert.SerializeObject(cl)
