@@ -150,18 +150,18 @@ namespace NutriDbService.Controllers
             }
         }
         [HttpPost]
-        public async Task<bool> SendEmailManual(long tgId)
+        public async Task<bool> SendEmailManual(string email)
         {
             try
             {
-                var noti = await _subscriptionHelper.SendPayNoti(tgId);
-                if (!noti)
-                    await ErrorHelper.SendSystemMess($"Не смогли отправить пользователю {tgId} ссылку на бота после оплаты");
-                return noti;
+             var res=  await _subscriptionHelper.SendEmailInfo(email);
+                if (!res)
+                    await ErrorHelper.SendSystemMess($"Не смогли отправить пользователю {email} ссылку на бота после оплаты");
+                return res;
             }
             catch (Exception ex)
             {
-                await ErrorHelper.SendErrorMess($"Упали при отправке уведомления^ {tgId}", ex);
+                await ErrorHelper.SendErrorMess($"Упали при отправке уведомления^ {email}", ex);
                 return false;
             }
         }
