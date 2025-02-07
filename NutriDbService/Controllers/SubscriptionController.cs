@@ -45,12 +45,12 @@ namespace NutriDbService.Controllers
                     _logger.LogWarning(ress2);
                     SuccessPayRequest cl = _subscriptionHelper.ConvertToPayRequestJSON(ress2);
                     await ErrorHelper.SendSystemMess($"Пришел платеж без пользователя {Newtonsoft.Json.JsonConvert.SerializeObject(cl)}");
-                    _logger.LogWarning(Newtonsoft.Json.JsonConvert.SerializeObject($"cl.Data={cl.Data}"));
+                    _logger.LogWarning(Newtonsoft.Json.JsonConvert.SerializeObject($"cl.Data={cl.Data.Values.First()}"));
                     // Парсим JSON в объект JObject
-                    JObject root = JObject.Parse(Newtonsoft.Json.JsonConvert.SerializeObject(cl.Data));
+                    JObject root = JObject.Parse(Newtonsoft.Json.JsonConvert.SerializeObject(cl.Data.Values.First()));
 
                     // Безопасно достаем поле "label" с помощью SelectToken
-                    string planLabel = (string)root.SelectToken("CloudPayments.recurrent.customerReceipt.items[0].label");
+                    string planLabel = (string)root.SelectToken("CustomerReceipt.Items[0].label");
                     _logger.LogWarning($"Label={planLabel}");
                     await _context.Subscriptions.AddAsync(new Subscription
                     {
