@@ -44,9 +44,8 @@ namespace NutriDbService.Controllers
                     var ress2 = HttpUtility.UrlDecode(bodyContent);
                     _logger.LogWarning(ress2);
                     SuccessPayRequest cl = _subscriptionHelper.ConvertToPayRequestJSON(ress2);
-                    //await ErrorHelper.SendSystemMess($"Success:{Newtonsoft.Json.JsonConvert.SerializeObject(cl)}");
+                    await ErrorHelper.SendSystemMess($"Пришел платеж без пользователя {Newtonsoft.Json.JsonConvert.SerializeObject(cl)}");
                     _logger.LogWarning(Newtonsoft.Json.JsonConvert.SerializeObject($"cl.Data={cl.Data}"));
-                    //var inputUserId = cl.CustomFields.First().ID;
                     // Парсим JSON в объект JObject
                     JObject root = JObject.Parse(Newtonsoft.Json.JsonConvert.SerializeObject(cl.Data));
 
@@ -80,10 +79,11 @@ namespace NutriDbService.Controllers
                     //}
                     //else
                     //{
-                    await ErrorHelper.SendSystemMess($"Пришел платеж без пользователя {Newtonsoft.Json.JsonConvert.SerializeObject(cl)}");
+                    await _context.SaveChangesAsync();
+
                     //}
                     _subscriptionHelper.SendEmailInfo(cl.Email, planLabel);
-                    await _context.SaveChangesAsync();
+
                     //var noti = await _subscriptionHelper.SendPayNoti(inputUserId);
                     //if (!noti)
                     //    await ErrorHelper.SendSystemMess($"Не смогли отправить пользователю {inputUserId} ссылку на бота после оплаты");

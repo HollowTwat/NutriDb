@@ -104,7 +104,8 @@ namespace NutriDbService.Helpers
                 var res = response.IsSuccessStatusCode;
                 return res;
             }
-            catch (HttpRequestException ex)
+            //catch (HttpRequestException ex)
+            catch (Exception ex)
             {
                 await ErrorHelper.SendErrorMess("Упали при отправке уведомления на Email", ex);
                 return false;
