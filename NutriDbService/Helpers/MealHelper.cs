@@ -247,6 +247,76 @@ namespace NutriDbService.Helpers
             return resp;
         }
 
+        public async Task<List<KKMealResponse>> GetMealsKK(GetUserMealsRequest req)
+        {
+            var user = await _nutriDbContext.Users.SingleOrDefaultAsync(x => x.TgId == req.userTgId);
+            if (user == null)
+            {
+                var mes = $"I Cant Find User : {req.userTgId}";
+                await ErrorHelper.SendSystemMess(mes);
+                throw new Exception(mes);
+            }
+            //var inDay = (DayOfWeek)day;
+            var now = DateTime.UtcNow.ToLocalTime().AddHours(3).Date;
+            var startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-7).Date;
+            switch (req.period)
+            {
+                case Periods.day:
+                    startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-1).Date;
+                    break;
+                case Periods.week:
+                    startDate = GetFirstDayOfWeek(now);
+                    break;
+                case Periods.mathweek:
+                    startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-7).Date;
+                    break;
+                case Periods.math3weeks:
+                    startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-21).Date;
+                    break;
+                case Periods.month:
+                    startDate = new DateTime(now.Year, now.Month, 1);
+                    break;
+            }
+            //var meals = _context.Meals.Where(x => x.UserId == user.Id && x.MealTime.Value.Date > startDate && x.MealTime.Value.DayOfWeek == (DayOfWeek)day).ToList();
+            var meals = await _nutriDbContext.Meals.Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).ToListAsync();
+            if (req.day != null)
+            {
+                meals = meals.Where(x => x.MealTime.DayOfWeek == (DayOfWeek)req.day).ToList();
+            }
+            if (!String.IsNullOrEmpty(req.dayStr))
+            {
+                meals = meals.Where(x => x.MealTime.Date == DateTime.ParseExact($"{req.dayStr}.{startDate.Year}", "dd.MM.yyyy", CultureInfo.InvariantCulture).Date).ToList();
+            }
+            if (req.typemeal != null)
+            {
+                meals = meals.Where(x => x.Type == ((short)req.typemeal)).ToList();
+            }
+            var mealsId = meals.Select(x => x.Id).ToList();
+            var dishes = await _nutriDbContext.Dishes.Where(x => mealsId.Contains(x.MealId)).ToListAsync();
+            var resp = new List<KKMealResponse>() { };
+            foreach (var meal in meals)
+            {
+
+                resp.Add(new KKMealResponse()
+                {
+                    date = meal.MealTime,
+                    meal = new PythModels.PythMeal
+                    {
+                        description = meal.Description,
+                        totalWeight = meal.Weight,
+                        type = (mealtype)meal.Type,
+                        food = dishes.Where(x => x.MealId == meal.Id).ToList().Select(x => new PythModels.PythFood()
+                        {
+                            description = x.Description,
+                            weight = x.Weight,
+                            nutritional_value = new PythModels.NutriProps(x.Fats, x.Carbs, x.Protein, x.Kkal)
+                        }).ToList(),
+                    }
+                });
+            }
+            return resp;
+        }
+
         public async Task<MealResponse> GetSingleMeal(GetUserMealsRequest req)
         {
             var user = await _nutriDbContext.Users.SingleOrDefaultAsync(x => x.TgId == req.userTgId);

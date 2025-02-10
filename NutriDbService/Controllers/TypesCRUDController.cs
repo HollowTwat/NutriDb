@@ -214,6 +214,52 @@ namespace NutriDbService.Controllers
         }
 
         [HttpPost]
+        public async Task<ActionResult<GetMealKKResponse>> GetUserMealsKK(GetUserMealsRequest req)
+        {
+            try
+            {
+                var resp = await _mealHelper.GetMealsKK(req);
+                Dictionary<DateTime, List<PythMeal>> respd = resp
+            .GroupBy(x => x.date.Date) // Группируем по дате
+            .ToDictionary(
+                g => g.Key, // Ключ словаря — дата
+                g => g.Select(x => x.meal).ToList() // Значение — список meal
+            );
+                var realResp = new GetMealKKResponse(req.period);
+
+                var userId = (await _context.Users.SingleOrDefaultAsync(x => x.TgId == req.userTgId)).Id;
+                var usi = await _context.Userinfos.SingleOrDefaultAsync(x => x.UserId == userId);
+                var userInfo = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, string>>(usi.Extra);
+                realResp.user_info = userInfo;
+                decimal avarageKK = 0m;
+
+                foreach (var day in realResp.days)
+                {
+
+                    var k = respd.GetValueOrDefault(day.date);
+                    if (k != null)
+                    {
+                        var totalKk = k.SelectMany(meal => meal.food)
+               .Sum(food => food.nutritional_value.kcal);
+                        day.isEmpty = false;
+                        day.Meals = k;
+                        day.totalKK = totalKk;
+                        avarageKK += totalKk;
+                    }
+                }
+                realResp.total_avg_period = avarageKK / realResp.days.Where(x => x.totalKK != 0m).Count();
+                return Ok(realResp);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+                await ErrorHelper.SendErrorMess("GetUserMeals Error", ex);
+                await ErrorHelper.SendErrorMess($"Input: {req}");
+                return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
+            }
+        }
+
+        [HttpPost]
         public async Task<ActionResult<GetMealResponseV2>> GetSingleUserMeal(GetUserMealsRequest req)
         {
             try
