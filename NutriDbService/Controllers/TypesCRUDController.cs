@@ -247,7 +247,9 @@ namespace NutriDbService.Controllers
                         avarageKK += totalKk;
                     }
                 }
-                realResp.total_avg_period = avarageKK / realResp.days.Where(x => x.totalKK != 0m).Count();
+                var notEmptyDays = realResp.days.Where(x => x.totalKK != 0m).Count();
+                if (notEmptyDays > 0)
+                    realResp.total_avg_period = avarageKK / notEmptyDays;
                 return Ok(realResp);
             }
             catch (Exception ex)
