@@ -253,7 +253,7 @@ namespace NutriDbService.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message);
-                await ErrorHelper.SendErrorMess("GetUserMeals Error", ex);
+                await ErrorHelper.SendErrorMess("GetUserMealsKK Error", ex);
                 await ErrorHelper.SendErrorMess($"Input: {req}");
                 return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
