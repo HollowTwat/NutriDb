@@ -208,7 +208,7 @@ namespace NutriDbService.Controllers
             {
                 _logger.LogError(ex, ex.Message);
                 await ErrorHelper.SendErrorMess("GetUserMeals Error", ex);
-                await ErrorHelper.SendErrorMess($"Input: {req}");
+                await ErrorHelper.SendErrorMess($"Input: {Newtonsoft.Json.JsonConvert.SerializeObject(req)}");
                 return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
         }
@@ -254,7 +254,7 @@ namespace NutriDbService.Controllers
             {
                 _logger.LogError(ex, ex.Message);
                 await ErrorHelper.SendErrorMess("GetUserMealsKK Error", ex);
-                await ErrorHelper.SendErrorMess($"Input: {req}");
+                await ErrorHelper.SendErrorMess($"Input: {Newtonsoft.Json.JsonConvert.SerializeObject(req)}");
                 return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
         }
