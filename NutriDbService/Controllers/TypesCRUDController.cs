@@ -749,7 +749,7 @@ namespace NutriDbService.Controllers
             }
             catch (Exception ex)
             {
-                await ErrorHelper.SendErrorMess("GetLastUserLesson Error", ex);
+                await ErrorHelper.SendErrorMess($"GetLastUserLesson Error. User={UserTgId}", ex);
                 _logger.LogError(ex, ex.Message);
                 return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
