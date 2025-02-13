@@ -224,8 +224,8 @@ namespace NutriDbService.Helpers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Упали при создании реквеста");
-                await ErrorHelper.SendErrorMess("Упали при создании реквеста", ex);
+                _logger.LogError(ex, $"Упали при создании реквеста: №{requstId} с урлом={reqUrl}. req= {Newtonsoft.Json.JsonConvert.SerializeObject(reqparams)}");
+                await ErrorHelper.SendErrorMess($"Упали при создании реквеста: №{requstId} {Newtonsoft.Json.JsonConvert.SerializeObject(reqparams)}", ex);
                 using (var scope = _serviceProviderFactory.CreateScope().ServiceProvider.CreateScope())
                 {
                     var _nutriDbContext = scope.ServiceProvider.GetRequiredService<railwayContext>();
