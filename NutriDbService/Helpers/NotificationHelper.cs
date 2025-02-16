@@ -28,9 +28,10 @@ namespace NutriDbService.Helpers
             _context = context;
             _logger = serviceProviderFactory.CreateScope().ServiceProvider.GetRequiredService<ILogger<NotificationHelper>>();
         }
-        private async Task SendNot(long ClientId, string MessBoxId)
+        private async Task SendNot(long? ClientId, string MessBoxId)
         {
-            var reqparams = new NocodeNot { client_id = ClientId, message_id = MessBoxId };
+            if (ClientId == null) { throw new ArgumentNullException("ClientId") ; }
+            var reqparams = new NocodeNot { client_id = (long)ClientId, message_id = MessBoxId };
             HttpClient client = new HttpClient();
             client.Timeout = TimeSpan.FromSeconds(100);
             HttpContent content = new StringContent(JsonConvert.SerializeObject(reqparams), Encoding.UTF8, "application/json");

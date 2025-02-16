@@ -448,6 +448,48 @@ namespace NutriDbService.Controllers
             }
         }
 
+        [HttpGet]
+        public async Task<ActionResult<GetMealResponse>> EnsureUserH(long userTgId, string userName)
+        {
+            try
+            {
+                _logger.LogWarning($"User \n:userTgId={userTgId} userName={userName}");
+                var user = await _context.Users.SingleOrDefaultAsync(x => x.TgId == userTgId);
+                if (user != null)
+                    return Ok(true);
+                bool isActive = false;
+                var subscription = await _context.Subscriptions.SingleOrDefaultAsync(x => x.UserTgId == userTgId && x.IsActive == true && x.IsLinked == false);
+                if (subscription != null)
+                {
+                    isActive = true;
+                    subscription.IsLinked = true;
+                }
+                await _context.Users.AddAsync(new DbModels.User
+                {
+                    TgId = userTgId,
+                    UserNoId = null,
+                    Timezone = 0,
+                    StageId = 0,
+                    LessonId = 0,
+                    RegistrationTime = DateOnly.FromDateTime(DateTime.UtcNow.ToLocalTime().AddHours(3)),
+                    IsActive = isActive,
+                    Username = string.IsNullOrEmpty(userName) ? null : userName,
+                });
+                if (subscription != null)
+                {
+                    _context.Subscriptions.Update(subscription);
+                }
+                await _context.SaveChangesAsync();
+                return Ok(true);
+            }
+            catch (Exception ex)
+            {
+                await ErrorHelper.SendErrorMess($"Упали при создании пользователя {userTgId}", ex);
+                _logger.LogError(ex, ex.Message);
+                return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
+            }
+        }
+
         [HttpPost]
         public async Task<ActionResult<bool>> GetUserWeekPlot(long userTgId)
         {
