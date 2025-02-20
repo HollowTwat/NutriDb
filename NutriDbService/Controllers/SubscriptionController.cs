@@ -348,7 +348,7 @@ namespace NutriDbService.Controllers
 
             try
             {
-                CheckSecret(HttpContext.Request);
+                //CheckSecret(HttpContext.Request);
                 return await _context.Subscriptions.SingleOrDefaultAsync(x => x.UserTgId == tgId && x.IsLinked == true && x.IsActive == true);
             }
             catch (Exception ex)
