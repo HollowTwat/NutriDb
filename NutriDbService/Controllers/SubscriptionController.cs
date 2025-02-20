@@ -343,6 +343,18 @@ namespace NutriDbService.Controllers
         }
 
         [HttpGet]
+        public async Task<Subscription> GetUserSubDetail(long tgId)
+        {
+
+            try
+            {
+                CheckSecret(HttpContext.Request);
+                return await _context.Subscriptions.SingleOrDefaultAsync(x => x.UserTgId == tgId);
+            }
+            catch (Exception ex) { _logger.LogError(ex, "GetUserSub"); throw; }
+        }
+
+        [HttpGet]
         public async Task<bool> DeactivateUser(string Email)
         {
             try
