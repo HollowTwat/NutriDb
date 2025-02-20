@@ -351,7 +351,13 @@ namespace NutriDbService.Controllers
                 CheckSecret(HttpContext.Request);
                 return await _context.Subscriptions.SingleOrDefaultAsync(x => x.UserTgId == tgId && x.IsLinked == true && x.IsActive == true);
             }
-            catch (Exception ex) { _logger.LogError(ex, "GetUserSub"); throw; }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "GetUserSub");
+                await ErrorHelper.SendErrorMess($"Упали при получении деталей подписки", ex);
+
+                throw;
+            }
         }
 
         [HttpGet]
