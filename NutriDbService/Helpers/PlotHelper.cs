@@ -13,12 +13,15 @@ using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Drawing;
 using System.Reflection;
 using System.Numerics;
+using Telegram.Bot.Types.ReplyMarkups;
+using System.Collections.Generic;
 
 namespace NutriDbService.Helpers
 {
     public class PlotHelper
     {
         private string token = "7220622235:AAEJAQUjZZagg6ZXkGuykfQySAtJzwAwqRI";
+        private string Htoken = "7596376672:AAFmVRBQQsfFDCq3josfCvi4yPZBxNvBx4k";
         private readonly ILogger _logger;
         public PlotHelper(IServiceProvider serviceProvider)
         {
@@ -38,6 +41,18 @@ namespace NutriDbService.Helpers
 
             CreateBarChart(values, labels, filePath, goalkk);
             await SendPhotoAsync(userTgId, filePath);
+            System.IO.File.Delete(filePath);
+        }
+        public async Task SendPlotH(decimal[] values, string[] labels, long userTgId, decimal? goalkk)
+        {
+            string filePath = $"{Guid.NewGuid().ToString()}.png";
+
+            string homePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            filePath = System.IO.Path.Combine(homePath, filePath);
+
+
+            CreateBarChart(values, labels, filePath, goalkk);
+            await SendPhotoHAsync(userTgId, filePath);
             System.IO.File.Delete(filePath);
         }
         private async Task SendPhotoAsync(long chatId, string filePath)
@@ -62,6 +77,40 @@ namespace NutriDbService.Helpers
                     chatId: chatId,
                     photo: inputOnlineFile,
                     caption: string.Empty
+                );
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
+                throw;
+            }
+        }
+        private async Task SendPhotoHAsync(long chatId, string filePath)
+        {
+            try
+            {
+                var botClient = new TelegramBotClient(Htoken);
+
+                // Убедитесь, что файл существует
+                if (!System.IO.File.Exists(filePath))
+                {
+                    Console.WriteLine("File not found: " + filePath);
+                    return;
+                }
+
+                // Чтение файла изображения
+                using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+                var inputOnlineFile = new Telegram.Bot.Types.InputFiles.InputOnlineFile(fileStream, System.IO.Path.GetFileName(filePath));
+                var analb = new InlineKeyboardButton("Показать анализ недели").CallbackData = "menu_dnevnik_analysis_rate-week";
+                var leftb = new InlineKeyboardButton("◀️").CallbackData = "menu_dnevnik";
+                var downb = new InlineKeyboardButton("⏏️").CallbackData = "menu_back";
+                var buttons = new List<InlineKeyboardButton> { analb,leftb,downb };
+                // Отправка изображения
+                await botClient.SendPhotoAsync(
+                    chatId: chatId,
+                    photo: inputOnlineFile,
+                    caption: string.Empty,
+                    replyMarkup: new InlineKeyboardMarkup(buttons)
                 );
             }
             catch (Exception ex)
