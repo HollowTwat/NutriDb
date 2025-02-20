@@ -33,7 +33,28 @@ namespace NutriDbService.Controllers
             _subscriptionHelper = subscriptionHelper;
         }
 
-       
+        //[HttpGet]
+        //public async Task<bool> sss()
+        //{
+        //    List<long> ptgids = new List<long>();
+        //    var subs = await _context.Subscriptions.Where(x => x.Type == "unknown").ToListAsync();
+        //    foreach (var sub in subs)
+        //    {
+        //        try
+        //        {
+        //            string label = (string)JObject.Parse(sub.Extra)["Data"]["CloudPayments"]["CustomerReceipt"]["Items"][0]["label"];
+        //            sub.Type = label;
+        //        }
+        //        catch {
+
+        //            ptgids.Add(sub.UserTgId);
+        //        }
+        //    }
+        //    var d = subs.Select(x => x.Type);
+        //    _context.UpdateRange(subs);
+        //await    _context.SaveChangesAsync();
+        //    return true;
+        //}
         [HttpPost]
         public async Task<SubResponse> SuccessPay()
         {
