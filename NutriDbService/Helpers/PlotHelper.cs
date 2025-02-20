@@ -101,10 +101,10 @@ namespace NutriDbService.Helpers
                 // Чтение файла изображения
                 using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
                 var inputOnlineFile = new Telegram.Bot.Types.InputFiles.InputOnlineFile(fileStream, System.IO.Path.GetFileName(filePath));
-                var analb = new InlineKeyboardButton("Показать анализ недели").CallbackData = "menu_dnevnik_analysis_rate-week";
-                var leftb = new InlineKeyboardButton("◀️").CallbackData = "menu_dnevnik";
-                var downb = new InlineKeyboardButton("⏏️").CallbackData = "menu_back";
-                var buttons = new List<InlineKeyboardButton> { analb,leftb,downb };
+                var analb = InlineKeyboardButton.WithCallbackData("Показать анализ недели", "menu_dnevnik_analysis_rate-week");
+                var leftb = InlineKeyboardButton.WithCallbackData("◀️", "menu_dnevnik");
+                var downb = InlineKeyboardButton.WithCallbackData("⏏️", "menu_back");
+                var buttons = new List<List<InlineKeyboardButton>> { new List<InlineKeyboardButton> { analb }, new List<InlineKeyboardButton> { leftb, downb } };
                 // Отправка изображения
                 await botClient.SendPhotoAsync(
                     chatId: chatId,
@@ -187,7 +187,7 @@ namespace NutriDbService.Helpers
                 }); // Y-Ось
                 ctx.DrawText("ккал", medfont, Color.Black, new PointF(margin - textFromAxe + 17, margin));
 
-                
+
                 // Отрисовка колонок
                 for (int i = 0; i < values.Length; i++)
                 {
@@ -210,11 +210,11 @@ namespace NutriDbService.Helpers
                                       height: barHeight);
 
                     ctx.Fill(barCollor, barRectangle);
-                    if(values[i] >200m)
-                    if (barCollor == Color.LightBlue)
-                        ctx.DrawText(values[i].ToString(), medfont, Color.Black, new PointF(margin + i * barWidth + (barWidth - barSpace) / 4 + 15, height - margin - barHeight + 5));
-                   else
-                        ctx.DrawText(values[i].ToString(), medfont, Color.White, new PointF(margin + i * barWidth + (barWidth - barSpace) / 4 + 15, height - margin - barHeight + 5));
+                    if (values[i] > 200m)
+                        if (barCollor == Color.LightBlue)
+                            ctx.DrawText(values[i].ToString(), medfont, Color.Black, new PointF(margin + i * barWidth + (barWidth - barSpace) / 4 + 15, height - margin - barHeight + 5));
+                        else
+                            ctx.DrawText(values[i].ToString(), medfont, Color.White, new PointF(margin + i * barWidth + (barWidth - barSpace) / 4 + 15, height - margin - barHeight + 5));
 
                     ctx.DrawText(labels[i], font, Color.Black, new PointF(margin + i * barWidth + (barWidth - barSpace) / 4, height - margin + 5));
                 }
