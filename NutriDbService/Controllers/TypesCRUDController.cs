@@ -1023,6 +1023,17 @@ namespace NutriDbService.Controllers
             catch (Exception ex) { return false; }
         }
 
+        [HttpGet]
+        public async Task<bool> SendManualNotifyH(int userId, bool isMorning)
+        {
+            try
+            {
+                await _notificationHelper.SendNotificationH(userId, isMorning);
+                return true;
+            }
+            catch (Exception ex) { return false; }
+        }
+
         //[HttpPost]
         //public async Task<bool> SaveRate(long tgid, short rating)
         //{
