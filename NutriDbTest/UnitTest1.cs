@@ -1,4 +1,7 @@
+using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Math;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -6,12 +9,7 @@ using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using NutriDbService.DbModels;
 using NutriDbService.Helpers;
-using System;
-using System.Net.Http;
-using System.Security.Cryptography;
 using System.Text;
-using Telegram.Bot.Types;
-using static System.Net.WebRequestMethods;
 
 namespace NutriDbTest
 {
@@ -123,6 +121,203 @@ namespace NutriDbTest
             await subscriptionHelper.SendEmailInfo("vkpolkit2012@gmail.com", "подписка на всегда");
             Xunit.Assert.True(true);
         }
+
+        [Fact]
+        public async Task GetStatic()
+        {
+            try
+            {
+                var _context = new railwayContext();
+                var startDateTime = new DateTime(2025, 01, 01);
+                var endDateTime = DateTime.Now;
+
+                Dictionary<DateTime, (int, int)> mounthres = new();
+                for (var currentDateTime = startDateTime; currentDateTime <= endDateTime; currentDateTime = currentDateTime.AddMonths(1))
+                {
+                    var mounthend = currentDateTime.AddMonths(1);
+                    var user = await _context.Users.Where(x => x.RegistrationTime <= DateOnly.FromDateTime(mounthend)).ToListAsync();
+                    var meals = await _context.Meals.Where(x => x.MealTime.Date.Month == currentDateTime.Month && user.Select(x => x.Id).Contains(x.UserId)).ToListAsync();
+                    var activeuserIds = meals.Select(x => x.UserId).Distinct().ToList();
+                    mounthres.Add(mounthend, new(user.Count(), activeuserIds.Count()));
+                }
+
+
+
+
+                Dictionary<DateTime, (int, int)> weekres = new();
+
+                for (var currentDateTime = startDateTime; currentDateTime <= endDateTime; currentDateTime = currentDateTime.AddDays(7))
+                {
+                    var weekend = currentDateTime.AddDays(7);
+                    var user = await _context.Users.Where(x => x.RegistrationTime <= DateOnly.FromDateTime(weekend)).ToListAsync();
+                    var meals = await _context.Meals.Where(x => x.MealTime.Date > currentDateTime && x.MealTime.Date < weekend && user.Select(x => x.Id).Contains(x.UserId)).ToListAsync();
+                    var activeuserIds = meals.Select(x => x.UserId).Distinct().ToList();
+                    weekres.Add(weekend, new(user.Count(), activeuserIds.Count()));
+                }
+                var csvw = new StringBuilder();
+
+
+
+                Dictionary<DateTime, (int, int)> dayres = new();
+                for (var currentDateTime = startDateTime; currentDateTime <= endDateTime; currentDateTime = currentDateTime.AddDays(1))
+                {
+                    var user = await _context.Users.Where(x => x.RegistrationTime <= DateOnly.FromDateTime(currentDateTime)).ToListAsync();
+                    var meals = await _context.Meals.Where(x => x.MealTime.Date == currentDateTime && user.Select(x => x.Id).Contains(x.UserId)).ToListAsync();
+                    var activeuserIds = meals.Select(x => x.UserId).Distinct().ToList();
+                    dayres.Add(currentDateTime, new(user.Count(), activeuserIds.Count()));
+                }
+
+
+
+                using (var workbook = new XLWorkbook())
+                {
+                    // Функция для добавления данных из словаря на лист
+                    void AddDataToSheet(IXLWorksheet sheet, Dictionary<DateTime, (int, int)> dict)
+                    {
+                        sheet.Cell(1, 1).Value = "Date";
+                        sheet.Cell(1, 2).Value = "allUser";
+                        sheet.Cell(1, 3).Value = "activeUser";
+
+                        int row = 2;
+                        foreach (var el in dict)
+                        {
+                            sheet.Cell(row, 1).Value = el.Key.ToShortDateString();
+                            sheet.Cell(row, 2).Value = el.Value.Item1.ToString();
+                            sheet.Cell(row, 3).Value = el.Value.Item2.ToString();
+                            row++;
+                        }
+                    }
+
+                    // Создаем и заполняем три листа
+                    var worksheet1 = workbook.Worksheets.Add("Day");
+                    AddDataToSheet(worksheet1, dayres);
+
+                    var worksheet2 = workbook.Worksheets.Add("Week");
+                    AddDataToSheet(worksheet2, weekres);
+
+                    var worksheet3 = workbook.Worksheets.Add("Mounth");
+                    AddDataToSheet(worksheet3, mounthres);
+
+                    // Сохраняем файл
+                    workbook.SaveAs("D:\\An.xlsx");
+                }
+
+
+
+                Xunit.Assert.True(true);
+            }
+            catch (Exception ex)
+            {
+                var a = 0;
+            }
+
+
+        }
+        [Fact]
+        public async Task GetStaticV2()
+        {
+            try
+            {
+                var _context = new railwayContext();
+                var users = await _context.Users.ToListAsync();
+                var usersStatic = new List<StatickAnswer>();
+                foreach (var user in users)
+                {
+                    var info = await _context.Userinfos.SingleOrDefaultAsync(x => x.UserId == user.Id);
+                    if (info == null)
+                        continue;
+                    var meal = await _context.Meals.OrderBy(x => x.MealTime).LastOrDefaultAsync(x => x.UserId == user.Id);
+                    var subscriptions = await _context.Subscriptions.Where(x => x.UserTgId == user.TgId).ToListAsync();
+                    var subbs = new List<Subs>();
+                    foreach (var item in subscriptions)
+                    {
+                        subbs.Add(new Subs
+                        {
+                            payment_amount = item.Amount,
+                            payment_id = item.TransactionId,
+                            subscription_period = item.Type,
+                            subscription_status = item.Status,
+                            subscription_type = item.Type
+                        });
+                    }
+                    var userStatic = new StatickAnswer()
+                    {
+                        telegram_id = user.TgId,
+                        username = user.Username,
+                        first_name = "-",
+                        last_name = "-",
+                        registration_date = user.RegistrationTime.ToString(),
+                        phone = "-",
+                        last_activity = meal?.MealTime.ToString(),
+                        lessons_completed = info?.Donelessonlist?.Split(',').Count(),
+                        email = user.Email,
+                        gender = info.Gender,
+                        age = info.Age,
+                        weight_kg = info.Weight,
+                        height_cm = info.Height,
+                        goal = info.Goal,
+                        daily_caloric_norm_kcal = info.Goalkk,
+                        subs = subbs
+
+                    };
+                    usersStatic.Add(userStatic);
+                }
+                Xunit.Assert.True(true);
+            }
+            catch (Exception ex) { }
+        }
+    }
+    public class Subs
+    {
+        public decimal? payment_amount { get; set; }
+
+        public long? payment_id { get; set; }
+
+        public string subscription_period { get; set; }
+
+        public string subscription_end_date { get; set; }
+
+        public string subscription_type { get; set; }
+
+        public string subscription_status { get; set; }
+    }
+    public class StatickAnswer
+    {
+        public long telegram_id { get; set; }
+        public string username { get; set; }
+        public string first_name { get; set; }
+        public string last_name { get; set; }
+        public string registration_date { get; set; }
+
+        public string phone { get; set; }
+
+        public string last_activity { get; set; }
+
+        public int? lessons_completed { get; set; }
+
+        public string email { get; set; }
+
+        public List<Subs> subs { get; set; }
+
+        //public long total_spent {  get; set; }
+
+        //public int total_purchases {  get; set; }
+        public string gender { get; set; }
+
+        public short? age { get; set; }
+
+        public decimal? weight_kg { get; set; }
+
+        public decimal? height_cm { get; set; }
+
+        public string goal { get; set; }
+
+        //public decimal target_weight_kg { get; set; }
+
+        public decimal? daily_caloric_norm_kcal { get; set; }
+
+        // public string macronutrient_norm_g { get; set; }
+        public int weekly_activity_hours { get; set; }
 
 
     }

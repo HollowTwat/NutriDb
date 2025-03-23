@@ -326,6 +326,23 @@ namespace NutriDbService.Controllers
                 return false;
             }
         }
+        [HttpPost]
+        public async Task<bool> IsActiveUser(long userTgId)
+        {
+            try
+            {
+                var user = await _context.Users.SingleOrDefaultAsync(x => x.TgId == userTgId);
+                if (user == null)
+                    return false;
+                if (user.IsActive) return true;
+                else return false;
+            }
+            catch (Exception ex)
+            {
+                await ErrorHelper.SendErrorMess($"Ошибка проверки пользователя {userTgId}", ex);
+                return false;
+            }
+        }
 
         [HttpGet]
         public async Task<List<Subscription>> GetSubs(string MyDateTime)
