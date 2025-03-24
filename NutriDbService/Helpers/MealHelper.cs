@@ -247,6 +247,53 @@ namespace NutriDbService.Helpers
             return resp;
         }
 
+        public async Task<List<MealResponse>> GetMealsForAnal(long userTgId)
+        {
+            var user = await _nutriDbContext.Users.SingleOrDefaultAsync(x => x.TgId == userTgId);
+            if (user == null)
+            {
+                var mes = $"I Cant Find User : {userTgId}";
+                await ErrorHelper.SendSystemMess(mes);
+                throw new Exception(mes);
+            }
+            var resp = new List<MealResponse>() { };
+            //var inDay = (DayOfWeek)day;
+            var now = DateTime.UtcNow.ToLocalTime().AddHours(3).Date;
+            var startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-7).Date;
+            //var meals = _context.Meals.Where(x => x.UserId == user.Id && x.MealTime.Value.Date > startDate && x.MealTime.Value.DayOfWeek == (DayOfWeek)day).ToList();
+            var meals = await _nutriDbContext.Meals.Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).ToListAsync();
+            if (meals.Count < 5)
+                meals = await _nutriDbContext.Meals.Where(x => x.UserId == user.Id).OrderByDescending(x => x.Id).Take(5).ToListAsync();
+            if (!meals.Any())
+                return resp;
+            var mealsId = meals.Select(x => x.Id).ToList();
+            var dishes = await _nutriDbContext.Dishes.Where(x => mealsId.Contains(x.MealId)).ToListAsync();
+
+            foreach (var meal in meals)
+            {
+
+                resp.Add(new MealResponse()
+                {
+                    mealId = meal.Id,
+                    eatedAt = meal.MealTime,
+                    userId = meal.UserId,
+                    meal = new PythModels.PythMeal
+                    {
+                        description = meal.Description,
+                        totalWeight = meal.Weight,
+                        type = (mealtype)meal.Type,
+                        food = dishes.Where(x => x.MealId == meal.Id).ToList().Select(x => new PythModels.PythFood()
+                        {
+                            description = x.Description,
+                            weight = x.Weight,
+                            nutritional_value = new PythModels.NutriProps(x.Fats, x.Carbs, x.Protein, x.Kkal)
+                        }).ToList(),
+                    }
+                });
+            }
+            return resp;
+        }
+
         public async Task<List<KKMealResponse>> GetMealsKK(GetUserMealsRequest req)
         {
             var user = await _nutriDbContext.Users.SingleOrDefaultAsync(x => x.TgId == req.userTgId);

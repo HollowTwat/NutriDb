@@ -212,7 +212,22 @@ namespace NutriDbService.Controllers
                 return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
         }
-
+        [HttpPost]
+        public async Task<ActionResult<GetMealResponse>> GetUserMealsForAnal(long userTgId)
+        {
+            try
+            {
+                var resp = await _mealHelper.GetMealsForAnal(userTgId);
+                return Ok(Newtonsoft.Json.JsonConvert.SerializeObject(new GetMealResponse(resp)));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+                await ErrorHelper.SendErrorMess("GetUserMealsForAnal Error", ex);
+                await ErrorHelper.SendErrorMess($"Input: {userTgId}");
+                return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
+            }
+        }
         [HttpPost]
         public async Task<ActionResult<GetMealKKResponse>> GetUserMealsKK(GetUserMealsRequest req)
         {
