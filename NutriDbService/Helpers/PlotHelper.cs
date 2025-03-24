@@ -21,7 +21,7 @@ namespace NutriDbService.Helpers
     public class PlotHelper
     {
         private string token = "7220622235:AAEJAQUjZZagg6ZXkGuykfQySAtJzwAwqRI";
-        private string Htoken = "7596376672:AAFmVRBQQsfFDCq3josfCvi4yPZBxNvBx4k";
+        private string Htoken = "7220622235:AAEJAQUjZZagg6ZXkGuykfQySAtJzwAwqRI";
         private readonly ILogger _logger;
         public PlotHelper(IServiceProvider serviceProvider)
         {
