@@ -213,12 +213,12 @@ namespace NutriDbService.Controllers
             }
         }
         [HttpPost]
-        public async Task<ActionResult<GetMealResponse>> GetUserMealsForAnal(long userTgId)
+        public async Task<ActionResult<List<MealResponse>>> GetUserMealsForAnal(long userTgId)
         {
             try
             {
                 var resp = await _mealHelper.GetMealsForAnal(userTgId);
-                return Ok(Newtonsoft.Json.JsonConvert.SerializeObject(new GetMealResponse(resp)));
+                return Ok(Newtonsoft.Json.JsonConvert.SerializeObject(resp));
             }
             catch (Exception ex)
             {
