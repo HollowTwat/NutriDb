@@ -43,7 +43,7 @@ namespace NutriDbService
             //services.AddHostedService<TaskSchedulerService>();
             services.AddSingleton<TaskSchedulerService>();
 #if !DEBUG
-            services.AddHostedService(provider => provider.GetService<TaskSchedulerService>());
+            //services.AddHostedService(provider => provider.GetService<TaskSchedulerService>());
 #endif
         }
 
