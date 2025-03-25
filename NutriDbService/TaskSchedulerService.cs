@@ -15,9 +15,9 @@ namespace NutriDbService
 {
     public class UserPing
     {
-        public int Id { get; set; }
+        public int UserId { get; set; }
 
-        public long UserNoId { get; set; }
+        public long UserTgId { get; set; }
 
         public TimeOnly MorningPing { get; set; }
 
@@ -49,8 +49,9 @@ namespace NutriDbService
             {
                 var _context = scope.ServiceProvider.GetRequiredService<railwayContext>();
                 //List<int> validUsers = new List<int>() { 17 };
-                var users = _context.Userinfos.Include(x => x.User).Where(x => x.User.NotifyStatus == true && x.User.IsActive && x.MorningPing != null && x.EveningPing != null)
-                    .Select(x => new UserPing { Id = x.UserId, UserNoId =(long)x.User.UserNoId, MorningPing = (TimeOnly)x.MorningPing, EveningPing = (TimeOnly)x.EveningPing, Slide = x.Timeslide }).ToList();
+                var us = _context.Userinfos.Include(x => x.User).Where(x => x.User.NotifyStatus == true && x.User.IsActive && x.MorningPing != null && x.EveningPing != null).ToList();
+
+                var users = us.Select(x => new UserPing { UserId = x.UserId, UserTgId = (long)x.User.TgId, MorningPing = (TimeOnly)x.MorningPing, EveningPing = (TimeOnly)x.EveningPing, Slide = x.Timeslide }).ToList();
                 //users = users.Where(x => validUsers.Contains(x.Id)).ToList();
                 return users;
             }
@@ -103,7 +104,7 @@ namespace NutriDbService
                     var localNotHelper = scope.ServiceProvider.GetRequiredService<NotificationHelper>();
 
                     // Используйте ассинхронную метод SendNotification
-                    await localNotHelper.SendNotification(userPing.Id, true);
+                    await localNotHelper.SendNotificationH(userPing, true);
                     // Планируем на следующий день
 
                     //ScheduleTask(userPing);
@@ -117,16 +118,16 @@ namespace NutriDbService
                     var localNotHelper = scope.ServiceProvider.GetRequiredService<NotificationHelper>();
 
                     // Используйте ассинхронную метод SendNotification
-                    await localNotHelper.SendNotification(userPing.Id, false);
+                    await localNotHelper.SendNotificationH(userPing, false);
                     // Планируем на следующий день
 
                     //ScheduleTask(userPing);
                 }
             }, null, timeToNextEveningOccurrence, TimeSpan.FromHours(24));// Timeout.InfiniteTimeSpan);
                                                                           //if (isMorningNext)
-            _timers.Add(new UserTimer { Id = userPing.Id, Timer = morningTimer });
+            _timers.Add(new UserTimer { Id = userPing.UserId, Timer = morningTimer });
             //else
-            _timers.Add(new UserTimer { Id = userPing.Id, Timer = eveningTimer });
+            _timers.Add(new UserTimer { Id = userPing.UserId, Timer = eveningTimer });
         }
 
         private DateTime CalculateNextOccurrence(DateTime currentTime, TimeOnly dailyTime)

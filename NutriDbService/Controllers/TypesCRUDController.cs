@@ -421,12 +421,13 @@ namespace NutriDbService.Controllers
         #endregion
 
         #region User
+        [Obsolete]
         [HttpGet]
-        public async Task<ActionResult<GetMealResponse>> EnsureUser(long userTgId, string userName, long userNoId)
+        public async Task<ActionResult<GetMealResponse>> EnsureUser(long userTgId, string userName)
         {
             try
             {
-                _logger.LogWarning($"User \n:userTgId={userTgId} userName={userName} userNoId={userNoId}");
+                _logger.LogWarning($"User \n:userTgId={userTgId} userName={userName}");
                 var user = await _context.Users.SingleOrDefaultAsync(x => x.TgId == userTgId);
                 if (user != null)
                     return Ok(true);
@@ -440,7 +441,6 @@ namespace NutriDbService.Controllers
                 await _context.Users.AddAsync(new DbModels.User
                 {
                     TgId = userTgId,
-                    UserNoId = userNoId,
                     Timezone = 0,
                     StageId = 0,
                     LessonId = 0,
@@ -482,7 +482,6 @@ namespace NutriDbService.Controllers
                 await _context.Users.AddAsync(new DbModels.User
                 {
                     TgId = userTgId,
-                    UserNoId = null,
                     Timezone = 0,
                     StageId = 0,
                     LessonId = 0,
@@ -1031,23 +1030,24 @@ namespace NutriDbService.Controllers
             }
         }
 
-        [HttpGet]
-        public async Task<bool> SendManualNotify(int userId, bool isMorning)
-        {
-            try
-            {
-                await _notificationHelper.SendNotification(userId, isMorning);
-                return true;
-            }
-            catch (Exception ex) { return false; }
-        }
+        //[HttpGet]
+        //public async Task<bool> SendManualNotify(int userId, bool isMorning)
+        //{
+        //    try
+        //    {
+        //        await _notificationHelper.SendNotification(userId, isMorning);
+        //        return true;
+        //    }
+        //    catch (Exception ex) { return false; }
+        //}
 
         [HttpGet]
-        public async Task<bool> SendManualNotifyH(int userId, bool isMorning)
+        public async Task<bool> SendManualNotifyH(long userTgId, bool isMorning)
         {
             try
             {
-                await _notificationHelper.SendNotificationH(userId, isMorning);
+                var user = await _context.Users.SingleOrDefaultAsync(x => x.TgId == userTgId);
+                await _notificationHelper.SendNotificationH(new UserPing { UserTgId = userTgId, UserId = user.Id }, isMorning);
                 return true;
             }
             catch (Exception ex) { return false; }

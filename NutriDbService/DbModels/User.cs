@@ -21,7 +21,6 @@ namespace NutriDbService.DbModels
         public int? LessonId { get; set; }
         public bool IsActive { get; set; }
         public long TgId { get; set; }
-        public long? UserNoId { get; set; }
         public bool? NotifyStatus { get; set; }
         public string Email { get; set; }
 

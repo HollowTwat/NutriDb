@@ -256,8 +256,6 @@ namespace NutriDbService.DbModels
 
                 entity.Property(e => e.Timezone).HasColumnName("timezone");
 
-                entity.Property(e => e.UserNoId).HasColumnName("userNoId");
-
                 entity.Property(e => e.Username)
                     .HasMaxLength(255)
                     .HasColumnName("username");
