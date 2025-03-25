@@ -266,6 +266,46 @@ namespace NutriDbTest
             }
             catch (Exception ex) { }
         }
+
+        [Fact]
+        public async Task GetStaticLessonEnd()
+        {
+            try
+            {
+                var _context = new railwayContext();
+                var userInfoDone = await _context.Userinfos.Where(x => x.Donelessonlist.EndsWith("21")).ToListAsync();
+                var users = await _context.Users.Where(x => userInfoDone.Select(x => x.UserId).Contains(x.Id)).ToListAsync();
+                var doneUsers = new List<UserDoneInfo>();
+
+                foreach (var user in users)
+                {
+                    doneUsers.Add(new UserDoneInfo
+                    {
+                        tgId = user.TgId,
+                        Email = user.Email,
+                        RegisterTime = user.RegistrationTime.ToDateTime(new TimeOnly(0, 0)),
+                        LessonEndTime = userInfoDone.SingleOrDefault(x => x.UserId == user.Id)?.LastlessonTime ?? DateTime.UtcNow,
+                    });
+                }
+                var d2 = doneUsers.ToList();
+                doneUsers.RemoveAll(x => (x.LessonEndTime - x.RegisterTime).Days > 31);
+                var res = Newtonsoft.Json.JsonConvert.SerializeObject(doneUsers);
+                var others = d2.Except(doneUsers);
+                var res2 = Newtonsoft.Json.JsonConvert.SerializeObject(others);
+                Xunit.Assert.True(true);
+            }
+            catch (Exception ex) { }
+        }
+    }
+    public class UserDoneInfo
+    {
+        public long tgId { get; set; }
+
+        public string Email { get; set; }
+
+        public DateTime RegisterTime { get; set; }
+
+        public DateTime LessonEndTime { get; set; }
     }
     public class Subs
     {

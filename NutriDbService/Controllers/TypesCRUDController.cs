@@ -619,6 +619,7 @@ namespace NutriDbService.Controllers
         {
             try
             {
+                _logger.LogInformation($"User \n:userTgId={req.UserTgId} add userInfo in AddUserExtraInfo ");
 
                 var userId = (await _context.Users.SingleOrDefaultAsync(x => x.TgId == req.UserTgId)).Id;
                 var usi = await _context.Userinfos.SingleOrDefaultAsync(x => x.UserId == userId);
@@ -686,6 +687,8 @@ namespace NutriDbService.Controllers
         {
             try
             {
+                _logger.LogInformation($"User \n:userTgId={req.UserTgId} add userInfo in AddOrUpdateUserExtraInfo ");
+
                 var userId = (await _context.Users.SingleOrDefaultAsync(x => x.TgId == req.UserTgId)).Id;
                 var usi = await _context.Userinfos.SingleOrDefaultAsync(x => x.UserId == userId);
                 bool ismorningPing = false;
