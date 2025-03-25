@@ -695,7 +695,8 @@ namespace NutriDbService.Controllers
                 bool iseveningPing = false;
                 if (usi == null)
                 {
-                    return Problem("У пользователя нет доп информации");
+                    return await AddUserExtraInfo(req);
+                    //return Problem("У пользователя нет доп информации");
                 }
                 else
                 {
