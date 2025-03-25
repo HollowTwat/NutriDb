@@ -1053,6 +1053,26 @@ namespace NutriDbService.Controllers
             catch (Exception ex) { return false; }
         }
 
+        [HttpPost]
+        public async Task<ActionResult<List<long>>> GetUsersIds(long userTgId, bool onlyActive)
+        {
+            try
+            {
+                var users = await _context.Users.ToListAsync();
+                if (onlyActive)
+                    users.RemoveAll(x => x.IsActive = false);
+                return Ok(users.Select(x => x.TgId));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+                await ErrorHelper.SendErrorMess("GetUserMealsForAnal Error", ex);
+                await ErrorHelper.SendErrorMess($"Input: {userTgId}");
+                return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
+            }
+        }
+
+
         //[HttpPost]
         //public async Task<bool> SaveRate(long tgid, short rating)
         //{
