@@ -50,7 +50,6 @@ namespace NutriDbService
                 var _context = scope.ServiceProvider.GetRequiredService<railwayContext>();
                 //List<int> validUsers = new List<int>() { 17 };
                 var us = _context.Userinfos.Include(x => x.User).Where(x => x.User.NotifyStatus == true && x.User.IsActive && x.MorningPing != null && x.EveningPing != null).ToList();
-
                 var users = us.Select(x => new UserPing { UserId = x.UserId, UserTgId = (long)x.User.TgId, MorningPing = (TimeOnly)x.MorningPing, EveningPing = (TimeOnly)x.EveningPing, Slide = x.Timeslide }).ToList();
                 //users = users.Where(x => validUsers.Contains(x.Id)).ToList();
                 return users;

@@ -42,11 +42,18 @@ namespace NutriDbService.Helpers
         //    var response = await client.PostAsync(_reqUrl, content);
         //    var r = await response.Content.ReadAsStringAsync();
         //}
-        private async Task SendNotH(long? ClientId, bool isMorning, string lessonNo)
+        private async Task SendNotH(long? ClientId, bool isMorning, int lessonNo)
         {
             var botClient = new TelegramBotClient(Htoken);
-            var text = isMorning ? "Начать урок" : "Продолжить урок";
-            var lessonb = InlineKeyboardButton.WithCallbackData(text, $"d{lessonNo}");
+            if (lessonNo == 99)
+                lessonNo = 0;
+            if (isMorning)
+                lessonNo++;
+            var text = isMorning ? $"Начать урок {lessonNo}" : $"Продолжить урок {lessonNo}";
+
+
+            var callback = isMorning ? $"d{lessonNo}" : $"d{lessonNo}_2";
+            var lessonb = InlineKeyboardButton.WithCallbackData(text, callback);
             var downb = InlineKeyboardButton.WithCallbackData("⏏️", "menu_back");
             var buttons = new List<List<InlineKeyboardButton>> { new List<InlineKeyboardButton> { lessonb }, new List<InlineKeyboardButton> { downb } };
             // Отправка изображения
@@ -102,36 +109,44 @@ namespace NutriDbService.Helpers
         {
             try
             {
-                List<string> doubleLessPrev = new List<string>() { "1", "2", "3", "4", "5", "6", "8", "9", "10", "11", "12", "14", "15", "16" };
+                List<int> doubleLessPrev = new List<int>() { 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 15, 16, 17 };
                 _logger.LogWarning($"User:{userPing.UserTgId} SendNotification");
                 //bool isMealNotSend = false;
                 bool isLessonForgotSend = false;
                 //var user = await _context.Users.SingleAsync(x => x.Id == UserId);
                 var userInfo = await _context.Userinfos.SingleAsync(x => x.UserId == userPing.UserId);
-                var lesList = userInfo.Donelessonlist.Split(',');
+                if (int.TryParse(userInfo.Donelessonlist.Split(',').Last(), out int lasLes))
+                {
 
-                if (!userInfo.Donelessonlist.Contains("21"))
-                {
-                    if (userInfo.LastlessonTime < DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-1))
-                        isLessonForgotSend = true;
-                }
-                if (isMornong)
-                {
-                    if (isLessonForgotSend)
-                        await SendNotH(userPing.UserTgId, true, lesList.Last());
-                    //if (isLessonDoneSend)
-                    //    await SendNotH(user.UserNoId,true, lesList.Last());
+                    if (!(lasLes == 21))
+                    {
+                        if (userInfo.LastlessonTime < DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-1))
+                            isLessonForgotSend = true;
+                    }
+                    if (isMornong)
+                    {
+                        if (isLessonForgotSend)
+                            await SendNotH(userPing.UserTgId, true, lasLes);
+                        //if (isLessonDoneSend)
+                        //    await SendNotH(user.UserNoId,true, lesList.Last());
+                    }
+                    else
+                    {
+                        //var meals = await _context.Meals.Where(x => x.UserId == UserId).OrderByDescending(x => x.MealTime).FirstOrDefaultAsync();
+
+                        //var lastMealTime = meals?.MealTime;
+                        //if (lastMealTime != null && lastMealTime < DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-1))
+                        //    isMealNotSend = true;
+                        //if (isMealNotSend && isLessonForgotSend)
+                        if (doubleLessPrev.Contains(lasLes))
+                            await SendNotH(userPing.UserTgId, false, lasLes);
+                    }
                 }
                 else
                 {
-                    //var meals = await _context.Meals.Where(x => x.UserId == UserId).OrderByDescending(x => x.MealTime).FirstOrDefaultAsync();
+                    _logger.LogError($"NotificationSendError for User:{userPing.UserTgId}");
+                    await ErrorHelper.SendErrorMess($"NotificationSendError for User:{userPing.UserTgId}");
 
-                    //var lastMealTime = meals?.MealTime;
-                    //if (lastMealTime != null && lastMealTime < DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-1))
-                    //    isMealNotSend = true;
-                    //if (isMealNotSend && isLessonForgotSend)
-                    if (doubleLessPrev.Contains(lesList.Last()))
-                        await SendNotH(userPing.UserTgId, false, lesList.Last());
                 }
             }
             catch (Exception ex)
