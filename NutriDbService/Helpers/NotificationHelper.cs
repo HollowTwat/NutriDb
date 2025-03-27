@@ -118,7 +118,7 @@ namespace NutriDbService.Helpers
                 if (int.TryParse(userInfo.Donelessonlist.Split(',').Last(), out int lasLes))
                 {
 
-                    if (!(lasLes == 21))
+                    if (lasLes != 21)
                     {
                         if (userInfo.LastlessonTime < DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-1))
                             isLessonForgotSend = true;
