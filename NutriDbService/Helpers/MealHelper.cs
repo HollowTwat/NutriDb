@@ -177,7 +177,7 @@ namespace NutriDbService.Helpers
 
         public async Task<List<MealResponse>> GetMeals(GetUserMealsRequest req)
         {
-            var user = await _nutriDbContext.Users.SingleOrDefaultAsync(x => x.TgId == req.userTgId);
+            var user = await _nutriDbContext.Users.AsNoTracking().SingleOrDefaultAsync(x => x.TgId == req.userTgId);
             if (user == null)
             {
                 var mes = $"I Cant Find User : {req.userTgId}";
@@ -206,7 +206,7 @@ namespace NutriDbService.Helpers
                     break;
             }
             //var meals = _context.Meals.Where(x => x.UserId == user.Id && x.MealTime.Value.Date > startDate && x.MealTime.Value.DayOfWeek == (DayOfWeek)day).ToList();
-            var meals = await _nutriDbContext.Meals.Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).ToListAsync();
+            var meals = await _nutriDbContext.Meals.AsNoTracking().Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).ToListAsync();
             if (req.day != null)
             {
                 meals = meals.Where(x => x.MealTime.DayOfWeek == (DayOfWeek)req.day).ToList();
@@ -220,7 +220,7 @@ namespace NutriDbService.Helpers
                 meals = meals.Where(x => x.Type == ((short)req.typemeal)).ToList();
             }
             var mealsId = meals.Select(x => x.Id).ToList();
-            var dishes = await _nutriDbContext.Dishes.Where(x => mealsId.Contains(x.MealId)).ToListAsync();
+            var dishes = await _nutriDbContext.Dishes.AsNoTracking().Where(x => mealsId.Contains(x.MealId)).ToListAsync();
             var resp = new List<MealResponse>() { };
             foreach (var meal in meals)
             {
@@ -296,7 +296,7 @@ namespace NutriDbService.Helpers
 
         public async Task<List<KKMealResponse>> GetMealsKK(GetUserMealsRequest req)
         {
-            var user = await _nutriDbContext.Users.SingleOrDefaultAsync(x => x.TgId == req.userTgId);
+            var user = await _nutriDbContext.Users.AsNoTracking().SingleOrDefaultAsync(x => x.TgId == req.userTgId);
             if (user == null)
             {
                 var mes = $"I Cant Find User : {req.userTgId}";
@@ -325,7 +325,7 @@ namespace NutriDbService.Helpers
                     break;
             }
             //var meals = _context.Meals.Where(x => x.UserId == user.Id && x.MealTime.Value.Date > startDate && x.MealTime.Value.DayOfWeek == (DayOfWeek)day).ToList();
-            var meals = await _nutriDbContext.Meals.Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).ToListAsync();
+            var meals = await _nutriDbContext.Meals.AsNoTracking().Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).ToListAsync();
             if (req.day != null)
             {
                 meals = meals.Where(x => x.MealTime.DayOfWeek == (DayOfWeek)req.day).ToList();
@@ -339,7 +339,7 @@ namespace NutriDbService.Helpers
                 meals = meals.Where(x => x.Type == ((short)req.typemeal)).ToList();
             }
             var mealsId = meals.Select(x => x.Id).ToList();
-            var dishes = await _nutriDbContext.Dishes.Where(x => mealsId.Contains(x.MealId)).ToListAsync();
+            var dishes = await _nutriDbContext.Dishes.AsNoTracking().Where(x => mealsId.Contains(x.MealId)).ToListAsync();
             var resp = new List<KKMealResponse>() { };
             foreach (var meal in meals)
             {
@@ -366,7 +366,7 @@ namespace NutriDbService.Helpers
 
         public async Task<MealResponse> GetSingleMeal(GetUserMealsRequest req)
         {
-            var user = await _nutriDbContext.Users.SingleOrDefaultAsync(x => x.TgId == req.userTgId);
+            var user = await _nutriDbContext.Users.AsNoTracking().SingleOrDefaultAsync(x => x.TgId == req.userTgId);
             if (user == null)
             {
                 var mes = $"I Cant Find User : {req.userTgId}";
@@ -377,7 +377,7 @@ namespace NutriDbService.Helpers
             var now = DateTime.UtcNow.ToLocalTime().AddHours(3).Date;
             var startDate = now.AddDays(-7).Date;
 
-            var meals = await _nutriDbContext.Meals.Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).ToListAsync();
+            var meals = await _nutriDbContext.Meals.AsNoTracking().Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).ToListAsync();
             if (!String.IsNullOrEmpty(req.dayStr))
             {
                 meals = meals.Where(x => x.MealTime.Date == DateTime.ParseExact(req.dayStr, "dd.MM.yyyy", CultureInfo.InvariantCulture).Date).ToList();
@@ -402,7 +402,7 @@ namespace NutriDbService.Helpers
             var meal = meals.SingleOrDefault();
             if (meal == null)
                 return new MealResponse();
-            var dishes = await _nutriDbContext.Dishes.Where(x => x.MealId == meal.Id).ToListAsync();
+            var dishes = await _nutriDbContext.Dishes.AsNoTracking().Where(x => x.MealId == meal.Id).ToListAsync();
             var resp = new MealResponse()
             {
                 mealId = meal.Id,
@@ -426,7 +426,7 @@ namespace NutriDbService.Helpers
 
         public async Task<List<MealResponse>> GetMealInMathMonthByDate(GetUserMealsRequest req)
         {
-            var user = await _nutriDbContext.Users.SingleOrDefaultAsync(x => x.TgId == req.userTgId);
+            var user = await _nutriDbContext.Users.AsNoTracking().SingleOrDefaultAsync(x => x.TgId == req.userTgId);
             if (user == null)
                 throw new Exception($"I Cant Find User : {req.userTgId}");
             //var inDay = (DayOfWeek)day;
@@ -434,7 +434,7 @@ namespace NutriDbService.Helpers
             var startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddMonths(-1).Date;
 
             //var meals = _context.Meals.Where(x => x.UserId == user.Id && x.MealTime.Value.Date > startDate && x.MealTime.Value.DayOfWeek == (DayOfWeek)day).ToList();
-            var meals = await _nutriDbContext.Meals.Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).ToListAsync();
+            var meals = await _nutriDbContext.Meals.AsNoTracking().Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).ToListAsync();
 
             if (!String.IsNullOrEmpty(req.dayStr))
             {
@@ -445,7 +445,7 @@ namespace NutriDbService.Helpers
                 meals = meals.Where(x => x.Type == ((short)req.typemeal)).ToList();
             }
             var mealsId = meals.Select(x => x.Id).ToList();
-            var dishes = await _nutriDbContext.Dishes.Where(x => mealsId.Contains(x.MealId)).ToListAsync();
+            var dishes = await _nutriDbContext.Dishes.AsNoTracking().Where(x => mealsId.Contains(x.MealId)).ToListAsync();
             var resp = new List<MealResponse>() { };
             foreach (var meal in meals)
             {

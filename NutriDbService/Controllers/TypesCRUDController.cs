@@ -157,14 +157,14 @@ namespace NutriDbService.Controllers
         {
             try
             {
-                var user = await _context.Users.SingleOrDefaultAsync(x => x.TgId == userTgId);
+                var user = await _context.Users.AsNoTracking().SingleOrDefaultAsync(x => x.TgId == userTgId);
                 if (user == null)
                     throw new Exception($"I Cant Find User : {userTgId}");
-                var meal = await _context.Meals.SingleOrDefaultAsync(x => x.UserId == user.Id && x.Id == mealId);
+                var meal = await _context.Meals.AsNoTracking().SingleOrDefaultAsync(x => x.UserId == user.Id && x.Id == mealId);
                 if (meal == null)
                     throw new Exception($"I Cant Find meal : {mealId}");
 
-                var dishes = await _context.Dishes.Where(x => x.MealId == mealId).ToListAsync();
+                var dishes = await _context.Dishes.AsNoTracking().Where(x => x.MealId == mealId).ToListAsync();
                 var resp = new List<MealResponse>
                 {
                     new MealResponse()
@@ -298,13 +298,13 @@ namespace NutriDbService.Controllers
         {
             try
             {
-                var user = await _context.Users.SingleOrDefaultAsync(x => x.TgId == userTgId);
+                var user = await _context.Users.AsNoTracking().SingleOrDefaultAsync(x => x.TgId == userTgId);
                 if (user == null)
                     throw new Exception($"I Cant Find User : {userTgId}");
 
                 var startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-7).Date;
-                var meals = await _context.Meals.Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).ToListAsync();
-                var dishes = await _context.Dishes.Where(x => meals.Select(x => x.Id).Contains(x.MealId)).ToListAsync();
+                var meals = await _context.Meals.AsNoTracking().Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).ToListAsync();
+                var dishes = await _context.Dishes.AsNoTracking().Where(x => meals.Select(x => x.Id).Contains(x.MealId)).ToListAsync();
                 var resp = new List<GetWeekMealStatusResponse>();
                 for (var i = 1; i <= 7; i++)
                 {
@@ -346,7 +346,7 @@ namespace NutriDbService.Controllers
         {
             try
             {
-                var user = await _context.Users.SingleOrDefaultAsync(x => x.TgId == userTgId);
+                var user = await _context.Users.AsNoTracking().SingleOrDefaultAsync(x => x.TgId == userTgId);
                 if (user == null)
                     throw new Exception($"I Cant Find User : {userTgId}");
 
@@ -372,8 +372,8 @@ namespace NutriDbService.Controllers
                         break;
                 }
                 daysinperiod = (now - startDate).Days;
-                var mealsIds = await _context.Meals.Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).Select(x => x.Id).ToListAsync();
-                var dishes = await _context.Dishes.Where(x => mealsIds.Contains(x.MealId)).ToListAsync();
+                var mealsIds = await _context.Meals.AsNoTracking().Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).Select(x => x.Id).ToListAsync();
+                var dishes = await _context.Dishes.AsNoTracking().Where(x => mealsIds.Contains(x.MealId)).ToListAsync();
                 var resp = new GetMealTotalResponse();
                 foreach (var dish in dishes)
                 {
@@ -814,8 +814,8 @@ namespace NutriDbService.Controllers
         {
             try
             {
-                var userId = (await _context.Users.SingleOrDefaultAsync(x => x.TgId == UserTgId)).Id;
-                var usi = await _context.Userinfos.SingleOrDefaultAsync(x => x.UserId == userId);
+                var userId = (await _context.Users.AsNoTracking().SingleOrDefaultAsync(x => x.TgId == UserTgId)).Id;
+                var usi = await _context.Userinfos.AsNoTracking().SingleOrDefaultAsync(x => x.UserId == userId);
                 //var res = new List<(string, bool)>();
                 var res2 = new List<bool>();
                 List<string> usisplit = new List<string>();
@@ -851,8 +851,8 @@ namespace NutriDbService.Controllers
         {
             try
             {
-                var userId = (await _context.Users.SingleOrDefaultAsync(x => x.TgId == UserTgId)).Id;
-                var usi = await _context.Userinfos.SingleOrDefaultAsync(x => x.UserId == userId);
+                var userId = (await _context.Users.AsNoTracking().SingleOrDefaultAsync(x => x.TgId == UserTgId)).Id;
+                var usi = await _context.Userinfos.AsNoTracking().SingleOrDefaultAsync(x => x.UserId == userId);
                 if (usi == null)
                 {
                     return 0;
@@ -875,8 +875,8 @@ namespace NutriDbService.Controllers
         {
             try
             {
-                var userId = (await _context.Users.SingleOrDefaultAsync(x => x.TgId == UserTgId)).Id;
-                var usi = await _context.Userinfos.SingleOrDefaultAsync(x => x.UserId == userId);
+                var userId = (await _context.Users.AsNoTracking().SingleOrDefaultAsync(x => x.TgId == UserTgId)).Id;
+                var usi = await _context.Userinfos.AsNoTracking().SingleOrDefaultAsync(x => x.UserId == userId);
                 var now = DateTime.UtcNow.ToLocalTime().AddHours(3);
                 if (usi.MorningPing == null || usi.EveningPing == null || usi.Timeslide == null)
                     return new GetUserPingResponse { MskTime = null };
@@ -907,8 +907,8 @@ namespace NutriDbService.Controllers
         {
             try
             {
-                var userId = (await _context.Users.SingleOrDefaultAsync(x => x.TgId == UserTgId)).Id;
-                var usi = await _context.Userinfos.SingleOrDefaultAsync(x => x.UserId == userId);
+                var userId = (await _context.Users.AsNoTracking().SingleOrDefaultAsync(x => x.TgId == UserTgId)).Id;
+                var usi = await _context.Userinfos.AsNoTracking().SingleOrDefaultAsync(x => x.UserId == userId);
                 var now = DateTime.UtcNow.ToLocalTime().AddHours(3);
                 if (usi.Timeslide == null)
                     return new GetUserPingResponse { MskTime = null };
@@ -937,8 +937,8 @@ namespace NutriDbService.Controllers
         {
             try
             {
-                var userId = (await _context.Users.SingleOrDefaultAsync(x => x.TgId == userTgId)).Id;
-                var usi = await _context.Userinfos.SingleOrDefaultAsync(x => x.UserId == userId);
+                var userId = (await _context.Users.AsNoTracking().SingleOrDefaultAsync(x => x.TgId == userTgId)).Id;
+                var usi = await _context.Userinfos.AsNoTracking().SingleOrDefaultAsync(x => x.UserId == userId);
                 var res = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, string>>(usi.Extra);
                 return Ok(res);
             }
@@ -953,7 +953,7 @@ namespace NutriDbService.Controllers
         public async Task<bool> CheckSubscription(long UserTgId)
         {
             //return  _context.Subscriptions.Any(x => x.UserTgId == UserTgId && x.IsLinked == true && x.IsActive == true);
-            return _context.Users.Any(x => x.TgId == UserTgId && x.IsActive == true);
+            return _context.Users.AsNoTracking().Any(x => x.TgId == UserTgId && x.IsActive == true);
         }
 
         [HttpPost]
@@ -1060,7 +1060,7 @@ namespace NutriDbService.Controllers
         {
             try
             {
-                var users = await _context.Users.ToListAsync();
+                var users = await _context.Users.AsNoTracking().ToListAsync();
                 if (onlyActive)
                     users.RemoveAll(x => x.IsActive = false);
                 return Ok(users.Select(x => x.TgId));

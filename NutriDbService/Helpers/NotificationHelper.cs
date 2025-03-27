@@ -61,7 +61,7 @@ namespace NutriDbService.Helpers
                 chatId: ClientId,
                 text: isMorning ? "Утреннее уведомление" : "Вечернее уведомление",
                 replyMarkup: new InlineKeyboardMarkup(buttons)
-            );
+            ).ConfigureAwait(false);
         }
         //public async Task SendNotification(int UserId, bool isMornong)
         //{
@@ -114,7 +114,12 @@ namespace NutriDbService.Helpers
                 //bool isMealNotSend = false;
                 bool isLessonForgotSend = false;
                 //var user = await _context.Users.SingleAsync(x => x.Id == UserId);
-                var userInfo = await _context.Userinfos.SingleAsync(x => x.UserId == userPing.UserId);
+                var userInfo = await _context.Userinfos.AsNoTracking().SingleAsync(x => x.UserId == userPing.UserId).ConfigureAwait(false);
+                if (userInfo == null)
+                {
+                    _logger.LogError("User info not found for user {UserId}", userPing.UserId);
+                    return;
+                }
                 if (int.TryParse(userInfo.Donelessonlist.Split(',').Last(), out int lasLes))
                 {
 
@@ -126,7 +131,7 @@ namespace NutriDbService.Helpers
                     if (isMornong)
                     {
                         if (isLessonForgotSend)
-                            await SendNotH(userPing.UserTgId, true, lasLes);
+                            await SendNotH(userPing.UserTgId, true, lasLes).ConfigureAwait(false);
                         //if (isLessonDoneSend)
                         //    await SendNotH(user.UserNoId,true, lesList.Last());
                     }

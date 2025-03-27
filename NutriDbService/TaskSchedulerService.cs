@@ -38,40 +38,52 @@ namespace NutriDbService
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger _logger;
         private static readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
+        private static readonly SemaphoreSlim _dbThrottle = new SemaphoreSlim(10, 10);
         public TaskSchedulerService(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
             _logger = _serviceProvider.CreateScope().ServiceProvider.GetRequiredService<ILogger<TaskSchedulerService>>();
         }
-        private List<UserPing> GetUserPings()
+        private async Task<List<UserPing>> GetUserPingsAsync()
         {
-            using (var scope = _serviceProvider.CreateScope())
+            await _dbThrottle.WaitAsync();
+            try
             {
-                var _context = scope.ServiceProvider.GetRequiredService<railwayContext>();
-                //List<int> validUsers = new List<int>() { 17 };
-                var us = _context.Userinfos.Include(x => x.User).Where(x => x.User.NotifyStatus == true && x.User.IsActive && x.MorningPing != null && x.EveningPing != null).ToList();
-                var users = us.Select(x => new UserPing { UserId = x.UserId, UserTgId = (long)x.User.TgId, MorningPing = (TimeOnly)x.MorningPing, EveningPing = (TimeOnly)x.EveningPing, Slide = x.Timeslide }).ToList();
-                //users = users.Where(x => validUsers.Contains(x.Id)).ToList();
-                return users;
+                using (var scope = _serviceProvider.CreateScope())
+                {
+                    var _context = scope.ServiceProvider.GetRequiredService<railwayContext>();
+                    //List<int> validUsers = new List<int>() { 17 };
+                    var us = _context.Userinfos.Include(x => x.User).Where(x => x.User.NotifyStatus == true && x.User.IsActive && x.MorningPing != null && x.EveningPing != null).ToList();
+                    var users = us.Select(x => new UserPing { UserId = x.UserId, UserTgId = (long)x.User.TgId, MorningPing = (TimeOnly)x.MorningPing, EveningPing = (TimeOnly)x.EveningPing, Slide = x.Timeslide }).ToList();
+                    //users = users.Where(x => validUsers.Contains(x.Id)).ToList();
+                    return users;
+                }
+            }
+            finally
+            {
+                _dbThrottle.Release();
             }
         }
-        public Task StartAsync(CancellationToken cancellationToken)
+        public async Task StartAsync(CancellationToken cancellationToken)
         {
-            var users = GetUserPings();
+            var users = await GetUserPingsAsync();
             ScheduleTasks(users);
             _logger.LogWarning($"Timers:{Newtonsoft.Json.JsonConvert.SerializeObject(_timers)}");
-            return Task.CompletedTask;
+
         }
 
         private void ScheduleTasks(List<UserPing> usersPings)
         {
             lock (_lock)
             {
+                //foreach (var timer in _timers)
+                //{
+                //    timer.Timer?.Dispose();
+                //}
+                //_timers.Clear();
+
                 foreach (var userPing in usersPings)
                 {
-
-                    //userPing.MorningPing = new TimeOnly(3, 06);
-                    //userPing.EveningPing = new TimeOnly(3, 04);
 
                     if (userPing.Slide != null)
                     {
@@ -85,7 +97,6 @@ namespace NutriDbService
 
         private void ScheduleTask(UserPing userPing)
         {
-            //bool isMorningNext = false;
             var morningTime = userPing.MorningPing;
             var eveningTime = userPing.EveningPing;
             var currentTime = DateTime.UtcNow.ToLocalTime().AddHours(3);
@@ -93,37 +104,60 @@ namespace NutriDbService
             var timeToNextMorningOccurrence = nextMorningOccurrence - currentTime;
             var nextEveningOccurrence = CalculateNextOccurrence(currentTime, eveningTime);
             var timeToNextEveningOccurrence = nextEveningOccurrence - currentTime;
-            //if (timeToNextMorningOccurrence < timeToNextEveningOccurrence)
-            //    isMorningNext = true;
+            Timer morningTimer = null;
+            morningTimer = new Timer(async x =>
+           {
+               try
+               {
+                   await _dbThrottle.WaitAsync();
+                   using (var scope = _serviceProvider.CreateScope())
+                   {
+                       var localNotHelper = scope.ServiceProvider.GetRequiredService<NotificationHelper>();
 
-            Timer morningTimer = new Timer(async x =>
-            {
-                using (var scope = _serviceProvider.CreateScope())
-                {
-                    var localNotHelper = scope.ServiceProvider.GetRequiredService<NotificationHelper>();
+                       // Используйте ассинхронную метод SendNotification
+                       await localNotHelper.SendNotificationH(userPing, true);
 
-                    // Используйте ассинхронную метод SendNotification
-                    await localNotHelper.SendNotificationH(userPing, true);
-                    // Планируем на следующий день
 
-                    //ScheduleTask(userPing);
-                }
-            }, null, timeToNextMorningOccurrence, TimeSpan.FromHours(24));// Timeout.InfiniteTimeSpan);
+                       //ScheduleTask(userPing);
+                   }
+               }
+               catch (Exception ex)
+               {
+                   _logger.LogError(ex, "Error in morning timer callback for user {UserId}", userPing.UserId);
+               }
+               finally
+               {
+                   _dbThrottle.Release();
+                   //morningTimer?.Change(TimeSpan.FromHours(24), Timeout.InfiniteTimeSpan);
+               }
+           }, null, timeToNextMorningOccurrence, TimeSpan.FromHours(24));// Timeout.InfiniteTimeSpan);
+            Timer eveningTimer = null;
+            eveningTimer = new Timer(async x =>
+           {
+               try
+               {
+                   await _dbThrottle.WaitAsync();
+                   using (var scope = _serviceProvider.CreateScope())
+                   {
+                       var localNotHelper = scope.ServiceProvider.GetRequiredService<NotificationHelper>();
 
-            Timer eveningTimer = new Timer(async x =>
-            {
-                using (var scope = _serviceProvider.CreateScope())
-                {
-                    var localNotHelper = scope.ServiceProvider.GetRequiredService<NotificationHelper>();
+                       // Используйте ассинхронную метод SendNotification
+                       await localNotHelper.SendNotificationH(userPing, false);
 
-                    // Используйте ассинхронную метод SendNotification
-                    await localNotHelper.SendNotificationH(userPing, false);
-                    // Планируем на следующий день
+                       //ScheduleTask(userPing);
+                   }
+               }
+               catch (Exception ex)
+               {
+                   _logger.LogError(ex, "Error in evening timer callback for user {UserId}", userPing.UserId);
+               }
+               finally
+               {
+                   _dbThrottle.Release();
+                   //eveningTimer?.Change(TimeSpan.FromHours(24), Timeout.InfiniteTimeSpan);
+               }
+           }, null, timeToNextEveningOccurrence, TimeSpan.FromHours(24));
 
-                    //ScheduleTask(userPing);
-                }
-            }, null, timeToNextEveningOccurrence, TimeSpan.FromHours(24));// Timeout.InfiniteTimeSpan);
-                                                                          //if (isMorningNext)
             _timers.Add(new UserTimer { Id = userPing.UserId, Timer = morningTimer });
             //else
             _timers.Add(new UserTimer { Id = userPing.UserId, Timer = eveningTimer });
@@ -144,22 +178,43 @@ namespace NutriDbService
 
         public async Task TimerRestart()
         {
-            await _semaphore.WaitAsync();
             try
             {
+                //await _semaphore.WaitAsync();
+
+                List<UserTimer> timersToDispose;
                 lock (_lock)
                 {
-                    // Остановить текущие таймеры
-                    foreach (var timer in _timers)
-                    {
-                        timer.Timer.Dispose();
-                    }
+                    timersToDispose = _timers.ToList();
                     _timers.Clear();
-
-                    // Настроить новые таймеры
-                    var users = GetUserPings();
-
-                    ScheduleTasks(users);
+                }
+                foreach (var timer in timersToDispose)
+                {
+                    try
+                    {
+                        await timer.Timer.DisposeAsync().ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error disposing timer for user {UserId}", timer.Id);
+                        throw;
+                    }
+                }
+                List<UserPing> users = await GetUserPingsAsync().ConfigureAwait(false);
+                lock (_lock)
+                {
+                    foreach (var userPing in users)
+                    {
+                        try
+                        {
+                            ScheduleTask(userPing);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Failed to schedule task for user {UserId}", userPing.UserId);
+                            throw;
+                        }
+                    }
                 }
             }
             catch (Exception ex)
@@ -170,7 +225,6 @@ namespace NutriDbService
             finally
             {
                 _logger.LogWarning($"Notofication Restarted");
-                _semaphore.Release(); // Высвобождение доступа для других вызовов
             }
 
         }
