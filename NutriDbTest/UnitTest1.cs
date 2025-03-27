@@ -47,8 +47,8 @@ namespace NutriDbTest
         {
             Setup();
             var notificationHelper = new NotificationHelper(new railwayContext(), _mockServiceScopeFactory.Object);
-            await notificationHelper.SendNotificationH(new NutriDbService.UserPing { UserId = 78, UserTgId = 389054202 }, true);
-            await notificationHelper.SendNotificationH(new NutriDbService.UserPing { UserId = 78, UserTgId = 389054202 }, false);
+            await notificationHelper.SendNotificationH(new NutriDbService.UserPing { UserId = 435, UserTgId = 633929411 }, true);
+            await notificationHelper.SendNotificationH(new NutriDbService.UserPing { UserId = 435, UserTgId = 633929411 }, false);
             Xunit.Assert.True(true);
         }
 
