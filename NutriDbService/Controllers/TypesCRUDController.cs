@@ -699,19 +699,22 @@ namespace NutriDbService.Controllers
                 }
                 else
                 {
-                    var dbInfo = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, string>>(usi.Extra);
-
-                    foreach (var kv in req.Info)
+                    if (usi.Extra == null)
+                        usi.Extra = Newtonsoft.Json.JsonConvert.SerializeObject(req.Info);
+                    else
                     {
-                        if (dbInfo.ContainsKey(kv.Key))
-                            dbInfo[kv.Key] = kv.Value;
-                        else
-                            dbInfo.Add(kv.Key, kv.Value);
+                        var dbInfo = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, string>>(usi.Extra);
+
+                        foreach (var kv in req.Info)
+                        {
+                            if (dbInfo.ContainsKey(kv.Key))
+                                dbInfo[kv.Key] = kv.Value;
+                            else
+                                dbInfo.Add(kv.Key, kv.Value);
+                        }
+
+                        usi.Extra = Newtonsoft.Json.JsonConvert.SerializeObject(dbInfo);
                     }
-
-                    usi.Extra = Newtonsoft.Json.JsonConvert.SerializeObject(dbInfo);
-
-
                     short? age = req.Info.ContainsKey("user_info_age") == true ? (string.IsNullOrEmpty(req?.Info["user_info_age"]) ? null : short.Parse(req.Info["user_info_age"])) : null;
                     if (age != null)
                         usi.Age = age;
