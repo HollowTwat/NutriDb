@@ -259,8 +259,8 @@ namespace NutriDbService.Helpers
             }
             var resp = new List<MealResponse>() { };
             //var inDay = (DayOfWeek)day;
-            var now = DateTime.UtcNow.ToLocalTime().AddHours(3).Date;
-            var startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-7).Date;
+            var now = DateTime.UtcNow.ToLocalTime().AddHours(3).AddHours(Decimal.ToDouble(user.Timeslide)).Date;
+            var startDate = now.AddDays(-7).Date;
             //var meals = _context.Meals.Where(x => x.UserId == user.Id && x.MealTime.Value.Date > startDate && x.MealTime.Value.DayOfWeek == (DayOfWeek)day).ToList();
             var meals = await _nutriDbContext.Meals.Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).ToListAsync();
             if (meals.Count < 5)

@@ -14,6 +14,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
+using Telegram.Bot.Types;
 
 namespace NutriDbService.Controllers
 {
@@ -302,7 +303,7 @@ namespace NutriDbService.Controllers
                 if (user == null)
                     throw new Exception($"I Cant Find User : {userTgId}");
 
-                var startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-7).Date;
+                var startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddHours(Decimal.ToDouble(user.Timeslide)).AddDays(-7).Date;
                 var meals = await _context.Meals.AsNoTracking().Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).ToListAsync();
                 var dishes = await _context.Dishes.AsNoTracking().Where(x => meals.Select(x => x.Id).Contains(x.MealId)).ToListAsync();
                 var resp = new List<GetWeekMealStatusResponse>();
@@ -350,22 +351,22 @@ namespace NutriDbService.Controllers
                 if (user == null)
                     throw new Exception($"I Cant Find User : {userTgId}");
 
-                DateTime startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).Date;
+                var now = DateTime.UtcNow.ToLocalTime().AddHours(3).AddHours(Decimal.ToDouble(user.Timeslide)).Date;
+                DateTime startDate = now;
                 int daysinperiod = 0;
-                var now = DateTime.UtcNow.ToLocalTime().AddHours(3).Date;
                 switch (period)
                 {
                     case Periods.day:
-                        startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-1).Date;
+                        startDate = now.AddDays(-1).Date;
                         break;
                     case Periods.week:
                         startDate = MealHelper.GetFirstDayOfWeek(now);
                         break;
                     case Periods.mathweek:
-                        startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-7).Date;
+                        startDate = now.AddDays(-7).Date;
                         break;
                     case Periods.math3weeks:
-                        startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-21).Date;
+                        startDate = now.AddDays(-21).Date;
                         break;
                     case Periods.month:
                         startDate = new DateTime(now.Year, now.Month, 1);
@@ -383,7 +384,7 @@ namespace NutriDbService.Controllers
                     resp.TotalFats += dish.Fats;
                     resp.TotalKkal += dish.Kkal;
                 }
-                var extra = (await _context.Userinfos.SingleOrDefaultAsync(x => x.UserId == user.Id))?.Extra;
+                var extra = (await _context.Userinfos.AsNoTracking().SingleOrDefaultAsync(x => x.UserId == user.Id))?.Extra;
                 if (extra == null) { resp.GoalKkal = 0.0m; }
                 else
                 {
@@ -502,22 +503,23 @@ namespace NutriDbService.Controllers
             }
         }
 
+        [Obsolete]
         [HttpPost]
         public async Task<ActionResult<bool>> GetUserWeekPlot(long userTgId)
         {
             try
             {
-                var user = await _context.Users.SingleOrDefaultAsync(x => x.TgId == userTgId);
+                var user = await _context.Users.AsNoTracking().SingleOrDefaultAsync(x => x.TgId == userTgId);
                 if (user == null)
                     throw new Exception($"I Cant Find User : {userTgId}");
-                var goalkk = (await _context.Userinfos.SingleOrDefaultAsync(x => x.UserId == user.Id)).Goalkk;
-                DateTime startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-7).Date;
+                var goalkk = (await _context.Userinfos.AsNoTracking().SingleOrDefaultAsync(x => x.UserId == user.Id)).Goalkk;
                 int daysinperiod = 0;
-                var now = DateTime.UtcNow.ToLocalTime().AddHours(3).Date;
+                var now = DateTime.UtcNow.ToLocalTime().AddHours(3).AddHours(Decimal.ToDouble(user.Timeslide)).Date;
+                DateTime startDate = now.AddDays(-7).Date;
 
                 daysinperiod = now.Day - startDate.Day;
-                var meals = await _context.Meals.Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).ToListAsync();
-                var dishes = await _context.Dishes.Where(x => meals.Select(x => x.Id).Contains(x.MealId)).ToListAsync();
+                var meals = await _context.Meals.AsNoTracking().Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).ToListAsync();
+                var dishes = await _context.Dishes.AsNoTracking().Where(x => meals.Select(x => x.Id).Contains(x.MealId)).ToListAsync();
                 //List<(string, decimal)> plotPairs = new List<(string, decimal)>();
                 decimal[] values = new decimal[7];
                 string[] labels = new string[7];
@@ -561,17 +563,18 @@ namespace NutriDbService.Controllers
         {
             try
             {
-                var user = await _context.Users.SingleOrDefaultAsync(x => x.TgId == userTgId);
+                var user = await _context.Users.AsNoTracking().SingleOrDefaultAsync(x => x.TgId == userTgId);
                 if (user == null)
                     throw new Exception($"I Cant Find User : {userTgId}");
                 var goalkk = (await _context.Userinfos.SingleOrDefaultAsync(x => x.UserId == user.Id)).Goalkk;
-                DateTime startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-7).Date;
+
+                var now = DateTime.UtcNow.ToLocalTime().AddHours(3).AddHours(Decimal.ToDouble(user.Timeslide)).Date;
+                DateTime startDate = now.AddDays(-7).Date;
                 int daysinperiod = 0;
-                var now = DateTime.UtcNow.ToLocalTime().AddHours(3).Date;
 
                 daysinperiod = now.Day - startDate.Day;
-                var meals = await _context.Meals.Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).ToListAsync();
-                var dishes = await _context.Dishes.Where(x => meals.Select(x => x.Id).Contains(x.MealId)).ToListAsync();
+                var meals = await _context.Meals.AsNoTracking().Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).ToListAsync();
+                var dishes = await _context.Dishes.AsNoTracking().Where(x => meals.Select(x => x.Id).Contains(x.MealId)).ToListAsync();
                 //List<(string, decimal)> plotPairs = new List<(string, decimal)>();
                 decimal[] values = new decimal[7];
                 string[] labels = new string[7];
@@ -781,20 +784,22 @@ namespace NutriDbService.Controllers
         {
             try
             {
-                var userId = (await _context.Users.SingleOrDefaultAsync(x => x.TgId == UserTgId)).Id;
+                var user = await _context.Users.AsNoTracking().SingleOrDefaultAsync(x => x.TgId == UserTgId);
+                var userId = user.Id;
                 var usi = await _context.Userinfos.SingleOrDefaultAsync(x => x.UserId == userId);
+                var now = DateTime.UtcNow.ToLocalTime().AddHours(3).AddHours(Decimal.ToDouble(user.Timeslide));
                 if (usi == null)
                 {
                     await _context.Userinfos.AddAsync(new Userinfo
                     {
                         UserId = userId,
                         Donelessonlist = lesson.ToString(),
-                        LastlessonTime = DateTime.UtcNow.ToLocalTime().AddHours(3),
+                        LastlessonTime = now,
                     });
                 }
                 else
                 {
-                    usi.LastlessonTime = DateTime.UtcNow.ToLocalTime().AddHours(3);
+                    usi.LastlessonTime = now;
                     if (usi.Donelessonlist == null)
                         usi.Donelessonlist = $"{lesson}";
                     else
@@ -862,15 +867,26 @@ namespace NutriDbService.Controllers
         {
             try
             {
-                var userId = (await _context.Users.AsNoTracking().SingleOrDefaultAsync(x => x.TgId == UserTgId)).Id;
-                var usi = await _context.Userinfos.AsNoTracking().SingleOrDefaultAsync(x => x.UserId == userId);
+                var user = await _context.Users.AsNoTracking().SingleOrDefaultAsync(x => x.TgId == UserTgId);
+                var usi = await _context.Userinfos.AsNoTracking().SingleOrDefaultAsync(x => x.UserId == user.Id);
+                var now = DateTime.UtcNow.ToLocalTime().AddHours(3).AddHours(Decimal.ToDouble(user.Timeslide)).Date;
+
                 if (usi == null)
                 {
                     return 0;
                 }
                 else
                 {
-                    return int.Parse(usi.Donelessonlist.Split(',').ToList().Last());
+                    var les = int.Parse(usi.Donelessonlist.Split(',').ToList().Last());
+                    if (now.Date > usi.LastlessonTime.Value.Date)
+                        return les;
+                    else
+                    {
+                        if (les == 99 || les == 21)
+                            return les;
+                        else
+                            return (les - 1);
+                    }
                 }
             }
             catch (Exception ex)
@@ -886,12 +902,13 @@ namespace NutriDbService.Controllers
         {
             try
             {
-                var userId = (await _context.Users.AsNoTracking().SingleOrDefaultAsync(x => x.TgId == UserTgId)).Id;
+                var user = await _context.Users.AsNoTracking().SingleOrDefaultAsync(x => x.TgId == UserTgId);
+                var userId = user.Id;
                 var usi = await _context.Userinfos.AsNoTracking().SingleOrDefaultAsync(x => x.UserId == userId);
-                var now = DateTime.UtcNow.ToLocalTime().AddHours(3);
+                var now = DateTime.UtcNow.ToLocalTime().AddHours(3).AddHours(Decimal.ToDouble(user.Timeslide));
                 if (usi.MorningPing == null || usi.EveningPing == null || usi.Timeslide == null)
                     return new GetUserPingResponse { MskTime = null };
-                DateTime ping = DateTime.UtcNow.ToLocalTime().AddHours(3);
+                DateTime ping = now;
                 if (TimeOfDay == 0)//утро
                 {
                     ping = DateOnly.FromDateTime(now).ToDateTime((TimeOnly)usi.MorningPing);
@@ -918,9 +935,10 @@ namespace NutriDbService.Controllers
         {
             try
             {
-                var userId = (await _context.Users.AsNoTracking().SingleOrDefaultAsync(x => x.TgId == UserTgId)).Id;
+                var user = await _context.Users.AsNoTracking().SingleOrDefaultAsync(x => x.TgId == UserTgId);
+                var userId = user.Id;
                 var usi = await _context.Userinfos.AsNoTracking().SingleOrDefaultAsync(x => x.UserId == userId);
-                var now = DateTime.UtcNow.ToLocalTime().AddHours(3);
+                var now = DateTime.UtcNow.ToLocalTime().AddHours(3).AddHours(Decimal.ToDouble(user.Timeslide));
                 if (usi.Timeslide == null)
                     return new GetUserPingResponse { MskTime = null };
 
