@@ -163,8 +163,9 @@ namespace NutriDbService.Helpers
             meal.Dishes = dishes;
             meal.Description = createMealRequest.meal.description;
             meal.Type = (short)createMealRequest.meal.type;
-            if (DateTime.TryParseExact(createMealRequest.EatedAt, "dd.MM.yyyy_HH:mm", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var parseTime))
-                meal.MealTime = parseTime;
+            // Не нужно, так как редактируется старый прием пищи
+            //if (DateTime.TryParseExact(createMealRequest.EatedAt, "dd.MM.yyyy_HH:mm", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var parseTime))
+            //    meal.MealTime = parseTime;
 
 
             await _nutriDbContext.Database.BeginTransactionAsync();

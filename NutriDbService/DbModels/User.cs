@@ -23,6 +23,7 @@ namespace NutriDbService.DbModels
         public long TgId { get; set; }
         public bool? NotifyStatus { get; set; }
         public string Email { get; set; }
+        public decimal Timeslide { get; set; }
 
         public virtual ICollection<Loyalty> Loyalties { get; set; }
         public virtual ICollection<Meal> Meals { get; set; }
