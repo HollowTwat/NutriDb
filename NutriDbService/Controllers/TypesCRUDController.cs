@@ -441,7 +441,6 @@ namespace NutriDbService.Controllers
                 await _context.Users.AddAsync(new DbModels.User
                 {
                     TgId = userTgId,
-                    Timezone = 0,
                     StageId = 0,
                     LessonId = 0,
                     RegistrationTime = DateOnly.FromDateTime(DateTime.UtcNow.ToLocalTime().AddHours(3)),
@@ -482,7 +481,6 @@ namespace NutriDbService.Controllers
                 await _context.Users.AddAsync(new DbModels.User
                 {
                     TgId = userTgId,
-                    Timezone = 0,
                     StageId = 0,
                     LessonId = 0,
                     RegistrationTime = DateOnly.FromDateTime(DateTime.UtcNow.ToLocalTime().AddHours(3)),
@@ -619,8 +617,8 @@ namespace NutriDbService.Controllers
             try
             {
                 _logger.LogInformation($"User \n:userTgId={req.UserTgId} add userInfo in AddUserExtraInfo ");
-
-                var userId = (await _context.Users.SingleOrDefaultAsync(x => x.TgId == req.UserTgId)).Id;
+                var user = await _context.Users.SingleOrDefaultAsync(x => x.TgId == req.UserTgId);
+                var userId = user.Id;
                 var usi = await _context.Userinfos.SingleOrDefaultAsync(x => x.UserId == userId);
                 var info = Newtonsoft.Json.JsonConvert.SerializeObject(req.Info);
 
@@ -650,6 +648,7 @@ namespace NutriDbService.Controllers
                         MorningPing = IsmorningPing ? m : null,
                         EveningPing = IseveningPing ? e : null,
                         Timeslide = timeslide,
+                        TgId = req.UserTgId,
                         Goal = goal
                     });
                 }
@@ -666,6 +665,11 @@ namespace NutriDbService.Controllers
                     usi.Timeslide = timeslide;
                     usi.Goal = goal;
                     _context.Update(usi);
+                }
+                if (timeslide != null)
+                {
+                    user.Timeslide = (decimal)timeslide;
+                    _context.Update(user);
                 }
                 await _context.SaveChangesAsync();
                 if (IsmorningPing || IseveningPing)
@@ -688,7 +692,8 @@ namespace NutriDbService.Controllers
             {
                 _logger.LogInformation($"User \n:userTgId={req.UserTgId} add userInfo in AddOrUpdateUserExtraInfo {Newtonsoft.Json.JsonConvert.SerializeObject(req)}");
 
-                var userId = (await _context.Users.SingleOrDefaultAsync(x => x.TgId == req.UserTgId)).Id;
+                var user = await _context.Users.SingleOrDefaultAsync(x => x.TgId == req.UserTgId);
+                var userId = user.Id;
                 var usi = await _context.Userinfos.SingleOrDefaultAsync(x => x.UserId == userId);
                 bool ismorningPing = false;
                 bool iseveningPing = false;
@@ -745,7 +750,10 @@ namespace NutriDbService.Controllers
 
                     decimal? timeslide = req.Info.ContainsKey("user_info_timeslide") == true ? (req.Info.ContainsKey("user_info_timeslide") == true ? (string.IsNullOrEmpty(req.Info["user_info_timeslide"]) ? null : decimal.Parse(req.Info["user_info_timeslide"])) : null) : null;
                     if (timeslide != null)
+                    {
                         usi.Timeslide = timeslide;
+                        user.Timeslide = (decimal)timeslide;
+                    }
 
                     string goal = req.Info.ContainsKey("user_info_goal") == true ? (string.IsNullOrEmpty(req.Info["user_info_goal"]) ? null : req.Info["user_info_goal"]) : null;
                     if (goal != null)

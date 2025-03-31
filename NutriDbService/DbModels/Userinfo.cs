@@ -19,6 +19,7 @@ namespace NutriDbService.DbModels
         public decimal? Goalkk { get; set; }
         public string Goal { get; set; }
         public DateTime? LastlessonTime { get; set; }
+        public long TgId { get; set; }
 
         public virtual User User { get; set; }
     }

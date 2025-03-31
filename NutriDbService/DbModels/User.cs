@@ -15,7 +15,6 @@ namespace NutriDbService.DbModels
 
         public int Id { get; set; }
         public string Username { get; set; }
-        public short? Timezone { get; set; }
         public DateOnly RegistrationTime { get; set; }
         public int? StageId { get; set; }
         public int? LessonId { get; set; }

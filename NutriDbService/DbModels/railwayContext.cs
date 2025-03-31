@@ -258,8 +258,6 @@ namespace NutriDbService.DbModels
                     .HasPrecision(10, 2)
                     .HasColumnName("timeslide");
 
-                entity.Property(e => e.Timezone).HasColumnName("timezone");
-
                 entity.Property(e => e.Username)
                     .HasMaxLength(255)
                     .HasColumnName("username");
@@ -309,6 +307,8 @@ namespace NutriDbService.DbModels
                 entity.Property(e => e.MorningPing)
                     .HasPrecision(6)
                     .HasColumnName("morningPing");
+
+                entity.Property(e => e.TgId).HasColumnName("tgId");
 
                 entity.Property(e => e.Timeslide)
                     .HasPrecision(10, 2)

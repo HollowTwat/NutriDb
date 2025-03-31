@@ -51,7 +51,7 @@ namespace NutriDbService.Helpers
             Meal meal;
             if (createMealRequest.mealId == null)
             {
-                var IsTyme = DateTime.TryParseExact(createMealRequest.EatedAt, "dd.MM.yyyy", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var parseTime);
+                var IsTyme = DateTime.TryParseExact(createMealRequest.EatedAt, "dd.MM.yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parseTime);
 
                 meal = new Meal()
                 {
@@ -61,7 +61,7 @@ namespace NutriDbService.Helpers
                     Description = createMealRequest.meal.description,
                     Type = (short)createMealRequest.meal.type,
 
-                    MealTime = IsTyme ? parseTime : DateTime.UtcNow.ToLocalTime().AddHours(3)
+                    MealTime = IsTyme ? parseTime : DateTime.UtcNow.ToLocalTime().AddHours(3).AddHours(Decimal.ToDouble(user.Timeslide))
                 };
 
                 var oldmeal = await _nutriDbContext.Meals.SingleOrDefaultAsync(x => x.UserId == meal.UserId && x.MealTime.Date == meal.MealTime.Date && x.Type == meal.Type);
