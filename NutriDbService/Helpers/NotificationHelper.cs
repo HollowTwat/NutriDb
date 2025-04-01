@@ -161,6 +161,16 @@ namespace NutriDbService.Helpers
             }
 
         }
+
+        public async Task SendCustomMessToUserH(long TgId, string mess)
+        {
+            var botClient = new TelegramBotClient(Htoken);
+
+            await botClient.SendTextMessageAsync(
+                chatId: TgId,
+                text: mess
+            ).ConfigureAwait(false);
+        }
     }
 
     public class NocodeNot

@@ -1085,12 +1085,11 @@ namespace NutriDbService.Controllers
         }
 
         [HttpGet]
-        public async Task<bool> SendManualMessToUserH(long userTgId, bool isMorning)
+        public async Task<bool> SendManualMessToUserH(long userTgId, string mess)
         {
             try
             {
-                var user = await _context.Users.SingleOrDefaultAsync(x => x.TgId == userTgId);
-                await _notificationHelper.SendNotificationH(new UserPing { UserTgId = userTgId, UserId = user.Id }, isMorning);
+                await _notificationHelper.SendCustomMessToUserH(userTgId, mess);
                 return true;
             }
             catch (Exception ex) { return false; }
