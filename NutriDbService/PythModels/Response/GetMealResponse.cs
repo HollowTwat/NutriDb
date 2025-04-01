@@ -37,12 +37,12 @@ namespace NutriDbService.PythModels.Response
                 //if (isSendMealId && meal.meal.type == mealtype.nightsnack)
                 //    pretty += $"Прием пищи {meal.mealId}";
 
-                pretty += $"\n{GetEnumDescription((mealtype)meal.meal.type)}";
+                pretty += $"\n<b>{GetEnumDescription((mealtype)meal.meal.type)}</b>\n";
                 var i = 0;
                 foreach (var item in meal.meal.food)
                 {
                     i++;
-                    pretty += $"\n{i}){item.description} {Math.Round(item.weight, 0)}г - {Math.Round(item.nutritional_value.kcal, 0)} ккал ({Math.Round(item.nutritional_value.fats, 0)}г жиров {Math.Round(item.nutritional_value.carbs, 0)}г углеводов {Math.Round(item.nutritional_value.protein, 0)}г белков)";
+                    pretty += $"\n{i}. <b>{item.description} {Math.Round(item.weight, 0)}г</b> :\n{Math.Round(item.nutritional_value.kcal, 0)} ккал ({Math.Round(item.nutritional_value.fats, 0)}г жиров {Math.Round(item.nutritional_value.carbs, 0)}г углеводов {Math.Round(item.nutritional_value.protein, 0)}г белков)\n";
                 }
                 pretty += "\n\n";
             }
