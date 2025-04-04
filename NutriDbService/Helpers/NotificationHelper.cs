@@ -115,6 +115,7 @@ namespace NutriDbService.Helpers
                 bool isLessonForgotSend = false;
                 //var user = await _context.Users.SingleAsync(x => x.Id == UserId);
                 var userInfo = await _context.Userinfos.AsNoTracking().SingleAsync(x => x.UserId == userPing.UserId).ConfigureAwait(false);
+
                 if (userInfo == null)
                 {
                     _logger.LogError("User info not found for user {UserId}", userPing.UserId);

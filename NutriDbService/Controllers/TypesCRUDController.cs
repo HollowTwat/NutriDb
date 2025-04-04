@@ -968,6 +968,8 @@ namespace NutriDbService.Controllers
             {
                 var userId = (await _context.Users.AsNoTracking().SingleOrDefaultAsync(x => x.TgId == userTgId)).Id;
                 var usi = await _context.Userinfos.AsNoTracking().SingleOrDefaultAsync(x => x.UserId == userId);
+                if (string.IsNullOrEmpty(usi?.Extra))
+                    return Ok(new Dictionary<string, string> { { "isempty", "true" } });
                 var res = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, string>>(usi.Extra);
                 return Ok(res);
             }
