@@ -9,6 +9,7 @@ using NutriDbService.PythModels.Request;
 using NutriDbService.PythModels.Response;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -613,7 +614,14 @@ namespace NutriDbService.Controllers
                 return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
         }
-
+        private decimal? ParseDecimal(string input)
+        {
+            if (!string.IsNullOrEmpty(input) && decimal.TryParse(input, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal result))
+            {
+                return result;
+            }
+            return null;
+        }
         [HttpPost]
         public async Task<ActionResult<bool>> AddUserExtraInfo(AddUserExtraRequest req)
         {
@@ -626,14 +634,16 @@ namespace NutriDbService.Controllers
                 var info = Newtonsoft.Json.JsonConvert.SerializeObject(req.Info);
 
                 short? age = string.IsNullOrEmpty(req.Info["user_info_age"]) ? null : short.Parse(req.Info["user_info_age"]);
-                decimal? weight = string.IsNullOrEmpty(req.Info["user_info_weight"]) ? null : decimal.Parse(req.Info["user_info_weight"]);
-                decimal? height = string.IsNullOrEmpty(req.Info["user_info_height"]) ? null : decimal.Parse(req.Info["user_info_height"]);
+                decimal? weight = ParseDecimal(req.Info["user_info_weight"]);
+                decimal? height = ParseDecimal(req.Info["user_info_height"]);
+                decimal? goalkk = ParseDecimal(req.Info["target_calories"]);
+                decimal? timeslide = ParseDecimal(req.Info["user_info_timeslide"]);
+
+
                 string gender = string.IsNullOrEmpty(req.Info["user_info_gender"]) ? null : req.Info["user_info_gender"];
-                decimal? goalkk = string.IsNullOrEmpty(req.Info["target_calories"]) ? null : decimal.Parse(req.Info["target_calories"]);
 
                 bool IsmorningPing = string.IsNullOrEmpty(req.Info["user_info_morning_ping"]) ? false : TimeOnly.TryParseExact(req.Info["user_info_morning_ping"], "%H:mm", out var m);
                 bool IseveningPing = string.IsNullOrEmpty(req.Info["user_info_evening_ping"]) ? false : TimeOnly.TryParseExact(req.Info["user_info_evening_ping"], "%H:mm", out var e);
-                decimal? timeslide = string.IsNullOrEmpty(req.Info["user_info_timeslide"]) ? null : decimal.Parse(req.Info["user_info_timeslide"]);
 
                 string goal = string.IsNullOrEmpty(req.Info["user_info_goal"]) ? null : req.Info["user_info_goal"];
 
@@ -727,11 +737,11 @@ namespace NutriDbService.Controllers
                     if (age != null)
                         usi.Age = age;
 
-                    decimal? weight = req.Info.ContainsKey("user_info_weight") == true ? (string.IsNullOrEmpty(req.Info["user_info_weight"]) ? null : decimal.Parse(req.Info["user_info_weight"])) : null;
+                    decimal? weight = req.Info.ContainsKey("user_info_weight") == true ? ParseDecimal(req.Info["user_info_weight"]) : null;
                     if (weight != null)
                         usi.Weight = weight;
 
-                    decimal? height = req.Info.ContainsKey("user_info_height") == true ? (string.IsNullOrEmpty(req.Info["user_info_height"]) ? null : decimal.Parse(req.Info["user_info_height"])) : null;
+                    decimal? height = req.Info.ContainsKey("user_info_height") == true ? ParseDecimal(req.Info["user_info_height"]) : null;
                     if (height != null)
                         usi.Height = height;
 
@@ -739,7 +749,7 @@ namespace NutriDbService.Controllers
                     if (gender != null)
                         usi.Gender = gender;
 
-                    decimal? goalkk = req.Info.ContainsKey("target_calories") == true ? (string.IsNullOrEmpty(req.Info["target_calories"]) ? null : decimal.Parse(req.Info["target_calories"])) : null;
+                    decimal? goalkk = req.Info.ContainsKey("target_calories") == true ? ParseDecimal(req.Info["target_calories"]) : null;
                     if (goalkk != null)
                         usi.Goalkk = goalkk;
 
@@ -751,7 +761,7 @@ namespace NutriDbService.Controllers
                     if (iseveningPing)
                         usi.EveningPing = e;
 
-                    decimal? timeslide = req.Info.ContainsKey("user_info_timeslide") == true ? (req.Info.ContainsKey("user_info_timeslide") == true ? (string.IsNullOrEmpty(req.Info["user_info_timeslide"]) ? null : decimal.Parse(req.Info["user_info_timeslide"])) : null) : null;
+                    decimal? timeslide = req.Info.ContainsKey("user_info_timeslide") == true ? ParseDecimal(req.Info["user_info_timeslide"]) : null;
                     if (timeslide != null)
                     {
                         usi.Timeslide = timeslide;
