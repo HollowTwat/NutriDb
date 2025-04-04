@@ -246,7 +246,12 @@ namespace NutriDbService.Controllers
 
                 var userId = (await _context.Users.SingleOrDefaultAsync(x => x.TgId == req.userTgId)).Id;
                 var usi = await _context.Userinfos.SingleOrDefaultAsync(x => x.UserId == userId);
-                var userInfo = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, string>>(usi.Extra);
+                Dictionary<string, string> userInfo;
+                if (string.IsNullOrEmpty(usi?.Extra))
+                    userInfo = new Dictionary<string, string> { { "isempty", "true" } };
+                else
+                    userInfo = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, string>>(usi.Extra);
+
                 realResp.user_info = userInfo;
                 decimal avarageKK = 0m;
 
