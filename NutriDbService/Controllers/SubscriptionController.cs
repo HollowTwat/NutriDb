@@ -375,7 +375,9 @@ namespace NutriDbService.Controllers
             Email = Email.ToLower().Trim();
             try
             {
+#if !DEBUG
                 CheckSecret(HttpContext.Request);
+#endif
                 return await _context.Subscriptions.Where(x => x.Email == Email).ToListAsync();
             }
             catch (Exception ex) { _logger.LogError(ex, "GetUserSub"); throw; }
@@ -405,7 +407,9 @@ namespace NutriDbService.Controllers
             try
             {
                 Email = Email.ToLower().Trim();
+                #if !DEBUG
                 CheckSecret(HttpContext.Request);
+#endif
                 var subs = await _context.Subscriptions.Where(x => x.Email.ToLower().Trim() == Email).ToListAsync();
                 if (!subs.Any())
                     return false;
