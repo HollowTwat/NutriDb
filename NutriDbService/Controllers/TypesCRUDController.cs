@@ -509,61 +509,6 @@ namespace NutriDbService.Controllers
             }
         }
 
-        [Obsolete]
-        [HttpPost]
-        public async Task<ActionResult<bool>> GetUserWeekPlot(long userTgId)
-        {
-            try
-            {
-                var user = await _context.Users.AsNoTracking().SingleOrDefaultAsync(x => x.TgId == userTgId);
-                if (user == null)
-                    throw new Exception($"I Cant Find User : {userTgId}");
-                var goalkk = (await _context.Userinfos.AsNoTracking().SingleOrDefaultAsync(x => x.UserId == user.Id)).Goalkk;
-                int daysinperiod = 0;
-                var now = DateTime.UtcNow.ToLocalTime().AddHours(3).AddHours(Decimal.ToDouble(user.Timeslide)).Date;
-                DateTime startDate = now.AddDays(-7).Date;
-
-                daysinperiod = now.Day - startDate.Day;
-                var meals = await _context.Meals.AsNoTracking().Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).ToListAsync();
-                var dishes = await _context.Dishes.AsNoTracking().Where(x => meals.Select(x => x.Id).Contains(x.MealId)).ToListAsync();
-                //List<(string, decimal)> plotPairs = new List<(string, decimal)>();
-                decimal[] values = new decimal[7];
-                string[] labels = new string[7];
-                for (var i = 1; i <= 7; i++)
-                {
-                    var ndate = startDate.AddDays(i);
-                    var todaymeals = meals.Where(x => x.MealTime.Date == ndate.Date);
-                    decimal todaykk = 0.0m;
-
-                    if (todaymeals.Any())
-                    {
-                        var todayDishes = dishes.Where(x => todaymeals.Select(x => x.Id).Contains(x.MealId));
-
-                        foreach (var dish in todayDishes)
-                        {
-                            todaykk += dish.Kkal;
-                        }
-                    }
-                    labels[i - 1] = ndate.Date.ToString("dd.MM");
-                    values[i - 1] = todaykk;
-                }
-                if (values.Any(x => x > 0))
-                {
-                    await _plotHelper.SendPlot(values, labels, userTgId, goalkk);
-                    return Ok(true);
-                }
-                else
-                {
-                    return Ok(false);
-                }
-            }
-            catch (Exception ex)
-            {
-                await ErrorHelper.SendErrorMess("GetUserWeekPlot Error", ex);
-                _logger.LogError(ex, ex.Message);
-                return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
-            }
-        }
         [HttpPost]
         public async Task<ActionResult<bool>> GetUserWeekPlotH(long userTgId)
         {
@@ -572,7 +517,7 @@ namespace NutriDbService.Controllers
                 var user = await _context.Users.AsNoTracking().SingleOrDefaultAsync(x => x.TgId == userTgId);
                 if (user == null)
                     throw new Exception($"I Cant Find User : {userTgId}");
-                var goalkk = (await _context.Userinfos.SingleOrDefaultAsync(x => x.UserId == user.Id)).Goalkk;
+                var goalkk = (await _context.Userinfos.SingleOrDefaultAsync(x => x.UserId == user.Id))?.Goalkk;
 
                 var now = DateTime.UtcNow.ToLocalTime().AddHours(3).AddHours(Decimal.ToDouble(user.Timeslide)).Date;
                 DateTime startDate = now.AddDays(-7).Date;

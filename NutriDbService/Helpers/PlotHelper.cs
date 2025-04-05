@@ -31,18 +31,18 @@ namespace NutriDbService.Helpers
         {
             //_logger = serviceProvider.GetRequiredService<ILogger<TransmitterHelper>>(); ;
         }
-        public async Task SendPlot(decimal[] values, string[] labels, long userTgId, decimal? goalkk)
-        {
-            string filePath = $"{Guid.NewGuid().ToString()}.png";
+        //public async Task SendPlot(decimal[] values, string[] labels, long userTgId, decimal? goalkk)
+        //{
+        //    string filePath = $"{Guid.NewGuid().ToString()}.png";
 
-            string homePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            filePath = System.IO.Path.Combine(homePath, filePath);
+        //    string homePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        //    filePath = System.IO.Path.Combine(homePath, filePath);
 
 
-            CreateBarChart(values, labels, filePath, goalkk);
-            await SendPhotoAsync(userTgId, filePath);
-            System.IO.File.Delete(filePath);
-        }
+        //    CreateBarChart(values, labels, filePath, goalkk);
+        //    await SendPhotoAsync(userTgId, filePath);
+        //    System.IO.File.Delete(filePath);
+        //}
         public async Task SendPlotH(decimal[] values, string[] labels, long userTgId, decimal? goalkk)
         {
             string filePath = $"{Guid.NewGuid().ToString()}.png";
