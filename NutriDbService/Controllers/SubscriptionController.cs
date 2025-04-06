@@ -407,7 +407,7 @@ namespace NutriDbService.Controllers
             try
             {
                 Email = Email.ToLower().Trim();
-                #if !DEBUG
+#if !DEBUG
                 CheckSecret(HttpContext.Request);
 #endif
                 var subs = await _context.Subscriptions.Where(x => x.Email.ToLower().Trim() == Email).ToListAsync();
@@ -418,8 +418,10 @@ namespace NutriDbService.Controllers
                 subs.ForEach(sub => sub.IsActive = false);
                 DbModels.User user = await _context.Users.SingleOrDefaultAsync(x => x.TgId == TgId);
                 if (TgId != null)
+                {
+                    user.NotifyStatus = false;
                     user.IsActive = false;
-
+                }
                 await _context.Database.BeginTransactionAsync();
                 _context.Subscriptions.UpdateRange(subs);
                 if (TgId != null)
