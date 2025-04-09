@@ -986,9 +986,9 @@ namespace NutriDbService.Controllers
         }
 
         [HttpGet]
-        public List<string> GetTimers()
+        public async Task<List<string>> GetTimers()
         {
-            return _taskSchedulerService.GetTimers();
+            return await _taskSchedulerService.GetTimers();
         }
         #endregion
 

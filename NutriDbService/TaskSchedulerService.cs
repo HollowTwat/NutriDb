@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Telegram.Bot.Types;
 using Microsoft.Extensions.Logging;
+using System.Runtime.CompilerServices;
 
 namespace NutriDbService
 {
@@ -275,15 +276,23 @@ namespace NutriDbService
             return Task.CompletedTask;
         }
 
-        public List<string> GetTimers()
+        public async Task<List<string>> GetTimers()
         {
             var res = new List<string>();
-            lock (_lock)
+
+            var pings = await GetUserPingsAsync();
+            var timercount = _timers.Count;
+            foreach (var ping in pings)
             {
-                foreach (var timer in _timers)
-                    res.Add($"{timer.Id}:{Newtonsoft.Json.JsonConvert.SerializeObject(timer.Timer)}\n");
-                return res;
+                if (ping.Slide != null)
+                {
+                    ping.EveningPing = ping.EveningPing.AddHours(-(double)ping.Slide);
+                    ping.MorningPing = ping.MorningPing.AddHours(-(double)ping.Slide);
+                }
+                res.Add($"{ping.UserTgId}:morning={ping.MorningPing}, evening={ping.EveningPing}\n");
             }
+            return res;
+
         }
     }
 }
