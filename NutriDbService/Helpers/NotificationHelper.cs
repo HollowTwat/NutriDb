@@ -13,6 +13,7 @@ using Newtonsoft.Json.Linq;
 using Telegram.Bot;
 using Telegram.Bot.Types.ReplyMarkups;
 using System.Collections.Generic;
+using Telegram.Bot.Types;
 
 namespace NutriDbService.Helpers
 {
@@ -126,7 +127,7 @@ namespace NutriDbService.Helpers
 
                     if (lasLes != 21)
                     {
-                        if (userInfo.LastlessonTime < DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-1))
+                        if (userInfo.LastlessonTime < DateTime.UtcNow.ToLocalTime().AddHours(3).AddHours(Decimal.ToDouble(userInfo?.Timeslide ?? 0)).AddDays(-1))
                             isLessonForgotSend = true;
                     }
                     if (isMornong)
@@ -138,12 +139,6 @@ namespace NutriDbService.Helpers
                     }
                     else
                     {
-                        //var meals = await _context.Meals.Where(x => x.UserId == UserId).OrderByDescending(x => x.MealTime).FirstOrDefaultAsync();
-
-                        //var lastMealTime = meals?.MealTime;
-                        //if (lastMealTime != null && lastMealTime < DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-1))
-                        //    isMealNotSend = true;
-                        //if (isMealNotSend && isLessonForgotSend)
                         if (doubleLessPrev.Contains(lasLes))
                             await SendNotH(userPing.UserTgId, false, lasLes);
                     }

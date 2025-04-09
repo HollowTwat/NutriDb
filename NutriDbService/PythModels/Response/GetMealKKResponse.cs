@@ -12,24 +12,24 @@ namespace NutriDbService.PythModels.Response
             int diff = (7 + (date.DayOfWeek - firstDay)) % 7;
             return date.AddDays(-1 * diff).Date;
         }
-        public GetMealKKResponse(Periods period)
+        public GetMealKKResponse(Periods period, decimal timeSlide)
         {
             days = new List<DaysMeal>();
-            var now = DateTime.UtcNow.ToLocalTime().AddHours(3).Date;
-            var startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-7).Date;
+            var now = DateTime.UtcNow.ToLocalTime().AddHours(3).AddHours(Decimal.ToDouble(timeSlide)).Date;
+            var startDate = now.AddDays(-7).Date;
             switch (period)
             {
                 case Periods.day:
-                    startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-1).Date;
+                    startDate = now.AddDays(-1).Date;
                     break;
                 case Periods.week:
                     startDate = GetFirstDayOfWeek(now);
                     break;
                 case Periods.mathweek:
-                    startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-7).Date;
+                    startDate = now.AddDays(-7).Date;
                     break;
                 case Periods.math3weeks:
-                    startDate = DateTime.UtcNow.ToLocalTime().AddHours(3).AddDays(-21).Date;
+                    startDate = now.AddDays(-21).Date;
                     break;
                 case Periods.month:
                     startDate = new DateTime(now.Year, now.Month, 1);
