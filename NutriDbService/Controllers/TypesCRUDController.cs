@@ -1060,13 +1060,15 @@ namespace NutriDbService.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<List<long>>> GetUsersIds(long userTgId, bool onlyActive)
+        public async Task<ActionResult<List<long>>> GetUsersIds(bool onlyUs, bool onlyActive)
         {
             try
             {
+                if (onlyUs)
+                    return Ok(new List<long>() { 389054202l, 464682207l });
                 var users = await _context.Users.AsNoTracking().ToListAsync();
                 if (onlyActive)
-                    users.RemoveAll(x => x.IsActive = false);
+                    users.RemoveAll(x => x.IsActive == false);
                 return Ok(users.Select(x => x.TgId));
             }
             catch (Exception ex)
