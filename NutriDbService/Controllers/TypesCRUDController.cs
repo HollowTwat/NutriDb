@@ -1075,7 +1075,7 @@ namespace NutriDbService.Controllers
             {
                 _logger.LogError(ex, ex.Message);
                 await ErrorHelper.SendErrorMess("GetUserMealsForAnal Error", ex);
-                await ErrorHelper.SendErrorMess($"Input: {userTgId}");
+          
                 return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
         }
