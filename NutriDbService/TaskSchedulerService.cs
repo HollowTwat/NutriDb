@@ -82,12 +82,12 @@ namespace NutriDbService
 
                 foreach (var userPing in usersPings)
                 {
-
-                    if (userPing.Slide != null)
-                    {
-                        userPing.EveningPing = userPing.EveningPing.AddHours(-(double)userPing.Slide);
-                        userPing.MorningPing = userPing.MorningPing.AddHours(-(double)userPing.Slide);
-                    }
+                   
+                    //if (userPing.Slide != null)
+                    //{
+                    //    userPing.EveningPing = userPing.EveningPing.AddHours(-(double)userPing.Slide);
+                    //    userPing.MorningPing = userPing.MorningPing.AddHours(-(double)userPing.Slide);
+                    //}
                     ScheduleTask(userPing);
                 }
             }
@@ -95,8 +95,8 @@ namespace NutriDbService
 
         private void ScheduleTask(UserPing userPing)
         {
-            var morningTime = userPing.MorningPing;
-            var eveningTime = userPing.EveningPing;
+            var morningTime = userPing.MorningPing.AddHours(-(double)userPing.Slide);
+            var eveningTime = userPing.EveningPing.AddHours(-(double)userPing.Slide);
             var currentTime = DateTime.UtcNow.ToLocalTime().AddHours(3);
             var nextMorningOccurrence = CalculateNextOccurrence(currentTime, morningTime);
             var timeToNextMorningOccurrence = nextMorningOccurrence - currentTime;
