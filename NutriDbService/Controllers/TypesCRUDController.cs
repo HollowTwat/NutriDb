@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using NutriDbService.DbModels;
@@ -502,6 +503,9 @@ namespace NutriDbService.Controllers
                     _context.Subscriptions.Update(subscription);
                 }
                 await _context.SaveChangesAsync();
+                IntegratorHelper integratorHelper = new IntegratorHelper();
+                var res = await integratorHelper.SendRequestAsync(new BotStartRequest { Email = user.Email, FirstName = user.Username, LastName = string.Empty, TgId = user.TgId, Username = user.Username, start_text = "/start" });
+
                 return Ok(true);
             }
             catch (Exception ex)
@@ -575,8 +579,9 @@ namespace NutriDbService.Controllers
             }
             return null;
         }
-        [HttpPost]
-        public async Task<ActionResult<bool>> AddUserExtraInfo(AddUserExtraRequest req)
+
+
+        private async Task<ActionResult<bool>> AddUserExtraInfo(AddUserExtraRequest req)
         {
             try
             {
@@ -597,6 +602,14 @@ namespace NutriDbService.Controllers
 
                 bool IsmorningPing = string.IsNullOrEmpty(req.Info["user_info_morning_ping"]) ? false : TimeOnly.TryParseExact(req.Info["user_info_morning_ping"], "%H:mm", out var m);
                 bool IseveningPing = string.IsNullOrEmpty(req.Info["user_info_evening_ping"]) ? false : TimeOnly.TryParseExact(req.Info["user_info_evening_ping"], "%H:mm", out var e);
+
+
+                double eh = 0;
+                double gh = 0;
+                decimal wc = 0;
+                bool Isgymhrs = string.IsNullOrEmpty(req.Info["user_info_gym_hrs"]) ? false : double.TryParse(req.Info["user_info_gym_hrs"], out gh);
+                bool Isexcersisehrs = string.IsNullOrEmpty(req.Info["user_info_excersise_hrs"]) ? false : double.TryParse(req.Info["user_info_excersise_hrs"], out eh);
+                bool Isweightchange = string.IsNullOrEmpty(req.Info["user_info_weight_change"]) ? false : decimal.TryParse(req.Info["user_info_weight_change"], out wc);
 
                 string goal = string.IsNullOrEmpty(req.Info["user_info_goal"]) ? null : req.Info["user_info_goal"];
 
@@ -638,6 +651,9 @@ namespace NutriDbService.Controllers
                     _context.Update(user);
                 }
                 await _context.SaveChangesAsync();
+                IntegratorHelper integratorHelper = new IntegratorHelper();
+                var res = await integratorHelper.SendRequestAsync(new ProfileAddRequest { Email = user.Email, ProfileName = user.Username, FirstName = user.Username, LastName = string.Empty, TgId = user.TgId, Username = user.Username, Age = age ?? 0, DailyCaloricNormKcal = goalkk ?? 0, Gender = gender, Goal = goal, HeightCm = height ?? 0, WeightKg = weight ?? 0, MacronutrientNormG = string.Empty, TargetWeightKg = Isweightchange ? weight ?? 0 + wc : 0, WeeklyActivityHours = Isgymhrs && Isexcersisehrs == true ? (eh + gh * 1.5) : 0 });
+
                 if (IsmorningPing || IseveningPing)
                     await _taskSchedulerService.TimerRestart();
                 return Ok(true);
@@ -777,6 +793,13 @@ namespace NutriDbService.Controllers
                         _context.Update(usi);
                     }
                 }
+                IntegratorHelper integratorHelper = new IntegratorHelper();
+                IntegratorResponse res;
+                if (lesson == 21)
+                    res = await integratorHelper.SendRequestAsync(new LessonEndRequest { Email = user.Email, ProfileName = user.Username, FirstName = user.Username, LastName = string.Empty, TgId = user.TgId, Username = user.Username, LessonsCompleted = lesson, LessonsCurrent = lesson + 1 });
+                else
+                    res = await integratorHelper.SendRequestAsync(new AllLessonsEndRequest { Email = user.Email, ProfileName = user.Username, FirstName = user.Username, LastName = string.Empty, TgId = user.TgId, Username = user.Username, LessonsCompleted = lesson });
+
                 await _context.SaveChangesAsync();
                 return Ok(true);
             }
@@ -1081,13 +1104,13 @@ namespace NutriDbService.Controllers
             }
         }
 
-        [HttpPost]
-        public async Task<bool> Test()
-        {
-            IntegratorHelper integratorHelper = new IntegratorHelper();
-            var res = await integratorHelper.SendRequestAsync(new BotStartRequest { Email = "xren@mail.vam", FirstName = "H", LastName = "I", start_text = "/start", TgId = 397597158, Username = "@aleshenka93" });
-        return res.Status;
-        }
+        //[HttpPost]
+        //public async Task<bool> Test()
+        //{
+        //    IntegratorHelper integratorHelper = new IntegratorHelper();
+        //    var res = await integratorHelper.SendRequestAsync(new BotStartRequest { Email = "xren@mail.vam", FirstName = "H", LastName = "I", start_text = "/start", TgId = 397597158, Username = "@aleshenka93" });
+        //return res.Status;
+        //}
         //[HttpPost]
         //public async Task<bool> SaveRate(long tgid, short rating)
         //{

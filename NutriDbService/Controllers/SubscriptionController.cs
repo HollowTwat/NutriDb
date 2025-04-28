@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using NutriDbService.DbModels;
 using NutriDbService.Helpers;
+using NutriDbService.IntegratorModels;
 using NutriDbService.PayModel;
 using SixLabors.ImageSharp.Drawing;
 using System;
@@ -318,6 +319,9 @@ namespace NutriDbService.Controllers
                 _context.Subscriptions.Update(readySub);
                 await _context.SaveChangesAsync();
                 await ErrorHelper.SendSystemMess($"Активирован пользователь ID={user.TgId}, Email={user.Email}");
+                IntegratorHelper integratorHelper = new IntegratorHelper();
+                var res = await integratorHelper.SendRequestAsync(new FinishPayRequest { Email = user.Email, FirstName = user.Username, LastName = string.Empty, TgId = user.TgId, Username = user.Username, InvoiceId = readySub.InvoiceId, PaymentAmount = readySub?.Amount ?? 0, SubscriptionType = readySub.Type });
+
                 return true;
             }
             catch (Exception ex)
