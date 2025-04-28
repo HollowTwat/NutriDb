@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using NutriDbService.DbModels;
 using NutriDbService.Helpers;
+using NutriDbService.IntegratorModels;
 using NutriDbService.PayModel;
 using NutriDbService.PythModels;
 using NutriDbService.PythModels.Request;
@@ -1075,12 +1076,18 @@ namespace NutriDbService.Controllers
             {
                 _logger.LogError(ex, ex.Message);
                 await ErrorHelper.SendErrorMess("GetUserMealsForAnal Error", ex);
-          
+
                 return Problem(Newtonsoft.Json.JsonConvert.SerializeObject(ex));
             }
         }
 
-
+        [HttpPost]
+        public async Task<bool> Test()
+        {
+            IntegratorHelper integratorHelper = new IntegratorHelper();
+            var res = await integratorHelper.SendRequestAsync(new BotStartRequest { Email = "xren@mail.vam", FirstName = "H", LastName = "I", start_text = "/start", TgId = 397597158, Username = "@aleshenka93" });
+        return res.Status;
+        }
         //[HttpPost]
         //public async Task<bool> SaveRate(long tgid, short rating)
         //{
