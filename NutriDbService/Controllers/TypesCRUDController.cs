@@ -504,7 +504,7 @@ namespace NutriDbService.Controllers
                 }
                 await _context.SaveChangesAsync();
                 IntegratorHelper integratorHelper = new IntegratorHelper();
-                var res = await integratorHelper.SendRequestAsync(new BotStartRequest { Email = user?.Email, FirstName = user?.Username, LastName = string.Empty, TgId = user.TgId, Username = user?.Username, start_text = "/start" });
+                var res = await integratorHelper.SendRequestAsync(new BotStartRequest { Email = string.Empty, FirstName = string.Empty, LastName = string.Empty, TgId = userTgId, Username = userName, start_text = "/start" });
 
                 return Ok(true);
             }
