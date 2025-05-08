@@ -127,7 +127,7 @@ namespace NutriDbService.Helpers
 
                     if (lasLes != 21)
                     {
-                        if (userInfo.LastlessonTime < DateTime.UtcNow.ToLocalTime().AddHours(3).AddHours(Decimal.ToDouble(userInfo?.Timeslide ?? 0)).AddDays(-1))
+                        if (userInfo.LastlessonTime < DateTime.UtcNow.ToLocalTime().AddHours(3).AddHours(Decimal.ToDouble(userInfo?.Timeslide ?? 0)).AddHours(-12))
                             isLessonForgotSend = true;
                     }
                     if (isMornong)
