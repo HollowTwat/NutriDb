@@ -11,22 +11,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Telegram.Bot.Types;
 using Microsoft.Extensions.Logging;
 using System.Runtime.CompilerServices;
-using Newtonsoft.Json;
 
 namespace NutriDbService
 {
-    public class TimerConverter : JsonConverter<Timer>
-    {
-        public override void WriteJson(JsonWriter writer, Timer value, JsonSerializer serializer)
-        {
-            writer.WriteValue(value != null ? "[Active Timer]" : "[Timer is null]");
-        }
-
-        public override Timer ReadJson(JsonReader reader, Type objectType, Timer existingValue, bool hasExistingValue, JsonSerializer serializer)
-        {
-            throw new NotImplementedException("Deserialization of Timer is not supported.");
-        }
-    }
     public class UserPing
     {
         public int UserId { get; set; }
@@ -48,7 +35,7 @@ namespace NutriDbService
     {
         private readonly object _lock = new object();
         private List<UserTimer> _timers = new List<UserTimer>();
-        //private List<UserPing> _userPings;
+        private List<UserPing> _userPings;
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger _logger;
         private static readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
@@ -78,13 +65,11 @@ namespace NutriDbService
         }
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            var users = await GetUserPingsAsync();
-            ScheduleTasks(users); 
-            var settings = new JsonSerializerSettings
-            {
-                Converters = new List<JsonConverter> { new TimerConverter() }
-            };
-            _logger.LogWarning($"Timers: {Newtonsoft.Json.JsonConvert.SerializeObject(_timers, settings)}");
+           
+            var users = await GetUserPingsAsync(); 
+            _userPings = users;
+            ScheduleTasks(users);
+            _logger.LogWarning($"Pings:{Newtonsoft.Json.JsonConvert.SerializeObject(_userPings)}");
         }
 
         private void ScheduleTasks(List<UserPing> usersPings)
