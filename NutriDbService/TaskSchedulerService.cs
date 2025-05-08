@@ -11,9 +11,22 @@ using Microsoft.Extensions.DependencyInjection;
 using Telegram.Bot.Types;
 using Microsoft.Extensions.Logging;
 using System.Runtime.CompilerServices;
+using Newtonsoft.Json;
 
 namespace NutriDbService
 {
+    public class TimerConverter : JsonConverter<Timer>
+    {
+        public override void WriteJson(JsonWriter writer, Timer value, JsonSerializer serializer)
+        {
+            writer.WriteValue(value != null ? "[Active Timer]" : "[Timer is null]");
+        }
+
+        public override Timer ReadJson(JsonReader reader, Type objectType, Timer existingValue, bool hasExistingValue, JsonSerializer serializer)
+        {
+            throw new NotImplementedException("Deserialization of Timer is not supported.");
+        }
+    }
     public class UserPing
     {
         public int UserId { get; set; }
@@ -66,8 +79,12 @@ namespace NutriDbService
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             var users = await GetUserPingsAsync();
-            ScheduleTasks(users);
-            _logger.LogWarning($"Timers:{Newtonsoft.Json.JsonConvert.SerializeObject(_timers)}");
+            ScheduleTasks(users); 
+            var settings = new JsonSerializerSettings
+            {
+                Converters = new List<JsonConverter> { new TimerConverter() }
+            };
+            _logger.LogWarning($"Timers: {Newtonsoft.Json.JsonConvert.SerializeObject(_timers, settings)}");
         }
 
         private void ScheduleTasks(List<UserPing> usersPings)
