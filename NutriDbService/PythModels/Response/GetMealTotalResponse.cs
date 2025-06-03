@@ -15,5 +15,12 @@ namespace NutriDbService.PythModels.Response
 
         public decimal TotalFats { get; set; }
 
+        public decimal GoalFats { get; set; }
+
+        public decimal GoalCarbs { get; set; }
+
+        public decimal GoalProt { get; set; }
+
+        public decimal RemainingKK { get; set; }
     }
 }

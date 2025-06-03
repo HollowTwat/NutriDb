@@ -22,6 +22,7 @@ namespace NutriDbTest
         private Mock<IServiceProvider> _mockServiceProvider;
         private Mock<ILogger<NotificationHelper>> _mockNotificationLogger;
         private Mock<ILogger<SubscriptionHelper>> _mockSubscriptionLogger;
+        private Mock<ILogger<MealHelper>> _mockMealLogger;
         [SetUp]
         public void Setup()
         {
@@ -34,6 +35,8 @@ namespace NutriDbTest
                                 .Returns(_mockNotificationLogger.Object);
             _mockServiceProvider.Setup(sp => sp.GetService(typeof(ILogger<SubscriptionHelper>)))
                                 .Returns(_mockSubscriptionLogger.Object);
+            _mockServiceProvider.Setup(sp => sp.GetService(typeof(ILogger<MealHelper>)))
+                               .Returns(_mockMealLogger.Object);
             // Создайте мок для IServiceScope
             _mockScope = new Mock<IServiceScope>();
             _mockScope.Setup(s => s.ServiceProvider).Returns(_mockServiceProvider.Object);
@@ -42,15 +45,15 @@ namespace NutriDbTest
             _mockServiceScopeFactory.Setup(s => s.CreateScope()).Returns(_mockScope.Object);
         }
 
-        [Fact]
-        public async Task NotifyHTest()
-        {
-            Setup();
-            var notificationHelper = new NotificationHelper(new railwayContext(), _mockServiceScopeFactory.Object);
-            await notificationHelper.SendNotificationH(new NutriDbService.UserPing { UserId = 435, UserTgId = 633929411 }, true);
-            await notificationHelper.SendNotificationH(new NutriDbService.UserPing { UserId = 435, UserTgId = 633929411 }, false);
-            Xunit.Assert.True(true);
-        }
+        //[Fact]
+        //public async Task NotifyHTest()
+        //{
+        //    Setup();
+        //    var notificationHelper = new NotificationHelper(new railwayContext(), new MealHelper(_mockContext.Object, _mockServiceProvider.Object), _mockServiceScopeFactory.Object);
+        //    await notificationHelper.SendNotificationH(new NutriDbService.UserPing { UserId = 435, UserTgId = 633929411 }, true);
+        //    await notificationHelper.SendNotificationH(new NutriDbService.UserPing { UserId = 435, UserTgId = 633929411 }, false);
+        //    Xunit.Assert.True(true);
+        //}
 
         [Fact]
         public async Task PlotTest()

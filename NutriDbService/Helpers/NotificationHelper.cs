@@ -27,11 +27,35 @@ namespace NutriDbService.Helpers
         private string Htoken = "7220622235:AAEJAQUjZZagg6ZXkGuykfQySAtJzwAwqRI";
         private railwayContext _context;
         private readonly ILogger _logger;
-
-        public NotificationHelper(railwayContext context, IServiceScopeFactory serviceProviderFactory)
+        private readonly Dictionary<int, (string, string)> messText;
+        private MealHelper _mealHelper;
+        public NotificationHelper(railwayContext context, MealHelper mealHelper, IServiceScopeFactory serviceProviderFactory)
         {
             _context = context;
             _logger = serviceProviderFactory.CreateScope().ServiceProvider.GetRequiredService<ILogger<NotificationHelper>>();
+            _mealHelper = mealHelper;
+            messText = new Dictionary<int, (string, string)> {
+            {1,("Занести еду — 3 минуты. А чувство гордости за дисциплину — целый день!","Занести еду") },
+            {2,("Нутри волнуется: вы съели что-то вкусное и не поделились?","Поделиться едой") },
+            {3,("Засчитано только то, что записано. Сорри, такие правила в дневнике питания 📝","Отправить еду") },
+            {4,("Не дай приёму пищи пропасть без вести. Ему положено быть в дневник!","Сделать запись") },
+            {5,("Ваша тарелка скучает по вниманию. Пора занести её в Нутри!","Заполнить дневник") },
+            {6,("🍽 Эй, не записал тарелку — как будто и не ел! Ну, почти.","Занести еду") },
+            {7,("👀Кто съел обед и не поделился с дневником? Ну-ну.","Отправить еду") },
+            {8,("🍎Даже яблоко хочет быть отмеченным. Ну правда!","Внести перекус") },
+            {9,("Эй, ваш завтрак просится в дневник!","Отметить еду.") },
+            {10,("Ужин съеден? Пора и КБЖУ посчитать","Занести в дневник") },
+            {11,("А ну признавайтесь, что ели! Нутри любит честность 😇"," Занести еду") },
+            {12,("👀 Нутри шепчет: «Покажи мне свою тарелку…»","Отправить фото еды") },
+            {13,("🔮 У Нутри интуиция: вы что-то вкусное съели и не записали!","Поправить ситуацию") },
+            {14,("Дневник жаждет внимания. Накормите его своей тарелкой 😄","Записать приём") },
+            {15,("Котики мурлыкают, когда их гладят. А Нутри — когда вы вносите еду 💚","Порадовать Нутри") },
+            {16,("💪 3 минуты — и вы снова герой здорового питания!","Внести еду") },
+            {17,("Поели и ушли? А сделать запись в дневнике? 💭","Записать тарелку") },
+            {18,("📖 А вы сегодня уже радовали свой дневник?","Занести приём пищи") },
+            {19,("Один клик по кнопке — и вы снова ответственный человек!","Заполнить дневник") },
+            {20,("Напоминаем: у Нутри слабость к красиво записанным блюдам ✨","Внести запись") },
+            };
         }
         //private async Task SendNot(long? ClientId, string MessBoxId)
         //{
@@ -157,7 +181,47 @@ namespace NutriDbService.Helpers
             }
 
         }
+        public async Task SendNotificationSingle(UserPing userPing)
+        {
+            try
+            {
+                _logger.LogWarning($"User:{userPing.UserTgId} SendNotification");
 
+                var userInfo = await _context.Userinfos.AsNoTracking().SingleAsync(x => x.UserId == userPing.UserId).ConfigureAwait(false);
+
+                if (userInfo == null)
+                {
+                    _logger.LogError("User info not found for user {UserId}", userPing.UserId);
+                    return;
+                }
+                var resp = await _mealHelper.GetMealTotal(userPing.UserTgId, Periods.day);
+
+                var botClient = new TelegramBotClient(Htoken);
+                var mess = $"Ваша статистика на сегодня 🍽️\r\n\r\nДневная цель : {resp.GoalKkal} ккал., {resp.GoalProt} г. белки, {resp.GoalFats} г. жиры, {resp.GoalCarbs} г. углеводы 💪.\r\nСегодня вы съели {resp.TotalKkal} ккал.🔥\r\n\r\nБелки: {resp.TotalProt} г. 💪\r\nЖиры: {resp.TotalFats} г. \U0001f9c8\r\nУглеводы: {resp.TotalCarbs} г. 🍞\r\n\r\nВы можете еще съесть {resp.RemainingKK} ккал.";
+                var dictVal = messText[new Random().Next(1, 21)];
+                var callback = $"menu_dnevnik_input";
+                var lessonb = InlineKeyboardButton.WithCallbackData(dictVal.Item2, callback);
+                //var downb = InlineKeyboardButton.WithCallbackData("⏏️", "menu_back");
+                var buttons = /*new List<List<InlineKeyboardButton>> {*/ new List<InlineKeyboardButton> { lessonb };/*, new List<InlineKeyboardButton> { downb } };*/
+                // Отправка изображения
+                await botClient.SendTextMessageAsync(
+                    chatId: userPing.UserTgId,
+                    text: dictVal.Item1,
+                    replyMarkup: new InlineKeyboardMarkup(buttons)
+                ).ConfigureAwait(false);
+
+                await botClient.SendTextMessageAsync(
+                   chatId: userPing.UserTgId,
+                   text: mess
+               ).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"NotificationSendError for User:{userPing.UserTgId}", ex);
+                await ErrorHelper.SendErrorMess($"NotificationSendError for User:{userPing.UserTgId}", ex);
+            }
+
+        }
         public async Task SendCustomMessToUserH(long TgId, string mess)
         {
             var botClient = new TelegramBotClient(Htoken);

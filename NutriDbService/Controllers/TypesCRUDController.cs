@@ -240,7 +240,6 @@ namespace NutriDbService.Controllers
                 var userId = (await _context.Users.SingleOrDefaultAsync(x => x.TgId == req.userTgId)).Id;
                 var usi = await _context.Userinfos.SingleOrDefaultAsync(x => x.UserId == userId);
 
-
                 var resp = await _mealHelper.GetMealsKK(req);
                 Dictionary<DateTime, List<PythMeal>> respd = resp
             .GroupBy(x => x.date.Date) // Группируем по дате
@@ -357,50 +356,7 @@ namespace NutriDbService.Controllers
         {
             try
             {
-                var user = await _context.Users.AsNoTracking().SingleOrDefaultAsync(x => x.TgId == userTgId);
-                if (user == null)
-                    throw new Exception($"I Cant Find User : {userTgId}");
-
-                var now = DateTime.UtcNow.ToLocalTime().AddHours(3).AddHours(Decimal.ToDouble(user.Timeslide)).Date;
-                DateTime startDate = now;
-                int daysinperiod = 0;
-                switch (period)
-                {
-                    case Periods.day:
-                        startDate = now.AddDays(-1).Date;
-                        break;
-                    case Periods.week:
-                        startDate = MealHelper.GetFirstDayOfWeek(now);
-                        break;
-                    case Periods.mathweek:
-                        startDate = now.AddDays(-7).Date;
-                        break;
-                    case Periods.math3weeks:
-                        startDate = now.AddDays(-21).Date;
-                        break;
-                    case Periods.month:
-                        startDate = new DateTime(now.Year, now.Month, 1);
-                        break;
-                }
-                daysinperiod = (now - startDate).Days;
-                var mealsIds = await _context.Meals.AsNoTracking().Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).Select(x => x.Id).ToListAsync();
-                var dishes = await _context.Dishes.AsNoTracking().Where(x => mealsIds.Contains(x.MealId)).ToListAsync();
-                var resp = new GetMealTotalResponse();
-                foreach (var dish in dishes)
-                {
-
-                    resp.TotalCarbs += dish.Carbs;
-                    resp.TotalProt += dish.Protein;
-                    resp.TotalFats += dish.Fats;
-                    resp.TotalKkal += dish.Kkal;
-                }
-                var extra = (await _context.Userinfos.AsNoTracking().SingleOrDefaultAsync(x => x.UserId == user.Id))?.Extra;
-                if (extra == null) { resp.GoalKkal = 0.0m; }
-                else
-                {
-                    var extraDict = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, string>>(extra);
-                    resp.GoalKkal = decimal.Parse(extraDict["target_calories"]) * daysinperiod;
-                }
+                var resp = await _mealHelper.GetMealTotal(userTgId, period);
                 return Ok(Newtonsoft.Json.JsonConvert.SerializeObject(resp));
             }
             catch (Exception ex)
@@ -1060,18 +1016,29 @@ namespace NutriDbService.Controllers
         //    catch (Exception ex) { return false; }
         //}
 
+        //[HttpGet]
+        //public async Task<bool> SendManualNotifyH(long userTgId, bool isMorning)
+        //{
+        //    try
+        //    {
+        //        var user = await _context.Users.SingleOrDefaultAsync(x => x.TgId == userTgId);
+        //        await _notificationHelper.SendNotificationH(new UserPing { UserTgId = userTgId, UserId = user.Id }, isMorning);
+        //        return true;
+        //    }
+        //    catch (Exception ex) { return false; }
+        //}
+
         [HttpGet]
-        public async Task<bool> SendManualNotifyH(long userTgId, bool isMorning)
+        public async Task<bool> SendManualNotifyNew(long userTgId)
         {
             try
             {
                 var user = await _context.Users.SingleOrDefaultAsync(x => x.TgId == userTgId);
-                await _notificationHelper.SendNotificationH(new UserPing { UserTgId = userTgId, UserId = user.Id }, isMorning);
+                await _notificationHelper.SendNotificationSingle(new UserPing { UserTgId = userTgId, UserId = user.Id });
                 return true;
             }
             catch (Exception ex) { return false; }
         }
-
         [HttpGet]
         public async Task<bool> SendManualMessToUserH(long userTgId, string mess)
         {

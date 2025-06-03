@@ -98,12 +98,12 @@ namespace NutriDbService
         private void ScheduleTask(UserPing userPing)
         {
             var morningTime = userPing.MorningPing.AddHours(-(double)userPing.Slide);
-            var eveningTime = userPing.EveningPing.AddHours(-(double)userPing.Slide);
+            //var eveningTime = userPing.EveningPing.AddHours(-(double)userPing.Slide);
             var currentTime = DateTime.UtcNow.ToLocalTime().AddHours(3);
             var nextMorningOccurrence = CalculateNextOccurrence(currentTime, morningTime);
             var timeToNextMorningOccurrence = nextMorningOccurrence - currentTime;
-            var nextEveningOccurrence = CalculateNextOccurrence(currentTime, eveningTime);
-            var timeToNextEveningOccurrence = nextEveningOccurrence - currentTime;
+            //var nextEveningOccurrence = CalculateNextOccurrence(currentTime, eveningTime);
+            //var timeToNextEveningOccurrence = nextEveningOccurrence - currentTime;
             Timer morningTimer = null;
             morningTimer = new Timer(async x =>
            {
@@ -114,7 +114,7 @@ namespace NutriDbService
                    {
                        var localNotHelper = scope.ServiceProvider.GetRequiredService<NotificationHelper>();
 
-                       await localNotHelper.SendNotificationH(userPing, true);
+                       await localNotHelper.SendNotificationSingle(userPing);
 
 
                        //ScheduleTask(userPing);
@@ -130,36 +130,8 @@ namespace NutriDbService
                    //morningTimer?.Change(TimeSpan.FromHours(24), Timeout.InfiniteTimeSpan);
                }
            }, null, timeToNextMorningOccurrence, TimeSpan.FromHours(24));// Timeout.InfiniteTimeSpan);
-            Timer eveningTimer = null;
-            eveningTimer = new Timer(async x =>
-           {
-               try
-               {
-                   await _dbThrottle.WaitAsync();
-                   using (var scope = _serviceProvider.CreateScope())
-                   {
-                       var localNotHelper = scope.ServiceProvider.GetRequiredService<NotificationHelper>();
-
-                       // Используйте ассинхронную метод SendNotification
-                       await localNotHelper.SendNotificationH(userPing, false);
-
-                       //ScheduleTask(userPing);
-                   }
-               }
-               catch (Exception ex)
-               {
-                   _logger.LogError(ex, "Error in evening timer callback for user {UserId}", userPing.UserId);
-               }
-               finally
-               {
-                   _dbThrottle.Release();
-                   //eveningTimer?.Change(TimeSpan.FromHours(24), Timeout.InfiniteTimeSpan);
-               }
-           }, null, timeToNextEveningOccurrence, TimeSpan.FromHours(24));
-
+         
             _timers.Add(new UserTimer { Id = userPing.UserId, Timer = morningTimer });
-            //else
-            _timers.Add(new UserTimer { Id = userPing.UserId, Timer = eveningTimer });
         }
 
         private DateTime CalculateNextOccurrence(DateTime currentTime, TimeOnly dailyTime)

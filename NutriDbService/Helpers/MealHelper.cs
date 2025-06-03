@@ -473,6 +473,60 @@ namespace NutriDbService.Helpers
             return resp;
         }
 
+        public async Task<GetMealTotalResponse> GetMealTotal(long userTgId, Periods period)
+        {
+            var user = await _nutriDbContext.Users.AsNoTracking().SingleOrDefaultAsync(x => x.TgId == userTgId);
+            if (user == null)
+                throw new Exception($"I Cant Find User : {userTgId}");
+
+            var now = DateTime.UtcNow.ToLocalTime().AddHours(3).AddHours(Decimal.ToDouble(user.Timeslide)).Date;
+            DateTime startDate = now;
+            int daysinperiod = 0;
+            switch (period)
+            {
+                case Periods.day:
+                    startDate = now.AddDays(-1).Date;
+                    break;
+                case Periods.week:
+                    startDate = MealHelper.GetFirstDayOfWeek(now);
+                    break;
+                case Periods.mathweek:
+                    startDate = now.AddDays(-7).Date;
+                    break;
+                case Periods.math3weeks:
+                    startDate = now.AddDays(-21).Date;
+                    break;
+                case Periods.month:
+                    startDate = new DateTime(now.Year, now.Month, 1);
+                    break;
+            }
+            daysinperiod = (now - startDate).Days;
+            var mealsIds = await _nutriDbContext.Meals.AsNoTracking().Where(x => x.UserId == user.Id && x.MealTime.Date > startDate).Select(x => x.Id).ToListAsync();
+            var dishes = await _nutriDbContext.Dishes.AsNoTracking().Where(x => mealsIds.Contains(x.MealId)).ToListAsync();
+            var resp = new GetMealTotalResponse();
+            foreach (var dish in dishes)
+            {
+
+                resp.TotalCarbs += dish.Carbs;
+                resp.TotalProt += dish.Protein;
+                resp.TotalFats += dish.Fats;
+                resp.TotalKkal += dish.Kkal;
+            }
+          
+            var extra = (await _nutriDbContext.Userinfos.AsNoTracking().SingleOrDefaultAsync(x => x.UserId == user.Id))?.Extra;
+            if (extra == null) { resp.GoalKkal = 0.0m; }
+            else
+            {
+                var extraDict = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, string>>(extra);
+                resp.GoalKkal = decimal.Parse(extraDict["target_calories"]) * daysinperiod;
+            }
+            resp.GoalProt = decimal.Round((0.225m * resp.GoalKkal) / 4, 1);
+            resp.GoalFats = decimal.Round((0.275m * resp.GoalKkal) / 9, 1);
+            resp.GoalCarbs = decimal.Round((0.55m * resp.GoalKkal) / 4, 1);
+            resp.RemainingKK = decimal.Round(resp.GoalKkal - resp.TotalKkal, 1);
+            return resp;
+        }
+
         public static DateTime GetFirstDayOfWeek(DateTime date)
         {
             DayOfWeek firstDay = DayOfWeek.Monday;
