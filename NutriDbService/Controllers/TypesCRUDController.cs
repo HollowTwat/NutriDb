@@ -557,7 +557,7 @@ namespace NutriDbService.Controllers
                 string gender = string.IsNullOrEmpty(req.Info["user_info_gender"]) ? null : req.Info["user_info_gender"];
 
                 bool IsmorningPing = string.IsNullOrEmpty(req.Info["user_info_morning_ping"]) ? false : TimeOnly.TryParseExact(req.Info["user_info_morning_ping"], "%H:mm", out var m);
-                bool IseveningPing = string.IsNullOrEmpty(req.Info["user_info_evening_ping"]) ? false : TimeOnly.TryParseExact(req.Info["user_info_evening_ping"], "%H:mm", out var e);
+                //bool IseveningPing = string.IsNullOrEmpty(req.Info["user_info_evening_ping"]) ? false : TimeOnly.TryParseExact(req.Info["user_info_evening_ping"], "%H:mm", out var e);
 
 
                 double eh = 0;
@@ -581,7 +581,7 @@ namespace NutriDbService.Controllers
                         Gender = gender,
                         Goalkk = goalkk,
                         MorningPing = IsmorningPing ? m : null,
-                        EveningPing = IseveningPing ? e : null,
+                        //EveningPing = IseveningPing ? e : null,
                         Timeslide = timeslide,
                         TgId = req.UserTgId,
                         Goal = goal
@@ -596,7 +596,7 @@ namespace NutriDbService.Controllers
                     usi.Gender = gender;
                     usi.Goalkk = goalkk;
                     usi.MorningPing = IsmorningPing ? m : null;
-                    usi.EveningPing = IseveningPing ? e : null;
+                    //usi.EveningPing = IseveningPing ? e : null;
                     usi.Timeslide = timeslide;
                     usi.Goal = goal;
                     _context.Update(usi);
@@ -610,7 +610,7 @@ namespace NutriDbService.Controllers
                 IntegratorHelper integratorHelper = new IntegratorHelper();
                 var res = await integratorHelper.SendRequestAsync(new ProfileAddRequest { Email = user.Email, ProfileName = user.Username, FirstName = user.Username, LastName = string.Empty, TgId = user.TgId, Username = user.Username, Age = age ?? 0, DailyCaloricNormKcal = goalkk ?? 0, Gender = gender, Goal = goal, HeightCm = height ?? 0, WeightKg = weight ?? 0, MacronutrientNormG = string.Empty, TargetWeightKg = Isweightchange ? weight ?? 0 + wc : 0, WeeklyActivityHours = Isgymhrs && Isexcersisehrs == true ? (eh + gh * 1.5) : 0 });
 
-                if (IsmorningPing || IseveningPing)
+                if (IsmorningPing)
                     await _taskSchedulerService.TimerRestart();
                 return Ok(true);
             }
@@ -634,7 +634,6 @@ namespace NutriDbService.Controllers
                 var userId = user.Id;
                 var usi = await _context.Userinfos.SingleOrDefaultAsync(x => x.UserId == userId);
                 bool ismorningPing = false;
-                bool iseveningPing = false;
                 if (usi == null)
                 {
                     return await AddUserExtraInfo(req);
@@ -682,10 +681,6 @@ namespace NutriDbService.Controllers
                     if (ismorningPing)
                         usi.MorningPing = m;
 
-                    iseveningPing = req.Info.ContainsKey("user_info_evening_ping") == true ? (string.IsNullOrEmpty(req.Info["user_info_evening_ping"]) ? false : TimeOnly.TryParseExact(req.Info["user_info_evening_ping"], "HH:mm", out var e)) : false;
-                    if (iseveningPing)
-                        usi.EveningPing = e;
-
                     decimal? timeslide = req.Info.ContainsKey("user_info_timeslide") == true ? ParseDecimal(req.Info["user_info_timeslide"]) : null;
                     if (timeslide != null)
                     {
@@ -701,7 +696,7 @@ namespace NutriDbService.Controllers
                     _context.Update(usi);
                 }
                 await _context.SaveChangesAsync();
-                if (ismorningPing || iseveningPing)
+                if (ismorningPing)
                     await _taskSchedulerService.TimerRestart();
                 return Ok(true);
             }
