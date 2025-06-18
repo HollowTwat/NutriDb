@@ -222,6 +222,35 @@ namespace NutriDbService.Helpers
             }
 
         }
+        public async Task SendVoteNotificationSingle(long UserTgId)
+        {
+            try
+            {
+                _logger.LogWarning($"User:{UserTgId} SendNotification");
+
+                var botClient = new TelegramBotClient(Htoken);
+                var mess = $"🌿 <i>Богини, как вы оцените свое последнее взаимодействие с Avocado Ботом?</i>\r\n\r\nОцените от 1 до 10, где 1 —  «очень плохо», а 10 — «отлично».";
+                var buttons = new List<InlineKeyboardButton>();
+                for (int i = 1; i <= 10; i++)
+                {
+                    buttons.Add(InlineKeyboardButton.WithCallbackData($"{i}", $"vote_{i}"));
+                }
+                List<InlineKeyboardButton> firstHalf = buttons.GetRange(0, 5);
+                List<InlineKeyboardButton> secondHalf = buttons.GetRange(5, 5);
+                await botClient.SendTextMessageAsync(
+                    chatId: UserTgId,
+                    text: mess,
+                    parseMode: Telegram.Bot.Types.Enums.ParseMode.Html,
+                    replyMarkup: new InlineKeyboardMarkup(new List<List<InlineKeyboardButton>> { firstHalf, secondHalf })
+                ).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"NotificationSendError for User:{UserTgId}", ex);
+                await ErrorHelper.SendErrorMess($"NotificationSendError for User:{UserTgId}", ex);
+            }
+
+        }
         public async Task SendCustomMessToUserH(long TgId, string mess)
         {
             var botClient = new TelegramBotClient(Htoken);

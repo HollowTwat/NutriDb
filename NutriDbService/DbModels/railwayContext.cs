@@ -316,6 +316,10 @@ namespace NutriDbService.DbModels
 
                 entity.Property(e => e.UserId).HasColumnName("userId");
 
+                entity.Property(e => e.Vote)
+                    .HasColumnName("vote")
+                    .HasDefaultValueSql("11");
+
                 entity.Property(e => e.Weight)
                     .HasPrecision(10, 2)
                     .HasColumnName("weight");

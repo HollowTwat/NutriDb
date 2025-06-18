@@ -1066,6 +1066,37 @@ namespace NutriDbService.Controllers
             }
         }
 
+        [HttpGet]
+        public async Task<bool> SendManualVoteNotify(long userTgId)
+        {
+            try
+            {
+                await _notificationHelper.SendVoteNotificationSingle(userTgId);
+                return true;
+            }
+            catch (Exception ex) { return false; }
+        }
+
+        [HttpGet]
+        public async Task<bool> SetUserVote(long userTgId, short vote)
+        {
+            try
+            {
+                var userInfo = await _context.Userinfos.SingleOrDefaultAsync(x => x.TgId == userTgId);
+                if (userInfo == null)
+                    return false;
+                userInfo.Vote = vote;
+                _context.Userinfos.Update(userInfo);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+                await ErrorHelper.SendErrorMess("GetUserMealById Error", ex);
+                return false;
+            }
+        }
         //[HttpPost]
         //public async Task<bool> Test()
         //{
