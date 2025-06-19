@@ -1090,7 +1090,7 @@ namespace NutriDbService.Controllers
                             await _notificationHelper.SendAlertToMe($"Exception on Vote id= {userTgId}");
                         }
                     }
-                    await _notificationHelper.SendAlertToMe("End Vote");
+                    await _notificationHelper.SendAlertToMe($"End Vote. Total={doneids.Count}");
                 }
                 catch (Exception ex)
                 {
