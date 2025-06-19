@@ -1067,7 +1067,7 @@ namespace NutriDbService.Controllers
         }
 
         [HttpGet]
-        public async Task<bool> SendManualVoteNotify(long userTgId)
+        public async Task<bool> StartVoteNotify()
         {
 
             _ = Task.Run(async () =>
