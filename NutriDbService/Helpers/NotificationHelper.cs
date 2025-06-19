@@ -260,6 +260,29 @@ namespace NutriDbService.Helpers
                 text: mess
             ).ConfigureAwait(false);
         }
+
+
+        public async Task SendAlertToMe(string mess)
+        {
+            try
+            {
+                _logger.LogWarning($"User:{389054202} SendNotification");
+
+                var botClient = new TelegramBotClient(Htoken);
+
+                await botClient.SendTextMessageAsync(
+                    chatId: 389054202,
+                    text: mess,
+                    parseMode: Telegram.Bot.Types.Enums.ParseMode.Html
+                ).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"NotificationSendError for User:{389054202}", ex);
+                await ErrorHelper.SendErrorMess($"NotificationSendError for User:{389054202}", ex);
+            }
+
+        }
     }
 
     public class NocodeNot

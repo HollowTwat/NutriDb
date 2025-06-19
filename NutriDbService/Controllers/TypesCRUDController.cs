@@ -1069,12 +1069,39 @@ namespace NutriDbService.Controllers
         [HttpGet]
         public async Task<bool> SendManualVoteNotify(long userTgId)
         {
-            try
+
+            _ = Task.Run(async () =>
             {
-                await _notificationHelper.SendVoteNotificationSingle(userTgId);
-                return true;
-            }
-            catch (Exception ex) { return false; }
+                List<long> doneids = new List<long>();
+                try
+                {
+                    await _notificationHelper.SendAlertToMe("Start Vote");
+                    var usersTgIds = await _context.Users.Where(x => x.IsActive == true).Select(x => x.TgId).ToListAsync();
+
+                    foreach (var userTgId in usersTgIds)
+                    {
+                        try
+                        {
+                            await _notificationHelper.SendVoteNotificationSingle(userTgId);
+                            doneids.Add(userTgId);
+                        }
+                        catch (Exception ex)
+                        {
+                            await _notificationHelper.SendAlertToMe($"Exception on Vote id= {userTgId}");
+                        }
+                    }
+                    await _notificationHelper.SendAlertToMe("End Vote");
+                }
+                catch (Exception ex)
+                {
+                    await _notificationHelper.SendAlertToMe("Exception on Vote");
+                    _logger.LogError($"Exception on Vote:", ex);
+                    _logger.LogInformation($"DoneList={Newtonsoft.Json.JsonConvert.SerializeObject(doneids)}");
+                    await _notificationHelper.SendAlertToMe("Exception on Vote:");
+                }
+            });
+
+            return true;
         }
 
         [HttpGet]
